@@ -1,0 +1,80 @@
+.TH K2HBENCH "1" "February 2014" "K2HASH" "NoSQL(KVS) Library"
+.SH NAME
+K2HBENCH \- Bench mark Tool for K2HASH by Yahoo! JAPAN
+.SH SYNOPSIS
+.B k2hbench
+[ \-f filename | \-t filename | \-m | \-h ] [OPTIONS]
+.SH DESCRIPTION
+.PP
+k2hbench is bench mark test tool, this can test benchmark for K2HASH library with any mode. Then this tool read/write the k2hash file or memory for bench mark on multi process/thread. You can see usage this tool by typing "-h".
+.SH OPTIONS
+.TP
+\fB\-h\fR
+display help
+.TP
+\fB\-f\fR [K2HASH FILE]
+specify permanent k2hash file
+.TP
+\fB\-t\fR [K2HASH FILE]
+specify temporary k2hash file
+.TP
+\fB\-m\fR
+k2hash data on only memory
+.TP
+
+\fB\-type\fR [ro | rw]
+bench type as READ ONLY/READ WRITE(default rw).
+.TP
+\fB\-proc\fR [count]
+process count(default 1).
+.TP
+\fB\-thread\fR [count]
+thread count(default 1).
+.TP
+\fB\-loop\fR [loop count]
+Loop count(default 1) for each thread, must set over 0.
+.TP
+\fB\-dcount\fR [count]
+data count(default 1) for using read/write test.
+.TP
+\fB\-dlength\fR [byte]
+data length(default 128 byte) for testing.
+.TP
+\fB\-start_nodata\fR
+if set this option, not initialize data before starting.
+.TP
+\fB\-mask\fR [BIT COUNT]
+specify bit mask count for k2hash data
+.TP
+\fB\-cmask\fR [BIT COUNT]
+specify collision bit mask count for k2hash data
+.TP
+\fB\-elementcnt\fR [ELEMENT COUNT]
+specify element count for each k2hash table
+.TP
+\fB\-pagesize\fR [BYTE]
+specify pagesize for each k2hash internal data
+\fB\-nofullmap\fR
+not map all of k2hash file on memory when k2hash file specified
+.TP
+\fB\-ro\fR
+work with read only mode when permanent k2hash file
+.TP
+\fB\-g\fR [ERR | WAN | INFO]
+set debugging level, k2hbench displaies debugging message for itself
+.SH ENVIRONMENT
+.TP
+\fBK2HDBGMODE\fR
+K2HDBGMODE environment sets debugging message level as same as \-g option. The value is set as SILENT, ERR, WAN or INFO.
+When k2hbench catches SIGUSER1 signal, the debugging message level is bumpup. The level is changed as order by SILENT, ERR, WAN, INFO, SILENT...
+.TP
+\fK2HDBGFILE\fR
+K2HDBGFILE environment sets the file which is debugging message, this is as same as \-glog option.
+.SH SEE ALSO
+.TP
+k2hash(1), k2hreplace(1), k2hcompress(1), k2htouch(1), k2hedit(1), k2hlinetool(1)
+.SH BUGS
+.TP
+Please report owner and comitter.
+.SH AUTHOR
+k2hash has been written by Takeshi Nakatani <ggtakec@gmail.com>.

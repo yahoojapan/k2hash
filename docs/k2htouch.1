@@ -1,0 +1,90 @@
+.TH K2HTOUCH "1" "February 2014" "K2HASH" "NoSQL(KVS) Library"
+.SH NAME
+K2HTOUCH \- Utility Tool for K2HASH by Yahoo! JAPAN
+.SH SYNOPSIS
+.B k2htouch
+[ \-h ]
+.TP
+.B k2htouch
+FILE [ COMMANDS [ KEY ] [ VALUE ] ]
+.SH DESCRIPTION
+.PP
+k2htouch is a tool for create/add/modify/delete-ing key and value in K2HASH file. This tool is used from k2hedit script for editing by vi editor.
+.SH OPTIONS
+.TP
+\fB\-h\fR
+display help
+.TP
+\fBFILE\fR
+specify k2hash file path
+.TP
+\fBcreate \fR
+the command for creating new k2hash file
+.TP
+\fBcreatemini\fR
+the command for creating new k2hash file(mini size)
+
+.TP
+\fBset\fR [ KEY ] [ VALUE ]
+the command for setting(adding) key and value into k2hash file
+.TP
+\fBget\fR [ KEY ]
+the command for getting a value by the key from k2hash file
+.TP
+\fBdelete\fR [ KEY ]
+the command for deleting the key from k2hash file
+
+.TP
+\fBaddsubkey\fR [ KEY ] [ SUBKEY ] [ VALUE ]
+the command for adding subkey and value into key
+.TP
+\fBgetsubkey\fR [ KEY ]
+the command for getting subkeys
+
+.TP
+\fBpush\fR [ queprefix ] [ value ] (-lifo or -fifo)
+the command for push the que
+.TP
+\fBpop\fR [ QUEPREFIX ] 
+the command for pop the que
+.TP
+\fBclear\fR [ QUEPREFIX ]
+the command for clear the que
+
+.TP
+\fBkpush\fR [ queprefix ] [ value ] (-lifo or -fifo)
+the command for push the keyed que
+.TP
+\fBkpop\fR [ QUEPREFIX ] 
+the command for pop the keyed que
+.TP
+\fBkclear\fR [ QUEPREFIX ]
+the command for clear the keyed que
+
+.TP
+\fBlist\fR
+the command for listing all key and value from k2hash file
+.TP
+\fBinfo\fR
+the command for print status of k2hashfile
+
+.TP
+\fBdtor\fR [on -conf dtorconffile  | off]
+the command for setting k2htpdtor(transaction plugin)
+
+.SH ENVIRONMENT
+.TP
+\fBK2HDBGMODE\fR
+K2HDBGMODE environment sets debugging message level as same as \-g option. The value is set as SILENT, ERR, WAN or INFO.
+When k2hlinetool catches SIGUSER1 signal, the debugging message level is bumpup. The level is changed as order by SILENT, ERR, WAN, INFO, SILENT...
+.TP
+\fK2HDBGFILE\fR
+K2HDBGFILE environment sets the file which is debugging message, this is as same as \-glog option.
+.SH SEE ALSO
+.TP
+k2hash(1), k2hlinetool(1), k2hreplace(1), k2hcompress(1), k2hedit(1)
+.SH BUGS
+.TP
+Please report owner and comitter.
+.SH AUTHOR
+k2hash has been written by Tetsuya Mochizuki <temochiz@yahoo-corp.jp>.

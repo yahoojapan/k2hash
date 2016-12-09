@@ -1,0 +1,83 @@
+.TH K2HLINETOOL "1" "February 2014" "K2HASH" "NoSQL(KVS) Library"
+.SH NAME
+K2HLINETOOL \- Interactive Command Line Tool for K2HASH by Yahoo! JAPAN
+.SH SYNOPSIS
+.B k2hlinetool
+[OPTIONS] [ \-f filename | \-t filename | \-m | \-h ]
+.SH DESCRIPTION
+.PP
+k2hlinetool is interactive tool, this can test almost of K2HASH library interface. Then you can create/modify/load transaction(archive) the k2hash file by this tool. k2hlinetool has CUI interface, and command history, etc. You can see usage this tool by typing "-h".
+.SH OPTIONS
+.TP
+\fB\-h\fR
+display help
+.TP
+\fB\-f\fR [K2HASH FILE]
+specify permanent k2hash file
+.TP
+\fB\-t\fR [K2HASH FILE]
+specify temporary k2hash file
+.TP
+\fB\-m\fR
+k2hash data on only memory
+.TP
+\fB\-mask\fR [BIT COUNT]
+specify bit mask count for k2hash data
+.TP
+\fB\-cmask\fR [BIT COUNT]
+specify collision bit mask count for k2hash data
+.TP
+\fB\-elementcnt\fR [ELEMENT COUNT]
+specify element count for each k2hash table
+.TP
+\fB\-pagesize\fR [BYTE]
+specify pagesize for each k2hash internal data
+.TP
+\fB\-ext\fR [LIBRARY PATH]
+specify extension library for hash function
+.TP
+\fB\-fullmap\fR
+map all of k2hash file on memory when k2hash file specified
+.TP
+\fB\-ro\fR
+work with read only mode when permanent k2hash file
+.TP
+\fB\-init\fR
+initialize k2hash permanent file
+.TP
+\fB\-lap\fR
+print lap time after finishing command
+.TP
+\fB\-his\fR [COUNT]
+set history count of command
+.TP
+\fB\-libversion\fR
+display k2hash library version
+.TP
+\fB\-g\fR [ERR | WAN | INFO]
+set debugging level, k2hlinetool displaies debugging message for itself
+.TP
+\fB\-glog\fR [FILE PATH]
+set output file for debugging message(default stderr)
+.TP
+\fB\-capi\fR
+use C API to k2hash library, this option is testing for library
+.TP
+\fB\-run [FILE PATH]\fR
+run command(history) file at starting
+.SH ENVIRONMENT
+.TP
+\fBK2HDBGMODE\fR
+K2HDBGMODE environment sets debugging message level as same as \-g option. The value is set as SILENT, ERR, WAN or INFO.
+When k2hlinetool catches SIGUSER1 signal, the debugging message level is bumpup. The level is changed as order by SILENT, ERR, WAN, INFO, SILENT...
+.TP
+\fK2HDBGFILE\fR
+K2HDBGFILE environment sets the file which is debugging message, this is as same as \-glog option.
+.SH SEE ALSO
+.TP
+k2hash(1), k2hreplace(1), k2hcompress(1), k2htouch(1), k2hedit(1)
+.SH BUGS
+.TP
+Please report owner and comitter.
+.SH AUTHOR
+k2hash has been written by Takeshi Nakatani <ggtakec@gmail.com>.

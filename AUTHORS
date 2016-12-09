@@ -1,0 +1,12 @@
+1. Takeshi Nakatani <ggtakec@gmail.com>
+
+Wrote from scratch the initial version of k2hash.
+
+2. Tetsuya Mochizuki <temochiz@yahoo-corp.jp>
+
+Wrote k2htouch, k2himport and k2hedit.
+
+3. Taku Ishihara <taishiha@yahoo-corp.jp>
+
+Porting to multiple languages for k2hash.
+

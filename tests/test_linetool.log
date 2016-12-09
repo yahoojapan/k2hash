@@ -1,0 +1,2770 @@
+-------------------------------------------------------
+ K2HASH TOOL
+-------------------------------------------------------
+Permanent file:                         /tmp/k2hash_test_linetool.k2h
+Attached paraemters:
+    Full are mapping:                   false
+    Key Index mask count:               8
+    Collision Key Index mask count:     4
+    Max element count:                  32
+-------------------------------------------------------
+
+Permanent file(/tmp/k2hash_test_linetool.k2h) is completely initialied.
+
+
+K2HASH library Version 1.0.37 (commit: 735b5b0)
+
+Copyright 2013 Yahoo! JAPAN corporation.
+
+K2HASH is key-valuew store base libraries. K2HASH is made for
+the purpose of the construction of original KVS system and the
+offer of the library. The characteristic is this KVS library
+which Key can layer. And can support multi-processing and
+multi-thread, and is provided safely as available KVS.
+
+
+FULLOCK Version 1.0.17 (commit: cd05001)
+
+Copyright 2015 Yahoo! JAPAN corporation.
+
+FULLOCK is fast locking library on user level by Yahoo! JAPAN.
+FULLOCK is following specifications.
+
+-------------------------------------------------------
+ K2HASH TOOL
+-------------------------------------------------------
+On memory mode
+Attached paraemters:
+    Full are mapping:                   true
+    Key Index mask count:               4
+    Collision Key Index mask count:     2
+    Max element count:                  32
+-------------------------------------------------------
+
+> h
+
+Command: [command] [parameters...]
+
+help(h)                                                      print help
+quit(q)/exit                                                 quit
+info(i) [state]                                              print k2hash file/memory information and with state
+dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
+settrial(st) <key> [pass=....]                               set key-value if key is not existed.
+setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
+directset(dset) <key> <value> <offset>                       set value from offset directly.
+setf(sf) <key> <offset> <file>                               set directly key-value from file.
+fill(f) <prefix> <value> <count>                             set key-value by prefix repeating by count
+fillsub <parent> <prefix> <val> <cnt>                        set key-value under parent key by prefix repeating by count
+rm <key> [all]                                               remove key, if all parameter is specified, remove all sub key under key
+rmsub <parent key> <key>                                     remove key under parent key
+rename(ren) <key> <new key>                                  rename key to new key name
+print(p) <key> [all] [noattrcheck] [pass=....]               print value/subkeys by key, if all parameter is specified, print nesting sub keys
+printattr(pa) <key>                                          print attribute by key.
+addattr(aa) <key> <attr name> <attr value>                   add attribute to key.
+directprint(dp) <key> <length> <offset>                      print value from offset and length directly.
+directsave(dsave) <start hash> <file path>                   save element binary data to file by hash value
+directload(dload) <file path> [unixtime]                     load element by binary data from file
+copyfile(cf) <key> <offset> <file>                           output directly key-value to file.
+list(l) <key>                                                dump existed key list
+stream(str) <key> < input | output>                          stream test by interactive.
+history(his)                                                 display all history, you can use a command line in history by "!<number>".
+save <file path>                                             save history to file.
+load <file path>                                             load and run command file.
+trans(tr) <on [filename [prefix [param]]] | off> [expire=sec]
+                                                             disable/enable transaction.
+threadpool(pool) [number]                                    set/display thread pool count for transaction, 0 means no thread pool.
+archive(ar) <put | load> <filename>                          put/load archive(transaction) file.
+queue(que) [prefix] empty                                    check queue is empty
+queue(que) [prefix] count                                    get data count in queue
+queue(que) [prefix] read <fifo | lifo> <pos> [pass=...]      read the value from queue at position
+queue(que) [prefix] push <fifo | lifo> <value> [pass=....] [expire=sec]
+                                                             push the value to queue(fifo/lifo)
+queue(que) [prefix] pop <fifo | lifo> [pass=...]             pop the value from queue
+queue(que) [prefix] dump <fifo | lifo>                       dump queue
+queue(que) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of values in queue
+keyqueue(kque) [prefix] empty                                check keyqueue is empty
+keyqueue(kque) [prefix] count                                get data count in keyqueue
+keyqueue(kque) [prefix] read <fifo | lifo> <pos> [pass=...]  read the value from keyqueue at position
+keyqueue(kque) [prefix] push <fifo | lifo> <key> <value> [pass=....] [expire=sec]
+                                                             push the key name to queue(fifo/lifo) and key-value into k2hash
+keyqueue(kque) [prefix] pop <fifo | lifo> [pass=...]         pop the key-value from queue and remove key-value from k2hash
+keyqueue(kque) [prefix] dump <fifo | lifo>                   dump queue(as same as queue command)
+keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of key-name in queue and remove those from k2hash
+builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
+                                                             set builtin attribute.
+loadpluginattr(lpa) filepath                                 load plugin attribute library.
+addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+cleanallattr(caa)                                            clear all attribute setting.
+shell                                                        exit shell(same as "!" command).
+echo <string>...                                             echo string
+sleep <second>                                               sleep seconds
+
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> set testkey testvalue pass=testpass
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => "testvalue"
+> set testkey testvalue expire=1
+> p testkey
+  +"testkey" => "testvalue"
+> sleep 2
+> p testkey
+  +"testkey" => value is not found
+> set testkey testvalue pass=testpass expire=1
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => "testvalue"
+> sleep 2
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => value is not found
+> rm testkey
+> l
+> set parentkey parentvalue
+> setsub parentkey childkey childvalue
+> p parentkey
+  +"parentkey" => "parentvalue"
+       subkey: "childkey"
+> p childkey
+  +"childkey" => "childvalue"
+> l
++"parentkey" => "parentvalue"
+         subkeys: "childkey"
++"childkey" => "childvalue"
+> rmsub parentkey childkey
+> p parentkey
+  +"parentkey" => "parentvalue"
+> p childkey
+  +"childkey" => value is not found
+> l
++"parentkey" => "parentvalue"
+> setsub parentkey childkey childvalue
+> rm parentkey all
+> p childkey
+  +"childkey" => value is not found
+> p parentkey
+  +"parentkey" => value is not found
+> l
+> fill testkey_ fillvalue 10
+> l
++"testkey_-0" => "fillvalue"
++"testkey_-1" => "fillvalue"
++"testkey_-2" => "fillvalue"
++"testkey_-3" => "fillvalue"
++"testkey_-4" => "fillvalue"
++"testkey_-5" => "fillvalue"
++"testkey_-6" => "fillvalue"
++"testkey_-7" => "fillvalue"
++"testkey_-8" => "fillvalue"
++"testkey_-9" => "fillvalue"
+> rm testkey_-1
+> rm testkey_-2
+> rm testkey_-0
+> rm testkey_-3
+> rm testkey_-4
+> rm testkey_-5
+> rm testkey_-6
+> rm testkey_-7
+> rm testkey_-8
+> rm testkey_-9
+> set parentkey parentvalue
+> fillsub parentkey testsub_ fillsubvalue 10
+> l
++"testsub_-6" => "fillsubvalue"
++"testsub_-8" => "fillsubvalue"
++"testsub_-7" => "fillsubvalue"
++"testsub_-5" => "fillsubvalue"
++"testsub_-4" => "fillsubvalue"
++"testsub_-3" => "fillsubvalue"
++"testsub_-2" => "fillsubvalue"
++"testsub_-1" => "fillsubvalue"
++"testsub_-0" => "fillsubvalue"
++"parentkey" => "parentvalue"
+         subkeys: "testsub_-0, testsub_-1, testsub_-2, testsub_-3, testsub_-4, testsub_-5, testsub_-6, testsub_-7, testsub_-8, testsub_-9"
++"testsub_-9" => "fillsubvalue"
+> rm parentkey all
+> l
+> set attrkey attrvalue
+> addattr attrkey testattr testvalue
+> printattr attrkey
+"attrkey" attribute = {
+    "testattr"	=> "testvalue"
+}
+> rm attrkey
+> l
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> p testkey_renamed
+  +"testkey_renamed" => value is not found
+> ren testkey testkey_renamed
+> p testkey
+  +"testkey" => value is not found
+> p testkey_renamed
+  +"testkey_renamed" => "testvalue"
+> rm testkey_renamed
+> que push fifo quevalue1
+> que push fifo quevalue2
+> que push fifo quevalue3
+> que push fifo quevalue4
+> que push fifo quevalue5
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5
+> que pop fifo
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo
+> que push fifo quevalue1 pass=testpass
+> que push fifo quevalue2 pass=testpass
+> que push fifo quevalue3 pass=testpass
+> que push fifo quevalue4 pass=testpass
+> que push fifo quevalue5 pass=testpass
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1 pass=testpass
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2 pass=testpass
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3 pass=testpass
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4 pass=testpass
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass
+> que push fifo quevalue2 pass=testpass
+> que push fifo quevalue3 pass=testpass
+> que push fifo quevalue4 pass=testpass
+> que push fifo quevalue5 pass=testpass
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo pass=testpass
+> que push fifo quevalue1 expire=1
+> que push fifo quevalue2 expire=1
+> que push fifo quevalue3 expire=1
+> que push fifo quevalue4 expire=1
+> que push fifo quevalue5 expire=1
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5
+> que pop fifo
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo
+> que push fifo quevalue1 expire=1
+> que push fifo quevalue2 expire=1
+> que push fifo quevalue3 expire=1
+> que push fifo quevalue4 expire=1
+> que push fifo quevalue5 expire=1
+> sleep 2
+> que count
+ Data count in Queue : 1
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1 pass=testpass
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2 pass=testpass
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3 pass=testpass
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4 pass=testpass
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo pass=testpass
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> sleep 2
+> que count
+ Data count in Queue : 1
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+> que read fifo 1 pass=testpass
+> que read fifo 2 pass=testpass
+> que read fifo 3 pass=testpass
+> que read fifo 4 pass=testpass
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> sleep 2
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1
+> kque push fifo kquekey2 kquevalue2
+> kque push fifo kquekey3 kquevalue3
+> kque push fifo kquekey4 kquevalue4
+> kque push fifo kquekey5 kquevalue5
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass
+> kque push fifo kquekey2 kquevalue2 pass=testpass
+> kque push fifo kquekey3 kquevalue3 pass=testpass
+> kque push fifo kquekey4 kquevalue4 pass=testpass
+> kque push fifo kquekey5 kquevalue5 pass=testpass
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1 pass=testpass
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2 pass=testpass
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3 pass=testpass
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4 pass=testpass
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass
+> kque push fifo kquekey2 kquevalue2 pass=testpass
+> kque push fifo kquekey3 kquevalue3 pass=testpass
+> kque push fifo kquekey4 kquevalue4 pass=testpass
+> kque push fifo kquekey5 kquevalue5 pass=testpass
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1 expire=1
+> kque push fifo kquekey2 kquevalue2 expire=1
+> kque push fifo kquekey3 kquevalue3 expire=1
+> kque push fifo kquekey4 kquevalue4 expire=1
+> kque push fifo kquekey5 kquevalue5 expire=1
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 expire=1
+> kque push fifo kquekey2 kquevalue2 expire=1
+> kque push fifo kquekey3 kquevalue3 expire=1
+> kque push fifo kquekey4 kquevalue4 expire=1
+> kque push fifo kquekey5 kquevalue5 expire=1
+> sleep 2
+> kque count
+ Data count in Key Queue : 1
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1 pass=testpass
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2 pass=testpass
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3 pass=testpass
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4 pass=testpass
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> sleep 2
+> kque count
+ Data count in Key Queue : 1
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+> kque read fifo 1 pass=testpass
+> kque read fifo 2 pass=testpass
+> kque read fifo 3 pass=testpass
+> kque read fifo 4 pass=testpass
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> sleep 2
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> ba mtime history expire=10 enc pass=test_encrypt_keys
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> rm testkey
+> clanallattr
+> cleanallattr
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> printattr testkey
+"testkey" => attribute is not found
+> rm testkey
+> exit
+Quit & Detacch.
+-------------------------------------------------------
+ K2HASH TOOL
+-------------------------------------------------------
+On memory mode
+Attached paraemters:
+    Full are mapping:                   true
+    Key Index mask count:               4
+    Collision Key Index mask count:     2
+    Max element count:                  32
+-------------------------------------------------------
+
+> h
+
+Command: [command] [parameters...]
+
+help(h)                                                      print help
+quit(q)/exit                                                 quit
+info(i) [state]                                              print k2hash file/memory information and with state
+dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
+settrial(st) <key> [pass=....]                               set key-value if key is not existed.
+setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
+directset(dset) <key> <value> <offset>                       set value from offset directly.
+setf(sf) <key> <offset> <file>                               set directly key-value from file.
+fill(f) <prefix> <value> <count>                             set key-value by prefix repeating by count
+fillsub <parent> <prefix> <val> <cnt>                        set key-value under parent key by prefix repeating by count
+rm <key> [all]                                               remove key, if all parameter is specified, remove all sub key under key
+rmsub <parent key> <key>                                     remove key under parent key
+rename(ren) <key> <new key>                                  rename key to new key name
+print(p) <key> [all] [noattrcheck] [pass=....]               print value/subkeys by key, if all parameter is specified, print nesting sub keys
+printattr(pa) <key>                                          print attribute by key.
+addattr(aa) <key> <attr name> <attr value>                   add attribute to key.
+directprint(dp) <key> <length> <offset>                      print value from offset and length directly.
+directsave(dsave) <start hash> <file path>                   save element binary data to file by hash value
+directload(dload) <file path> [unixtime]                     load element by binary data from file
+copyfile(cf) <key> <offset> <file>                           output directly key-value to file.
+list(l) <key>                                                dump existed key list
+stream(str) <key> < input | output>                          stream test by interactive.
+history(his)                                                 display all history, you can use a command line in history by "!<number>".
+save <file path>                                             save history to file.
+load <file path>                                             load and run command file.
+trans(tr) <on [filename [prefix [param]]] | off> [expire=sec]
+                                                             disable/enable transaction.
+threadpool(pool) [number]                                    set/display thread pool count for transaction, 0 means no thread pool.
+archive(ar) <put | load> <filename>                          put/load archive(transaction) file.
+queue(que) [prefix] empty                                    check queue is empty
+queue(que) [prefix] count                                    get data count in queue
+queue(que) [prefix] read <fifo | lifo> <pos> [pass=...]      read the value from queue at position
+queue(que) [prefix] push <fifo | lifo> <value> [pass=....] [expire=sec]
+                                                             push the value to queue(fifo/lifo)
+queue(que) [prefix] pop <fifo | lifo> [pass=...]             pop the value from queue
+queue(que) [prefix] dump <fifo | lifo>                       dump queue
+queue(que) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of values in queue
+keyqueue(kque) [prefix] empty                                check keyqueue is empty
+keyqueue(kque) [prefix] count                                get data count in keyqueue
+keyqueue(kque) [prefix] read <fifo | lifo> <pos> [pass=...]  read the value from keyqueue at position
+keyqueue(kque) [prefix] push <fifo | lifo> <key> <value> [pass=....] [expire=sec]
+                                                             push the key name to queue(fifo/lifo) and key-value into k2hash
+keyqueue(kque) [prefix] pop <fifo | lifo> [pass=...]         pop the key-value from queue and remove key-value from k2hash
+keyqueue(kque) [prefix] dump <fifo | lifo>                   dump queue(as same as queue command)
+keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of key-name in queue and remove those from k2hash
+builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
+                                                             set builtin attribute.
+loadpluginattr(lpa) filepath                                 load plugin attribute library.
+addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+cleanallattr(caa)                                            clear all attribute setting.
+shell                                                        exit shell(same as "!" command).
+echo <string>...                                             echo string
+sleep <second>                                               sleep seconds
+
+> set testkey testvalue
+> p testkey
+  +"testkey" => value is not found
+> set testkey testvalue pass=testpass
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => value is not found
+> set testkey testvalue expire=1
+> p testkey
+  +"testkey" => value is not found
+> sleep 2
+> p testkey
+  +"testkey" => value is not found
+> set testkey testvalue pass=testpass expire=1
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => value is not found
+> sleep 2
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => value is not found
+> rm testkey
+> l
+> set parentkey parentvalue
+> setsub parentkey childkey childvalue
+> p parentkey
+  +"parentkey" => value is not found
+> p childkey
+  +"childkey" => value is not found
+> l
+> rmsub parentkey childkey
+> p parentkey
+  +"parentkey" => value is not found
+> p childkey
+  +"childkey" => value is not found
+> l
+> setsub parentkey childkey childvalue
+> rm parentkey all
+> p childkey
+  +"childkey" => value is not found
+> p parentkey
+  +"parentkey" => value is not found
+> l
+> fill testkey_ fillvalue 10
+> l
+> rm testkey_-1
+> rm testkey_-2
+> rm testkey_-0
+> rm testkey_-3
+> rm testkey_-4
+> rm testkey_-5
+> rm testkey_-6
+> rm testkey_-7
+> rm testkey_-8
+> rm testkey_-9
+> set parentkey parentvalue
+> fillsub parentkey testsub_ fillsubvalue 10
+> l
+> rm parentkey all
+> l
+> set attrkey attrvalue
+> addattr attrkey testattr testvalue
+> printattr attrkey
+"attrkey" => attribute is not found
+> rm attrkey
+> l
+> set testkey testvalue
+> p testkey
+  +"testkey" => value is not found
+> p testkey_renamed
+  +"testkey_renamed" => value is not found
+> ren testkey testkey_renamed
+> p testkey
+  +"testkey" => value is not found
+> p testkey_renamed
+  +"testkey_renamed" => value is not found
+> rm testkey_renamed
+> que push fifo quevalue1
+> que push fifo quevalue2
+> que push fifo quevalue3
+> que push fifo quevalue4
+> que push fifo quevalue5
+> que count
+ Data count in Queue : 0
+
+> que empty
+ Queue is EMPTY.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass
+> que push fifo quevalue2 pass=testpass
+> que push fifo quevalue3 pass=testpass
+> que push fifo quevalue4 pass=testpass
+> que push fifo quevalue5 pass=testpass
+> que count
+ Data count in Queue : 0
+
+> que empty
+ Queue is EMPTY.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+> que read fifo 1 pass=testpass
+> que read fifo 2 pass=testpass
+> que read fifo 3 pass=testpass
+> que read fifo 4 pass=testpass
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass
+> que push fifo quevalue2 pass=testpass
+> que push fifo quevalue3 pass=testpass
+> que push fifo quevalue4 pass=testpass
+> que push fifo quevalue5 pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que push fifo quevalue1 expire=1
+> que push fifo quevalue2 expire=1
+> que push fifo quevalue3 expire=1
+> que push fifo quevalue4 expire=1
+> que push fifo quevalue5 expire=1
+> que count
+ Data count in Queue : 0
+
+> que empty
+ Queue is EMPTY.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 expire=1
+> que push fifo quevalue2 expire=1
+> que push fifo quevalue3 expire=1
+> que push fifo quevalue4 expire=1
+> que push fifo quevalue5 expire=1
+> sleep 2
+> que count
+ Data count in Queue : 0
+
+> que empty
+ Queue is EMPTY.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> que count
+ Data count in Queue : 0
+
+> que empty
+ Queue is EMPTY.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+> que read fifo 1 pass=testpass
+> que read fifo 2 pass=testpass
+> que read fifo 3 pass=testpass
+> que read fifo 4 pass=testpass
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> sleep 2
+> que count
+ Data count in Queue : 0
+
+> que empty
+ Queue is EMPTY.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+> que read fifo 1 pass=testpass
+> que read fifo 2 pass=testpass
+> que read fifo 3 pass=testpass
+> que read fifo 4 pass=testpass
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> sleep 2
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1
+> kque push fifo kquekey2 kquevalue2
+> kque push fifo kquekey3 kquevalue3
+> kque push fifo kquekey4 kquevalue4
+> kque push fifo kquekey5 kquevalue5
+> kque count
+ Data count in Key Queue : 0
+
+> kque empty
+ Key Queue is EMPTY.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass
+> kque push fifo kquekey2 kquevalue2 pass=testpass
+> kque push fifo kquekey3 kquevalue3 pass=testpass
+> kque push fifo kquekey4 kquevalue4 pass=testpass
+> kque push fifo kquekey5 kquevalue5 pass=testpass
+> kque count
+ Data count in Key Queue : 0
+
+> kque empty
+ Key Queue is EMPTY.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+> kque read fifo 1 pass=testpass
+> kque read fifo 2 pass=testpass
+> kque read fifo 3 pass=testpass
+> kque read fifo 4 pass=testpass
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass
+> kque push fifo kquekey2 kquevalue2 pass=testpass
+> kque push fifo kquekey3 kquevalue3 pass=testpass
+> kque push fifo kquekey4 kquevalue4 pass=testpass
+> kque push fifo kquekey5 kquevalue5 pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1 expire=1
+> kque push fifo kquekey2 kquevalue2 expire=1
+> kque push fifo kquekey3 kquevalue3 expire=1
+> kque push fifo kquekey4 kquevalue4 expire=1
+> kque push fifo kquekey5 kquevalue5 expire=1
+> kque count
+ Data count in Key Queue : 0
+
+> kque empty
+ Key Queue is EMPTY.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 expire=1
+> kque push fifo kquekey2 kquevalue2 expire=1
+> kque push fifo kquekey3 kquevalue3 expire=1
+> kque push fifo kquekey4 kquevalue4 expire=1
+> kque push fifo kquekey5 kquevalue5 expire=1
+> sleep 2
+> kque count
+ Data count in Key Queue : 0
+
+> kque empty
+ Key Queue is EMPTY.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> kque count
+ Data count in Key Queue : 0
+
+> kque empty
+ Key Queue is EMPTY.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+> kque read fifo 1 pass=testpass
+> kque read fifo 2 pass=testpass
+> kque read fifo 3 pass=testpass
+> kque read fifo 4 pass=testpass
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> sleep 2
+> kque count
+ Data count in Key Queue : 0
+
+> kque empty
+ Key Queue is EMPTY.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+> kque read fifo 1 pass=testpass
+> kque read fifo 2 pass=testpass
+> kque read fifo 3 pass=testpass
+> kque read fifo 4 pass=testpass
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> sleep 2
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> ba mtime history expire=10 enc pass=test_encrypt_keys
+> set testkey testvalue
+> p testkey
+  +"testkey" => value is not found
+> rm testkey
+> clanallattr
+> cleanallattr
+> set testkey testvalue
+> p testkey
+  +"testkey" => value is not found
+> printattr testkey
+"testkey" => attribute is not found
+> rm testkey
+> exit
+Quit & Detacch.
+-------------------------------------------------------
+ K2HASH TOOL
+-------------------------------------------------------
+Temporaly file:                         /tmp/k2hash_test_linetool.k2h
+Attached paraemters:
+    Full are mapping:                   true
+    Key Index mask count:               4
+    Collision Key Index mask count:     2
+    Max element count:                  32
+-------------------------------------------------------
+
+> h
+
+Command: [command] [parameters...]
+
+help(h)                                                      print help
+quit(q)/exit                                                 quit
+info(i) [state]                                              print k2hash file/memory information and with state
+dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
+settrial(st) <key> [pass=....]                               set key-value if key is not existed.
+setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
+directset(dset) <key> <value> <offset>                       set value from offset directly.
+setf(sf) <key> <offset> <file>                               set directly key-value from file.
+fill(f) <prefix> <value> <count>                             set key-value by prefix repeating by count
+fillsub <parent> <prefix> <val> <cnt>                        set key-value under parent key by prefix repeating by count
+rm <key> [all]                                               remove key, if all parameter is specified, remove all sub key under key
+rmsub <parent key> <key>                                     remove key under parent key
+rename(ren) <key> <new key>                                  rename key to new key name
+print(p) <key> [all] [noattrcheck] [pass=....]               print value/subkeys by key, if all parameter is specified, print nesting sub keys
+printattr(pa) <key>                                          print attribute by key.
+addattr(aa) <key> <attr name> <attr value>                   add attribute to key.
+directprint(dp) <key> <length> <offset>                      print value from offset and length directly.
+directsave(dsave) <start hash> <file path>                   save element binary data to file by hash value
+directload(dload) <file path> [unixtime]                     load element by binary data from file
+copyfile(cf) <key> <offset> <file>                           output directly key-value to file.
+list(l) <key>                                                dump existed key list
+stream(str) <key> < input | output>                          stream test by interactive.
+history(his)                                                 display all history, you can use a command line in history by "!<number>".
+save <file path>                                             save history to file.
+load <file path>                                             load and run command file.
+trans(tr) <on [filename [prefix [param]]] | off> [expire=sec]
+                                                             disable/enable transaction.
+threadpool(pool) [number]                                    set/display thread pool count for transaction, 0 means no thread pool.
+archive(ar) <put | load> <filename>                          put/load archive(transaction) file.
+queue(que) [prefix] empty                                    check queue is empty
+queue(que) [prefix] count                                    get data count in queue
+queue(que) [prefix] read <fifo | lifo> <pos> [pass=...]      read the value from queue at position
+queue(que) [prefix] push <fifo | lifo> <value> [pass=....] [expire=sec]
+                                                             push the value to queue(fifo/lifo)
+queue(que) [prefix] pop <fifo | lifo> [pass=...]             pop the value from queue
+queue(que) [prefix] dump <fifo | lifo>                       dump queue
+queue(que) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of values in queue
+keyqueue(kque) [prefix] empty                                check keyqueue is empty
+keyqueue(kque) [prefix] count                                get data count in keyqueue
+keyqueue(kque) [prefix] read <fifo | lifo> <pos> [pass=...]  read the value from keyqueue at position
+keyqueue(kque) [prefix] push <fifo | lifo> <key> <value> [pass=....] [expire=sec]
+                                                             push the key name to queue(fifo/lifo) and key-value into k2hash
+keyqueue(kque) [prefix] pop <fifo | lifo> [pass=...]         pop the key-value from queue and remove key-value from k2hash
+keyqueue(kque) [prefix] dump <fifo | lifo>                   dump queue(as same as queue command)
+keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of key-name in queue and remove those from k2hash
+builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
+                                                             set builtin attribute.
+loadpluginattr(lpa) filepath                                 load plugin attribute library.
+addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+cleanallattr(caa)                                            clear all attribute setting.
+shell                                                        exit shell(same as "!" command).
+echo <string>...                                             echo string
+sleep <second>                                               sleep seconds
+
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> set testkey testvalue pass=testpass
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => "testvalue"
+> set testkey testvalue expire=1
+> p testkey
+  +"testkey" => "testvalue"
+> sleep 2
+> p testkey
+  +"testkey" => value is not found
+> set testkey testvalue pass=testpass expire=1
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => "testvalue"
+> sleep 2
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => value is not found
+> rm testkey
+> l
+> set parentkey parentvalue
+> setsub parentkey childkey childvalue
+> p parentkey
+  +"parentkey" => "parentvalue"
+       subkey: "childkey"
+> p childkey
+  +"childkey" => "childvalue"
+> l
++"parentkey" => "parentvalue"
+         subkeys: "childkey"
++"childkey" => "childvalue"
+> rmsub parentkey childkey
+> p parentkey
+  +"parentkey" => "parentvalue"
+> p childkey
+  +"childkey" => value is not found
+> l
++"parentkey" => "parentvalue"
+> setsub parentkey childkey childvalue
+> rm parentkey all
+> p childkey
+  +"childkey" => value is not found
+> p parentkey
+  +"parentkey" => value is not found
+> l
+> fill testkey_ fillvalue 10
+> l
++"testkey_-0" => "fillvalue"
++"testkey_-1" => "fillvalue"
++"testkey_-2" => "fillvalue"
++"testkey_-3" => "fillvalue"
++"testkey_-4" => "fillvalue"
++"testkey_-5" => "fillvalue"
++"testkey_-6" => "fillvalue"
++"testkey_-7" => "fillvalue"
++"testkey_-8" => "fillvalue"
++"testkey_-9" => "fillvalue"
+> rm testkey_-1
+> rm testkey_-2
+> rm testkey_-0
+> rm testkey_-3
+> rm testkey_-4
+> rm testkey_-5
+> rm testkey_-6
+> rm testkey_-7
+> rm testkey_-8
+> rm testkey_-9
+> set parentkey parentvalue
+> fillsub parentkey testsub_ fillsubvalue 10
+> l
++"testsub_-6" => "fillsubvalue"
++"testsub_-8" => "fillsubvalue"
++"testsub_-7" => "fillsubvalue"
++"testsub_-5" => "fillsubvalue"
++"testsub_-4" => "fillsubvalue"
++"testsub_-3" => "fillsubvalue"
++"testsub_-2" => "fillsubvalue"
++"testsub_-1" => "fillsubvalue"
++"testsub_-0" => "fillsubvalue"
++"parentkey" => "parentvalue"
+         subkeys: "testsub_-0, testsub_-1, testsub_-2, testsub_-3, testsub_-4, testsub_-5, testsub_-6, testsub_-7, testsub_-8, testsub_-9"
++"testsub_-9" => "fillsubvalue"
+> rm parentkey all
+> l
+> set attrkey attrvalue
+> addattr attrkey testattr testvalue
+> printattr attrkey
+"attrkey" attribute = {
+    "testattr"	=> "testvalue"
+}
+> rm attrkey
+> l
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> p testkey_renamed
+  +"testkey_renamed" => value is not found
+> ren testkey testkey_renamed
+> p testkey
+  +"testkey" => value is not found
+> p testkey_renamed
+  +"testkey_renamed" => "testvalue"
+> rm testkey_renamed
+> que push fifo quevalue1
+> que push fifo quevalue2
+> que push fifo quevalue3
+> que push fifo quevalue4
+> que push fifo quevalue5
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5
+> que pop fifo
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo
+> que push fifo quevalue1 pass=testpass
+> que push fifo quevalue2 pass=testpass
+> que push fifo quevalue3 pass=testpass
+> que push fifo quevalue4 pass=testpass
+> que push fifo quevalue5 pass=testpass
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1 pass=testpass
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2 pass=testpass
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3 pass=testpass
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4 pass=testpass
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass
+> que push fifo quevalue2 pass=testpass
+> que push fifo quevalue3 pass=testpass
+> que push fifo quevalue4 pass=testpass
+> que push fifo quevalue5 pass=testpass
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo pass=testpass
+> que push fifo quevalue1 expire=1
+> que push fifo quevalue2 expire=1
+> que push fifo quevalue3 expire=1
+> que push fifo quevalue4 expire=1
+> que push fifo quevalue5 expire=1
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5
+> que pop fifo
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo
+> que push fifo quevalue1 expire=1
+> que push fifo quevalue2 expire=1
+> que push fifo quevalue3 expire=1
+> que push fifo quevalue4 expire=1
+> que push fifo quevalue5 expire=1
+> sleep 2
+> que count
+ Data count in Queue : 1
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1 pass=testpass
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2 pass=testpass
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3 pass=testpass
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4 pass=testpass
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo pass=testpass
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> sleep 2
+> que count
+ Data count in Queue : 1
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+> que read fifo 1 pass=testpass
+> que read fifo 2 pass=testpass
+> que read fifo 3 pass=testpass
+> que read fifo 4 pass=testpass
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> sleep 2
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1
+> kque push fifo kquekey2 kquevalue2
+> kque push fifo kquekey3 kquevalue3
+> kque push fifo kquekey4 kquevalue4
+> kque push fifo kquekey5 kquevalue5
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass
+> kque push fifo kquekey2 kquevalue2 pass=testpass
+> kque push fifo kquekey3 kquevalue3 pass=testpass
+> kque push fifo kquekey4 kquevalue4 pass=testpass
+> kque push fifo kquekey5 kquevalue5 pass=testpass
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1 pass=testpass
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2 pass=testpass
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3 pass=testpass
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4 pass=testpass
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass
+> kque push fifo kquekey2 kquevalue2 pass=testpass
+> kque push fifo kquekey3 kquevalue3 pass=testpass
+> kque push fifo kquekey4 kquevalue4 pass=testpass
+> kque push fifo kquekey5 kquevalue5 pass=testpass
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1 expire=1
+> kque push fifo kquekey2 kquevalue2 expire=1
+> kque push fifo kquekey3 kquevalue3 expire=1
+> kque push fifo kquekey4 kquevalue4 expire=1
+> kque push fifo kquekey5 kquevalue5 expire=1
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 expire=1
+> kque push fifo kquekey2 kquevalue2 expire=1
+> kque push fifo kquekey3 kquevalue3 expire=1
+> kque push fifo kquekey4 kquevalue4 expire=1
+> kque push fifo kquekey5 kquevalue5 expire=1
+> sleep 2
+> kque count
+ Data count in Key Queue : 1
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1 pass=testpass
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2 pass=testpass
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3 pass=testpass
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4 pass=testpass
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> sleep 2
+> kque count
+ Data count in Key Queue : 1
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+> kque read fifo 1 pass=testpass
+> kque read fifo 2 pass=testpass
+> kque read fifo 3 pass=testpass
+> kque read fifo 4 pass=testpass
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> sleep 2
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> ba mtime history expire=10 enc pass=test_encrypt_keys
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> rm testkey
+> clanallattr
+> cleanallattr
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> printattr testkey
+"testkey" => attribute is not found
+> rm testkey
+> exit
+Quit & Detacch.
+-------------------------------------------------------
+ K2HASH TOOL
+-------------------------------------------------------
+Permanent file:                         /tmp/k2hash_test_linetool.k2h
+Attached paraemters:
+    Full are mapping:                   true
+    Key Index mask count:               4
+    Collision Key Index mask count:     2
+    Max element count:                  32
+-------------------------------------------------------
+
+> h
+
+Command: [command] [parameters...]
+
+help(h)                                                      print help
+quit(q)/exit                                                 quit
+info(i) [state]                                              print k2hash file/memory information and with state
+dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
+settrial(st) <key> [pass=....]                               set key-value if key is not existed.
+setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
+directset(dset) <key> <value> <offset>                       set value from offset directly.
+setf(sf) <key> <offset> <file>                               set directly key-value from file.
+fill(f) <prefix> <value> <count>                             set key-value by prefix repeating by count
+fillsub <parent> <prefix> <val> <cnt>                        set key-value under parent key by prefix repeating by count
+rm <key> [all]                                               remove key, if all parameter is specified, remove all sub key under key
+rmsub <parent key> <key>                                     remove key under parent key
+rename(ren) <key> <new key>                                  rename key to new key name
+print(p) <key> [all] [noattrcheck] [pass=....]               print value/subkeys by key, if all parameter is specified, print nesting sub keys
+printattr(pa) <key>                                          print attribute by key.
+addattr(aa) <key> <attr name> <attr value>                   add attribute to key.
+directprint(dp) <key> <length> <offset>                      print value from offset and length directly.
+directsave(dsave) <start hash> <file path>                   save element binary data to file by hash value
+directload(dload) <file path> [unixtime]                     load element by binary data from file
+copyfile(cf) <key> <offset> <file>                           output directly key-value to file.
+list(l) <key>                                                dump existed key list
+stream(str) <key> < input | output>                          stream test by interactive.
+history(his)                                                 display all history, you can use a command line in history by "!<number>".
+save <file path>                                             save history to file.
+load <file path>                                             load and run command file.
+trans(tr) <on [filename [prefix [param]]] | off> [expire=sec]
+                                                             disable/enable transaction.
+threadpool(pool) [number]                                    set/display thread pool count for transaction, 0 means no thread pool.
+archive(ar) <put | load> <filename>                          put/load archive(transaction) file.
+queue(que) [prefix] empty                                    check queue is empty
+queue(que) [prefix] count                                    get data count in queue
+queue(que) [prefix] read <fifo | lifo> <pos> [pass=...]      read the value from queue at position
+queue(que) [prefix] push <fifo | lifo> <value> [pass=....] [expire=sec]
+                                                             push the value to queue(fifo/lifo)
+queue(que) [prefix] pop <fifo | lifo> [pass=...]             pop the value from queue
+queue(que) [prefix] dump <fifo | lifo>                       dump queue
+queue(que) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of values in queue
+keyqueue(kque) [prefix] empty                                check keyqueue is empty
+keyqueue(kque) [prefix] count                                get data count in keyqueue
+keyqueue(kque) [prefix] read <fifo | lifo> <pos> [pass=...]  read the value from keyqueue at position
+keyqueue(kque) [prefix] push <fifo | lifo> <key> <value> [pass=....] [expire=sec]
+                                                             push the key name to queue(fifo/lifo) and key-value into k2hash
+keyqueue(kque) [prefix] pop <fifo | lifo> [pass=...]         pop the key-value from queue and remove key-value from k2hash
+keyqueue(kque) [prefix] dump <fifo | lifo>                   dump queue(as same as queue command)
+keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of key-name in queue and remove those from k2hash
+builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
+                                                             set builtin attribute.
+loadpluginattr(lpa) filepath                                 load plugin attribute library.
+addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+cleanallattr(caa)                                            clear all attribute setting.
+shell                                                        exit shell(same as "!" command).
+echo <string>...                                             echo string
+sleep <second>                                               sleep seconds
+
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> set testkey testvalue pass=testpass
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => "testvalue"
+> set testkey testvalue expire=1
+> p testkey
+  +"testkey" => "testvalue"
+> sleep 2
+> p testkey
+  +"testkey" => value is not found
+> set testkey testvalue pass=testpass expire=1
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => "testvalue"
+> sleep 2
+> p testkey
+  +"testkey" => value is not found
+> p testkey pass=testpass
+  +"testkey" => value is not found
+> rm testkey
+> l
+> set parentkey parentvalue
+> setsub parentkey childkey childvalue
+> p parentkey
+  +"parentkey" => "parentvalue"
+       subkey: "childkey"
+> p childkey
+  +"childkey" => "childvalue"
+> l
++"parentkey" => "parentvalue"
+         subkeys: "childkey"
++"childkey" => "childvalue"
+> rmsub parentkey childkey
+> p parentkey
+  +"parentkey" => "parentvalue"
+> p childkey
+  +"childkey" => value is not found
+> l
++"parentkey" => "parentvalue"
+> setsub parentkey childkey childvalue
+> rm parentkey all
+> p childkey
+  +"childkey" => value is not found
+> p parentkey
+  +"parentkey" => value is not found
+> l
+> fill testkey_ fillvalue 10
+> l
++"testkey_-0" => "fillvalue"
++"testkey_-1" => "fillvalue"
++"testkey_-2" => "fillvalue"
++"testkey_-3" => "fillvalue"
++"testkey_-4" => "fillvalue"
++"testkey_-5" => "fillvalue"
++"testkey_-6" => "fillvalue"
++"testkey_-7" => "fillvalue"
++"testkey_-8" => "fillvalue"
++"testkey_-9" => "fillvalue"
+> rm testkey_-1
+> rm testkey_-2
+> rm testkey_-0
+> rm testkey_-3
+> rm testkey_-4
+> rm testkey_-5
+> rm testkey_-6
+> rm testkey_-7
+> rm testkey_-8
+> rm testkey_-9
+> set parentkey parentvalue
+> fillsub parentkey testsub_ fillsubvalue 10
+> l
++"testsub_-6" => "fillsubvalue"
++"testsub_-8" => "fillsubvalue"
++"testsub_-7" => "fillsubvalue"
++"testsub_-5" => "fillsubvalue"
++"testsub_-4" => "fillsubvalue"
++"testsub_-3" => "fillsubvalue"
++"testsub_-2" => "fillsubvalue"
++"testsub_-1" => "fillsubvalue"
++"testsub_-0" => "fillsubvalue"
++"parentkey" => "parentvalue"
+         subkeys: "testsub_-0, testsub_-1, testsub_-2, testsub_-3, testsub_-4, testsub_-5, testsub_-6, testsub_-7, testsub_-8, testsub_-9"
++"testsub_-9" => "fillsubvalue"
+> rm parentkey all
+> l
+> set attrkey attrvalue
+> addattr attrkey testattr testvalue
+> printattr attrkey
+"attrkey" attribute = {
+    "testattr"	=> "testvalue"
+}
+> rm attrkey
+> l
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> p testkey_renamed
+  +"testkey_renamed" => value is not found
+> ren testkey testkey_renamed
+> p testkey
+  +"testkey" => value is not found
+> p testkey_renamed
+  +"testkey_renamed" => "testvalue"
+> rm testkey_renamed
+> que push fifo quevalue1
+> que push fifo quevalue2
+> que push fifo quevalue3
+> que push fifo quevalue4
+> que push fifo quevalue5
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5
+> que pop fifo
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo
+> que push fifo quevalue1 pass=testpass
+> que push fifo quevalue2 pass=testpass
+> que push fifo quevalue3 pass=testpass
+> que push fifo quevalue4 pass=testpass
+> que push fifo quevalue5 pass=testpass
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1 pass=testpass
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2 pass=testpass
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3 pass=testpass
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4 pass=testpass
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass
+> que push fifo quevalue2 pass=testpass
+> que push fifo quevalue3 pass=testpass
+> que push fifo quevalue4 pass=testpass
+> que push fifo quevalue5 pass=testpass
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo pass=testpass
+> que push fifo quevalue1 expire=1
+> que push fifo quevalue2 expire=1
+> que push fifo quevalue3 expire=1
+> que push fifo quevalue4 expire=1
+> que push fifo quevalue5 expire=1
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5
+> que pop fifo
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo
+> que push fifo quevalue1 expire=1
+> que push fifo quevalue2 expire=1
+> que push fifo quevalue3 expire=1
+> que push fifo quevalue4 expire=1
+> que push fifo quevalue5 expire=1
+> sleep 2
+> que count
+ Data count in Queue : 1
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> que count
+ Data count in Queue : 5
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+ READ QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que read fifo 1 pass=testpass
+ READ QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que read fifo 2 pass=testpass
+ READ QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que read fifo 3 pass=testpass
+ READ QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que read fifo 4 pass=testpass
+ READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+> que pop fifo pass=testpass
+ POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+> que pop fifo pass=testpass
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> sleep 2
+> que count
+ Data count in Queue : 1
+
+> que empty
+ Queue is NOT empty.
+
+> que read fifo 0
+> que read fifo 1
+> que read fifo 2
+> que read fifo 3
+> que read fifo 4
+> que read fifo 5
+> que read fifo 0 pass=testpass
+> que read fifo 1 pass=testpass
+> que read fifo 2 pass=testpass
+> que read fifo 3 pass=testpass
+> que read fifo 4 pass=testpass
+> que read fifo 5 pass=testpass
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que pop fifo
+> que push fifo quevalue1 pass=testpass expire=1
+> que push fifo quevalue2 pass=testpass expire=1
+> que push fifo quevalue3 pass=testpass expire=1
+> que push fifo quevalue4 pass=testpass expire=1
+> que push fifo quevalue5 pass=testpass expire=1
+> sleep 2
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> que pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1
+> kque push fifo kquekey2 kquevalue2
+> kque push fifo kquekey3 kquevalue3
+> kque push fifo kquekey4 kquevalue4
+> kque push fifo kquekey5 kquevalue5
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass
+> kque push fifo kquekey2 kquevalue2 pass=testpass
+> kque push fifo kquekey3 kquevalue3 pass=testpass
+> kque push fifo kquekey4 kquevalue4 pass=testpass
+> kque push fifo kquekey5 kquevalue5 pass=testpass
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1 pass=testpass
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2 pass=testpass
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3 pass=testpass
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4 pass=testpass
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass
+> kque push fifo kquekey2 kquevalue2 pass=testpass
+> kque push fifo kquekey3 kquevalue3 pass=testpass
+> kque push fifo kquekey4 kquevalue4 pass=testpass
+> kque push fifo kquekey5 kquevalue5 pass=testpass
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1 expire=1
+> kque push fifo kquekey2 kquevalue2 expire=1
+> kque push fifo kquekey3 kquevalue3 expire=1
+> kque push fifo kquekey4 kquevalue4 expire=1
+> kque push fifo kquekey5 kquevalue5 expire=1
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 expire=1
+> kque push fifo kquekey2 kquevalue2 expire=1
+> kque push fifo kquekey3 kquevalue3 expire=1
+> kque push fifo kquekey4 kquevalue4 expire=1
+> kque push fifo kquekey5 kquevalue5 expire=1
+> sleep 2
+> kque count
+ Data count in Key Queue : 1
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> kque count
+ Data count in Key Queue : 5
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+ READ QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ READ QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque read fifo 1 pass=testpass
+ READ QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ READ QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque read fifo 2 pass=testpass
+ READ QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ READ QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque read fifo 3 pass=testpass
+ READ QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ READ QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque read fifo 4 pass=testpass
+ READ QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+> kque pop fifo pass=testpass
+ POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+> kque pop fifo pass=testpass
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> sleep 2
+> kque count
+ Data count in Key Queue : 1
+
+> kque empty
+ Key Queue is NOT empty.
+
+> kque read fifo 0
+> kque read fifo 1
+> kque read fifo 2
+> kque read fifo 3
+> kque read fifo 4
+> kque read fifo 5
+> kque read fifo 0 pass=testpass
+> kque read fifo 1 pass=testpass
+> kque read fifo 2 pass=testpass
+> kque read fifo 3 pass=testpass
+> kque read fifo 4 pass=testpass
+> kque read fifo 5 pass=testpass
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque pop fifo
+> kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
+> kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
+> kque push fifo kquekey3 kquevalue3 pass=testpass expire=1
+> kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
+> kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
+> sleep 2
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> kque pop fifo pass=testpass
+> ba mtime history expire=10 enc pass=test_encrypt_keys
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> rm testkey
+> clanallattr
+> cleanallattr
+> set testkey testvalue
+> p testkey
+  +"testkey" => "testvalue"
+> printattr testkey
+"testkey" => attribute is not found
+> rm testkey
+> exit
+Quit & Detacch.
+-------------------------------------------------------
+ K2HASH TOOL
+-------------------------------------------------------
+On memory mode
+Attached paraemters:
+    Full are mapping:                   true
+    Key Index mask count:               2
+    Collision Key Index mask count:     2
+    Max element count:                  2
+-------------------------------------------------------
+
+> h
+
+Command: [command] [parameters...]
+
+help(h)                                                      print help
+quit(q)/exit                                                 quit
+info(i) [state]                                              print k2hash file/memory information and with state
+dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
+settrial(st) <key> [pass=....]                               set key-value if key is not existed.
+setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
+directset(dset) <key> <value> <offset>                       set value from offset directly.
+setf(sf) <key> <offset> <file>                               set directly key-value from file.
+fill(f) <prefix> <value> <count>                             set key-value by prefix repeating by count
+fillsub <parent> <prefix> <val> <cnt>                        set key-value under parent key by prefix repeating by count
+rm <key> [all]                                               remove key, if all parameter is specified, remove all sub key under key
+rmsub <parent key> <key>                                     remove key under parent key
+rename(ren) <key> <new key>                                  rename key to new key name
+print(p) <key> [all] [noattrcheck] [pass=....]               print value/subkeys by key, if all parameter is specified, print nesting sub keys
+printattr(pa) <key>                                          print attribute by key.
+addattr(aa) <key> <attr name> <attr value>                   add attribute to key.
+directprint(dp) <key> <length> <offset>                      print value from offset and length directly.
+directsave(dsave) <start hash> <file path>                   save element binary data to file by hash value
+directload(dload) <file path> [unixtime]                     load element by binary data from file
+copyfile(cf) <key> <offset> <file>                           output directly key-value to file.
+list(l) <key>                                                dump existed key list
+stream(str) <key> < input | output>                          stream test by interactive.
+history(his)                                                 display all history, you can use a command line in history by "!<number>".
+save <file path>                                             save history to file.
+load <file path>                                             load and run command file.
+trans(tr) <on [filename [prefix [param]]] | off> [expire=sec]
+                                                             disable/enable transaction.
+threadpool(pool) [number]                                    set/display thread pool count for transaction, 0 means no thread pool.
+archive(ar) <put | load> <filename>                          put/load archive(transaction) file.
+queue(que) [prefix] empty                                    check queue is empty
+queue(que) [prefix] count                                    get data count in queue
+queue(que) [prefix] read <fifo | lifo> <pos> [pass=...]      read the value from queue at position
+queue(que) [prefix] push <fifo | lifo> <value> [pass=....] [expire=sec]
+                                                             push the value to queue(fifo/lifo)
+queue(que) [prefix] pop <fifo | lifo> [pass=...]             pop the value from queue
+queue(que) [prefix] dump <fifo | lifo>                       dump queue
+queue(que) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of values in queue
+keyqueue(kque) [prefix] empty                                check keyqueue is empty
+keyqueue(kque) [prefix] count                                get data count in keyqueue
+keyqueue(kque) [prefix] read <fifo | lifo> <pos> [pass=...]  read the value from keyqueue at position
+keyqueue(kque) [prefix] push <fifo | lifo> <key> <value> [pass=....] [expire=sec]
+                                                             push the key name to queue(fifo/lifo) and key-value into k2hash
+keyqueue(kque) [prefix] pop <fifo | lifo> [pass=...]         pop the key-value from queue and remove key-value from k2hash
+keyqueue(kque) [prefix] dump <fifo | lifo>                   dump queue(as same as queue command)
+keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
+                                                             remove count of key-name in queue and remove those from k2hash
+builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
+                                                             set builtin attribute.
+loadpluginattr(lpa) filepath                                 load plugin attribute library.
+addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+cleanallattr(caa)                                            clear all attribute setting.
+shell                                                        exit shell(same as "!" command).
+echo <string>...                                             echo string
+sleep <second>                                               sleep seconds
+
+> set key1 value1
+> set key27 value1
+> list
++"key1" => "value1"
++"key27" => "value1"
+> dsave 3 /tmp/test_linetool_dsave_binary.data
+> rm key1
+> rm key27
+> list
+> dload /tmp/test_linetool_dsave_binary.data
+> list
++"key27" => "value1"
++"key1" => "value1"
+> exit
+Quit & Detacch.

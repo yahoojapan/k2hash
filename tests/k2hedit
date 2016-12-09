@@ -1,0 +1,63 @@
+#!/bin/sh
+#
+# K2HASH
+#
+# Copyright 2013 Yahoo! JAPAN corporation.
+#
+# K2HASH is key-valuew store base libraries.
+# K2HASH is made for the purpose of the construction of
+# original KVS system and the offer of the library.
+# The characteristic is this KVS library which Key can
+# layer. And can support multi-processing and multi-thread,
+# and is provided safely as available KVS.
+#
+# For the full copyright and license information, please view
+# the LICENSE file that was distributed with this source code.
+#
+# AUTHOR:   Tetsuya Mochizuki
+# CREATE:   Thu Jan 15 2015
+# REVISION:
+#
+
+# k2hfile edit and save
+
+if [ "X$1" = "X" ]; then
+	echo "Error: k2hedit needs k2hash file parameter"
+	exit 1
+fi
+
+if [ "X$1" = "X-h" -o "X$1" = "X-H" ]; then
+	echo "Usage:"
+	echo "    k2hedit -h"
+	echo "    k2hedit <k2hash file>"
+	echo ""
+	echo "* Default editor is vi. If EDITOR environment is set, k2hedit uses it."
+	echo ""
+	exit 0
+fi
+
+if [ "X$EDITOR" != "X" ]; then
+	k2heditor=$EDITOR
+else
+	k2heditor=vi
+fi
+
+k2hfile=$1
+orgfile=/tmp/k2hedittemp$$
+wrkfile=/tmp/k2hedittemp$$.wrk
+diffile=/tmp/k2hedittemp$$.dif
+
+k2htouch $k2hfile list | sort > $orgfile
+cp $orgfile $wrkfile
+$k2heditor $wrkfile
+diff --new-line-format="%L" --unchanged-line-format="" --old-line-format="" $orgfile $wrkfile > $diffile
+cat $diffile | awk -F\\t '{system("k2htouch '$k2hfile' set "$1" "$2"")}'
+rm $orgfile $wrkfile $diffile
+
+exit 0
+
+#
+# VIM modelines
+#
+# vim:set ts=4 fenc=utf-8:
+#

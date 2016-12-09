@@ -1,0 +1,34 @@
+.TH K2HEDIT "1" "February 2014" "K2HASH" "NoSQL(KVS) Library"
+.SH NAME
+K2HEDIT \- Utility Tool for K2HASH by Yahoo! JAPAN
+.SH SYNOPSIS
+.B k2hedit
+[ \-h ]
+.TP
+.B k2hedit
+FILE
+.SH DESCRIPTION
+.PP
+k2hedit is a script tool for editing key and value in K2HASH file. This tool is called k2htouch tool.
+k2hedit open a temporary text file by editor, the opend file is mapped all key and value from k2hash file.
+After closing editor, k2hedit sets/deletes all key and value witten by text into original k2hash file.
+.SH OPTIONS
+.TP
+\fB\-h\fR
+display help
+.TP
+\fBFILE\fR
+specify k2hash file path
+.SH ENVIRONMENT
+.TP
+\fBEDITOR\fR
+k2hedit uses vi editor as default editor.
+If EDITOR environment is set, k2hedit uses it.
+.SH SEE ALSO
+.TP
+k2hash(1), k2hlinetool(1), k2hreplace(1), k2hcompress(1), k2htouch(1)
+.SH BUGS
+.TP
+Please report owner and comitter.
+.SH AUTHOR
+k2hash has been written by Tetsuya Mochizuki <temochiz@yahoo-corp.jp>.

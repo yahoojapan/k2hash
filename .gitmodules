@@ -1,0 +1,3 @@
+[submodule "fullock"]
+	path = fullock
+	url = https://github.com/yahoojapan/fullock.git

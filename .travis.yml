@@ -1,0 +1,50 @@
+#
+# FULLOCK - Fast User Level LOCK library by Yahoo! JAPAN
+#
+# Copyright 2015 Yahoo! JAPAN corporation.
+#
+# FULLOCK is fast locking library on user level by Yahoo! JAPAN.
+# FULLOCK is following specifications.
+#
+# For the full copyright and license information, please view
+# the LICENSE file that was distributed with this source code.
+#
+# AUTHOR:   Takeshi Nakatani
+# CREATE:   Wed 7 Dec 2016
+# REVISION:
+#
+
+language: cpp
+
+sudo: required
+
+dist: trusty
+
+cache: apt
+
+git:
+  submodules: false
+
+before_install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config
+ - git submodule update --init --recursive
+ - git clone --recursive git://github.com/nakatani-yj/nakatani_yj_test_pj
+ - cd fullock
+ - ./autogen.sh
+ - ./configure --prefix=/usr
+ - make
+ - sudo make install
+ - cd ..
+
+script:
+ - ./autogen.sh
+ - ./configure --prefix=/usr
+ - make
+ - "cd tests && make check-TESTS"
+
+#
+# VIM modelines
+#
+# vim:set ts=4 fenc=utf-8:
+#

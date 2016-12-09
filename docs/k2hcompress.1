@@ -1,0 +1,59 @@
+.TH K2HCOMPRESS "1" "February 2014" "K2HASH" "NoSQL(KVS) Library"
+.SH NAME
+K2HCOMPRESS \- Utility Tool for K2HASH by Yahoo! JAPAN
+.SH SYNOPSIS
+.B k2hcompress
+[ \-replace | \-direct | \-print ] [ OPTIONS ] FILE
+.SH DESCRIPTION
+.PP
+k2hcompress is a tool for compressing K2HASH file. This tool can compress the file when another processes are using it.(but now it is unsupported mode.)
+.SH OPTIONS
+.TP
+\fBFILE\fR
+specify k2hash file path
+.TP
+\fB\-h\fR
+display help
+.TP
+\fB\-replace\fR
+make and replace temporary k2hash file for compressing
+.TP
+\fB\-direct\fR
+compress directly k2hash file mapped on memory
+.TP
+\fB\-print\fR
+only print area information of k2hash file
+.TP
+\fB\-mask\fR [BIT COUNT]
+specify bit mask count for k2hash data
+.TP
+\fB\-cmask\fR [BIT COUNT]
+specify collision bit mask count for k2hash data
+.TP
+\fB\-elementcnt\fR [ELEMENT COUNT]
+specify element count for each k2hash table
+.TP
+\fB\-pagesize\fR [BYTE]
+specify pagesize for each k2hash internal data
+.TP
+\fB\-ext\fR [LIBRARY PATH]
+specify extension library for hash function
+.TP
+\fB\-g\fR [ERR | WAN | INFO]
+set debugging level, k2hlinetool displaies debugging message for itself
+.SH ENVIRONMENT
+.TP
+\fBK2HDBGMODE\fR
+K2HDBGMODE environment sets debugging message level as same as \-g option. The value is set as SILENT, ERR, WAN or INFO.
+When k2hlinetool catches SIGUSER1 signal, the debugging message level is bumpup. The level is changed as order by SILENT, ERR, WAN, INFO, SILENT...
+.TP
+\fK2HDBGFILE\fR
+K2HDBGFILE environment sets the file which is debugging message, this is as same as \-glog option.
+.SH SEE ALSO
+.TP
+k2hash(1), k2hlinetool(1), k2hreplace(1), k2htouch(1), k2hedit(1)
+.SH BUGS
+.TP
+Please report owner and comitter.
+.SH AUTHOR
+k2hash has been written by Takeshi Nakatani <ggtakec@gmail.com>.

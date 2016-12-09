@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: k2hash
+Description: k2hash C/C++ library
+Version: @VERSION@
+Libs: -L${libdir} -lk2hash
+Cflags: -I${includedir}/k2hash

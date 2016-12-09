@@ -1,0 +1,150 @@
+#
+# K2HASH
+#
+# Copyright 2013 Yahoo! JAPAN corporation.
+#
+# K2HASH is key-valuew store base libraries.
+# K2HASH is made for the purpose of the construction of
+# original KVS system and the offer of the library.
+# The characteristic is this KVS library which Key can
+# layer. And can support multi-processing and multi-thread,
+# and is provided safely as available KVS.
+#
+# For the full copyright and license information, please view
+# the LICENSE file that was distributed with this source code.
+#
+# AUTHOR:   Takeshi Nakatani
+# CREATE:   Fri Dec 2 2013
+# REVISION:
+#
+
+#
+# Compiled Object files
+#
+*.slo
+*.lo
+*.o
+*.Po
+*.Plo
+
+#
+# Precompiled Headers
+#
+*.gch
+*.pch
+
+#
+# Compiled Dynamic libraries
+#
+*.so
+*.so.*
+*.dylib
+*.dll
+
+#
+# Fortran module files
+#
+*.mod
+
+#
+# Compiled Static libraries
+#
+*.lai
+*.la
+*.a
+*.lib
+
+#
+# Executables
+#
+*.exe
+*.out
+*.app
+
+#
+# autotools
+#
+aclocal.m4
+autom4te.cache
+autoscan.log
+config.guess
+config.h
+config.h.in
+config.h.in~
+config.log
+config.status
+config.sub
+configure
+configure.scan
+depcomp
+install-sh
+libtool
+ltmain.sh
+m4
+m4/*
+missing
+stamp-h1
+
+#
+# automakes
+#
+Makefile.in
+*/Makefile.in
+
+
+#
+# archive files and backups
+#
+*.tgz
+*.tar.gz
+*.rpm
+*.swp
+
+#
+# object directories
+#
+.deps
+.libs
+*/.deps
+*/.deps/*
+*/.libs
+*/.libs/*
+
+#
+# other files
+#
+compile
+compile/*
+test-driver
+test-driver/*
+
+#
+# Other built objects
+#
+*.pc
+Makefile
+*/Makefile
+
+#
+# project custom
+#
+RELEASE_VERSION
+lib/k2hashversion.cc
+*.k2h
+tests/k2hinittest
+tests/k2hmemtest
+tests/k2hrwtest
+tests/k2hcompress
+tests/k2hexttest
+tests/k2hlinetool
+tests/k2hreplace
+tests/k2hstreamtest
+tests/k2hbench
+tests/k2himport
+tests/k2htouch
+
+#
+# VIM modelines
+#
+# vim:set ts=4 fenc=utf-8:
+#

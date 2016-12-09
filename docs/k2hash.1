@@ -1,0 +1,535 @@
+.TH K2HASH "1" "February 2014" "K2HASH" "NoSQL(KVS) Library"
+.SH NAME
+K2HASH \- NoSQL Key Value Store(KVS) library by Yahoo! JAPAN
+.SH SYNOPSIS
+.SS library
+.TP
+\fBlibk2hash.so
+.SS tool for library
+.TP
+\fBk2hlinetool [options]
+.TP
+\fBk2hreplace [options]
+.TP
+\fBk2hcompress [options]
+.TP
+\fBk2htouch [options]
+.TP
+\fBk2hedit [options]
+.SH DESCRIPTION
+.TP 2
+K2HASH is NoSQL(key value store) library and tools for this library by Yahoo! JAPAN. K2HASH is following specifications.
+\- Supports multi-threading and multi-processing program.
+.br
+\- Expands data area.
+.br
+\- Switchs accessing only memory and data file directly.
+.br
+\- Puts transaction.
+.br
+\- Archiving.
+.br
+\- Replaces hash function like plugin.
+.br
+\- Replaces transaction.
+.PP
+K2HASH tools can create/store(write)/read a file or memory which is made(allocated) by K2HASH library for testing.
+.TP 2
+K2HASH library has following three way for KVS storage.
+\- Use storage on memory only, this type of strage can be used by only multi-thread process. And on this type, the deta on strage is not permanent.
+.br
+\- Use fully mapping file, this type can be used by multi-thread and multi-process. All of data in the file is mmapping fully, then the limit of the file and data size depends on the memory.
+.br
+\- Use a part of mapping file and directly accessing a file, this type can be used by multi-thread and multi-process. 
+.PP
+K2HASH maps only hash table and etc from the file, and reads/writes the file for datas directly.
+This way is expanding upper limit, but less performance because directly accessing.
+.TP
+In cases of using mapping file, you can use the data(file) as permanently or tempolarily.
+.TP 2
+K2HASH uses FNV-1a hashing function in it. If you replace this hash function, you can do by two way.
+\- One way is that your process defines same prototype of hash function.
+.br
+\- The other is that you can load your original DSO library which includes same prototype of hash function.
+.PP
+You can know how to implement replacing hash function, please see k2hashfunc.h file.
+.TP 2
+K2HASH can put transaction and archive all of data in file. If you need to make your original formated transaction outputs, you can do by two way like replacing hash function.
+\- One way is that your process defines same prototype of hash function.
+.br
+\- The other is that you can load your original DSO library which includes same prototype of hash function.
+.PP
+You can know how to implement replacing transaction function, please see k2htransfunc.h file.
+.TP 2
+K2HASH C Language interface function:
+void k2h_bump_debug_level(...)
+.br
+void k2h_set_debug_level_silent(...)
+.br
+void k2h_set_debug_level_error(...)
+.br
+void k2h_set_debug_level_warning(...)
+.br
+void k2h_set_debug_level_message(...)
+.br
+bool k2h_set_debug_file(...)
+.br
+bool k2h_unset_debug_file(...)
+.br
+bool k2h_load_debug_env(...)
+.br
+bool k2h_set_bumup_debug_signal_user1(...)
+.TP 2
+.BR
+bool k2h_load_hash_library(...)
+.br
+bool k2h_unload_hash_library(...)
+.br
+bool k2h_load_transaction_library(...)
+.br
+bool k2h_unload_transaction_library(...)
+.TP 2
+.BR
+bool k2h_create(...)
+.br
+k2h_h k2h_open(...)
+.br
+k2h_h k2h_open_rw(...)
+.TP 2
+.BR
+k2h_h k2h_open_ro(...)
+.br
+k2h_h k2h_open_tempfile(...)
+.br
+k2h_h k2h_open_mem(...)
+.br
+bool k2h_close(...)
+.br
+bool k2h_close_wait(...)
+.TP 2
+.BR
+bool k2h_transaction(...)
+.br
+bool k2h_transaction_prefix(...)
+.br
+bool k2h_transaction_param(...)
+.br
+bool k2h_transaction_param_we(...)
+.br
+bool k2h_enable_transaction(...)
+.br
+bool k2h_enable_transaction_prefix(...)
+.br
+bool k2h_enable_transaction_param(...)
+.br
+bool k2h_enable_transaction_param_we(...)
+.br
+bool k2h_disable_transaction(...)
+.br
+int k2h_get_transaction_archive_fd(...)
+.br
+bool k2h_load_archive(...)
+.br
+bool k2h_put_archive(...)
+.br
+int k2h_get_transaction_thread_pool(...)
+.br
+bool k2h_set_transaction_thread_pool(...)
+.br
+bool k2h_unset_transaction_thread_pool(...)
+.TP 2
+.BR
+bool k2h_set_common_attr(...)
+.br
+bool k2h_clean_common_attr(...)
+.br
+bool k2h_add_attr_plugin_library(...)
+.br
+bool k2h_add_attr_crypt_pass(...)
+.br
+bool k2h_print_attr_version(...)
+.br
+bool k2h_print_attr_information(...)
+.TP 2
+.BR
+bool k2h_get_value(...)
+.br
+unsigned char* k2h_get_direct_value(...)
+.br
+bool k2h_get_str_value(...)
+.br
+char* k2h_get_str_direct_value(...)
+.br
+bool k2h_get_value_wp(...)
+.br
+unsigned char* k2h_get_direct_value_wp(...)
+.br
+bool k2h_get_str_value_wp(...)
+.br
+char* k2h_get_str_direct_value_wp(...)
+.br
+bool k2h_get_value_np(...)
+.br
+unsigned char* k2h_get_direct_value_np(...)
+.br
+bool k2h_get_str_value_np(...)
+.br
+char* k2h_get_str_direct_value_np(...)
+.br
+bool k2h_get_value_ext(...)
+.br
+unsigned char* k2h_get_direct_value_ext(...)
+.br
+bool k2h_get_str_value_ext(...)
+.br
+char* k2h_get_str_direct_value_ext(...)
+.br
+bool k2h_get_value_wp_ext(...)
+.br
+unsigned char* k2h_get_direct_value_wp_ext(...)
+.br
+bool k2h_get_str_value_wp_ext(...)
+.br
+char* k2h_get_str_direct_value_wp_ext(...)
+.br
+bool k2h_get_value_np_ext(...)
+.br
+unsigned char* k2h_get_direct_value_np_ext(...)
+.br
+bool k2h_get_str_value_np_ext(...)
+.br
+char* k2h_get_str_direct_value_np_ext(...)
+.TP 2
+.BR
+bool k2h_get_subkeys(...)
+.br
+PK2HKEYPCK k2h_get_direct_subkeys(...)
+.br
+int k2h_get_str_subkeys(...)
+.br
+char** k2h_get_str_direct_subkeys(...)
+.br
+bool k2h_get_subkeys_np(...)
+.br
+PK2HKEYPCK k2h_get_direct_subkeys_np(...)
+.br
+int k2h_get_str_subkeys_np(...)
+.br
+char** k2h_get_str_direct_subkeys_np(...)
+.TP 2
+.BR
+bool k2h_free_keypack(...)
+.br
+bool k2h_free_keyarray(...)
+.TP 2
+.BR
+bool k2h_get_attrs(...)
+.br
+PK2HATTRPCK k2h_get_direct_attrs(...)
+.br
+PK2HATTRPCK k2h_get_str_direct_attrs(...)
+.br
+bool k2h_free_attrpack(...)
+.TP 2
+.BR
+bool k2h_set_all(...)
+.br
+bool k2h_set_str_all(...)
+.br
+bool k2h_set_value(...)
+.br
+bool k2h_set_str_value(...)
+.br
+bool k2h_set_all_wa(...)
+.br
+bool k2h_set_str_all_wa(...)
+.br
+bool k2h_set_value_wa(...)
+.br
+bool k2h_set_str_value_wa(...)
+.br
+bool k2h_set_subkeys(...)
+.br
+bool k2h_set_str_subkeys(...)
+.br
+bool k2h_add_subkey(...)
+.br
+bool k2h_add_str_subkey(...)
+.br
+k2h_add_subkey_wa(...)
+.br
+k2h_add_str_subkey_wa(...)
+.br
+k2h_add_attr(...)
+.br
+k2h_add_str_attr(...)
+.TP 2
+.BR
+bool k2h_remove_all(...)
+.br
+bool k2h_remove_str_all(...)
+.br
+bool k2h_remove(...)
+.br
+bool k2h_remove_str(...)
+.br
+bool k2h_remove_subkey(...)
+.br
+bool k2h_remove_str_subkey(...)
+.TP 2
+.BR
+bool k2h_rename(...)
+.br
+bool k2h_rename_str(...)
+.TP 2
+.BR
+k2h_find_h k2h_find_first(...)
+.br
+k2h_find_h k2h_find_first_subkey(...)
+.br
+k2h_find_h k2h_find_first_str_subkey(...)
+.br
+k2h_find_h k2h_find_next(...)
+.br
+bool k2h_find_free(...)
+.TP 2
+.BR
+bool k2h_find_get_key(...)
+.br
+char* k2h_find_get_str_key(...)
+.br
+bool k2h_find_get_value(...)
+.br
+char* k2h_find_get_direct_value(...)
+.br
+bool k2h_find_get_subkeys(...)
+.br
+PK2HKEYPCK k2h_find_get_direct_subkeys(...)
+.br
+int k2h_find_get_str_subkeys(...)
+.br
+char** k2h_find_get_str_direct_subkeys(...)
+.TP 2
+.BR
+k2h_da_h k2h_da_handle(...)
+.br
+k2h_da_h k2h_da_handle_read(...)
+.br
+k2h_da_h k2h_da_handle_write(...)
+.br
+k2h_da_h k2h_da_handle_rw(...)
+.br
+k2h_da_h k2h_da_str_handle(...)
+.br
+k2h_da_h k2h_da_str_handle_read(...)
+.br
+k2h_da_h k2h_da_str_handle_write(...)
+.br
+k2h_da_h k2h_da_str_handle_rw(...)
+.br
+bool k2h_da_free(...)
+.br
+ssize_t k2h_da_get_length(...)
+.br
+ssize_t k2h_da_get_buf_size(...)
+.br
+bool k2h_da_set_buf_size(...)
+.br
+off_t k2h_da_get_offset(...)
+.br
+off_t k2h_da_get_read_offset(...)
+.br
+off_t k2h_da_get_write_offset(...)
+.br
+bool k2h_da_set_offset(...)
+.br
+bool k2h_da_set_read_offset(...)
+.br
+bool k2h_da_set_write_offset(...)
+.br
+bool k2h_da_get_value(...)
+.br
+bool k2h_da_get_value_offset(...)
+.br
+bool k2h_da_get_value_to_file(...)
+.br
+unsigned char* k2h_da_read(...)
+.br
+unsigned char* k2h_da_read_offset(...)
+.br
+char* k2h_da_read_str(...)
+.br
+bool k2h_da_set_value(...)
+.br
+bool k2h_da_set_value_offset(...)
+.br
+bool k2h_da_set_value_from_file(...)
+.br
+bool k2h_da_set_value_str(...)
+.TP 2
+.BR
+k2h_q_h k2h_q_handle(...)
+.br
+k2h_q_h k2h_q_handle_prefix(...)
+.br
+k2h_q_h k2h_q_handle_str_prefix(...)
+.br
+bool k2h_q_free(...)
+.br
+bool k2h_q_empty(...)
+.br
+int k2h_q_count(...)
+.br
+bool k2h_q_read(...)
+.br
+bool k2h_q_str_read(...)
+.br
+bool k2h_q_push(...)
+.br
+bool k2h_q_str_push(...)
+.br
+bool k2h_q_pop(...)
+.br
+bool k2h_q_str_pop(...)
+.br
+bool k2h_q_remove(...)
+.br
+int k2h_q_remove_ext(...)
+.br
+bool k2h_q_dump(...)
+.br
+k2h_q_read_wp(...)
+.br
+k2h_q_str_read_wp(...)
+.br
+k2h_q_push_wa(...)
+.br
+k2h_q_str_push_wa(...)
+.br
+k2h_q_pop_wa(...)
+.br
+k2h_q_str_pop_wa(...)
+.br
+k2h_q_pop_wp(...)
+.br
+k2h_q_str_pop_wp(...)
+.br
+k2h_q_remove_wp(...)
+.br
+k2h_q_remove_wp_ext(...)
+.br
+k2h_keyq_h k2h_keyq_handle(...)
+.br
+k2h_keyq_h k2h_keyq_handle_prefix(...)
+.br
+k2h_keyq_h k2h_keyq_handle_str_prefix(...)
+.br
+bool k2h_keyq_free(...)
+.br
+bool k2h_keyq_empty(...)
+.br
+int k2h_keyq_count(...)
+.br
+bool k2h_keyq_read(...)
+.br
+bool k2h_keyq_read_keyval(...)
+.br
+bool k2h_keyq_str_read(...)
+.br
+bool k2h_keyq_str_read_keyval(...)
+.br
+bool k2h_keyq_push(...)
+.br
+bool k2h_keyq_str_push(...)
+.br
+bool k2h_keyq_push_keyval(...)
+.br
+bool k2h_keyq_str_push_keyval(...)
+.br
+bool k2h_keyq_pop(...)
+.br
+bool k2h_keyq_pop_keyval(...)
+.br
+bool k2h_keyq_str_pop(...)
+.br
+bool k2h_keyq_str_pop_keyval(...)
+.br
+bool k2h_keyq_remove(...)
+.br
+int k2h_keyq_remove_ext(...)
+.br
+bool k2h_keyq_dump(...)
+.br
+k2h_keyq_read_wp(...)
+.br
+k2h_keyq_read_keyval_wp(...)
+.br
+k2h_keyq_str_read_wp(...)
+.br
+k2h_keyq_str_read_keyval_wp(...)
+.br
+k2h_keyq_push_wa(...)
+.br
+k2h_keyq_push_keyval_wa(...)
+.br
+k2h_keyq_str_push_wa(...)
+.br
+k2h_keyq_str_push_keyval_wa(...)
+.br
+k2h_keyq_pop_wp(...)
+.br
+k2h_keyq_pop_keyval_wp(...)
+.br
+k2h_keyq_str_pop_wp(...)
+.br
+k2h_keyq_str_pop_keyval_wp(...)
+.br
+k2h_keyq_remove_wp(...)
+.br
+k2h_keyq_remove_wp_ext(...)
+.TP 2
+.BR
+bool k2h_dump_head(...)
+.br
+bool k2h_dump_keytable(...)
+.br
+bool k2h_dump_full_keytable(...)
+.br
+bool k2h_dump_elementtable(...)
+.br
+bool k2h_dump_full(...)
+.br
+bool k2h_print_state(...)
+.br
+void k2h_print_version(...)
+.PP
+You can see these function prototypes in k2hash.h
+.TP
+K2HASH C++ Language interface is implemented almost in k2shm.h. You can use public K2HShm class methods like C Language interface.
+.SH ENVIRONMENT
+.TP 2
+K2HASH use some environments automatically, plese take care these environments.
+K2HDBGMODE \- specifies debugging level: INFO/WAN/ERR/SILENT
+.br
+K2HDBGFILE \- output file path for message(default: stderr)
+.br
+K2HATTR_MTIME \- set ON for builtin attribute last modify time
+.br
+K2HATTR_HISTORY \- set ON for builtin attribute history
+.br
+K2HATTR_EXPIRE_SEC \- set seconds for builtin attribute expire time
+.br
+K2HATTR_DEFENC \- set ON for enabling builtin attribute encrypt
+.br
+K2HATTR_ENCFILE \- set pass phrase file path for builtin attribute en(de)crypt
+.SH NOTES
+.TP
+k2hlinetool, k2hreplace, k2hcompress, k2htouch, k2hedit is tool for k2hash file/memory.
+.SH SEE ALSO
+.TP
+k2hlinetool(1), k2hreplace(1), k2hcompress(1), k2htouch(1), k2hedit(1)
+.SH BUGS
+.TP
+Please report owner and comitter.
+.SH AUTHOR
+k2hash has been written by Takeshi Nakatani <ggtakec@gmail.com>.
