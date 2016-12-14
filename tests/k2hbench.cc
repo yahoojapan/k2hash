@@ -670,7 +670,7 @@ static K2HShm* InitializeK2HashFile(BOPTS& benchopts)
 
 	// build file(memory)
 	bool	result;
-	if('\0' == benchopts.szfile){
+	if('\0' == benchopts.szfile[0]){
 		result = pk2hshm->AttachMem(benchopts.maskcnt, benchopts.cmaskcnt, benchopts.elementcnt, benchopts.pagesize);
 	}else{
 		result = pk2hshm->Create(&benchopts.szfile[0], benchopts.is_fullmap, benchopts.maskcnt, benchopts.cmaskcnt, benchopts.elementcnt, benchopts.pagesize);
