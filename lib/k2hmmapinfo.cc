@@ -348,7 +348,7 @@ PK2HMMAPINFO* K2HMmapMan::GetMmapInfo(const K2HShm* pk2hshm, const char* file, b
 {
 	if(!pk2hshm){
 		ERR_K2HPRN("pk2hshm object pointer is NULL.");
-		return false;
+		return NULL;
 	}
 
 	if(needlock){

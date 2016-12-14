@@ -467,7 +467,7 @@ static bool SetBenchOptions(int argc, char** argv, BOPTS& benchopts)
 			ERR("\"-ro\" option does not need parameter(%s).", optparams["-ro"].rawstring.c_str());
 			return false;
 		}
-		if(ISEMPTYSTR(benchopts.szfile) || benchopts.is_temp_mode){
+		if('\0' == benchopts.szfile[0] || benchopts.is_temp_mode){
 			ERR("\"-ro\" option could not set with \"-m\" or \"-t\" option.");
 			return false;
 		}
@@ -480,7 +480,7 @@ static bool SetBenchOptions(int argc, char** argv, BOPTS& benchopts)
 			ERR("\"-nofullmap\" option does not need parameter(%s).", optparams["-nofullmap"].rawstring.c_str());
 			return false;
 		}
-		if(ISEMPTYSTR(benchopts.szfile) || benchopts.is_temp_mode){
+		if('\0' == benchopts.szfile[0] || benchopts.is_temp_mode){
 			ERR("\"-nofullmap\" option could not set with \"-m\" or \"-t\" option.");
 			return false;
 		}
@@ -571,7 +571,7 @@ static bool SetBenchOptions(int argc, char** argv, BOPTS& benchopts)
 			ERR("\"-proc\" option parameter(%s) must be decimal string.", optparams["-proc"].rawstring.c_str());
 			return false;
 		}
-		if((ISEMPTYSTR(benchopts.szfile) || benchopts.is_temp_mode) && 1 < optparams["-proc"].num_value){
+		if(('\0' == benchopts.szfile[0] || benchopts.is_temp_mode) && 1 < optparams["-proc"].num_value){
 			ERR("\"-proc\" option parameter(%d) could not set with \"-t\" or \"-m\" option, must be \"-proc 1\" or not set.", optparams["-proc"].num_value);
 			return false;
 		}
@@ -670,7 +670,7 @@ static K2HShm* InitializeK2HashFile(BOPTS& benchopts)
 
 	// build file(memory)
 	bool	result;
-	if(ISEMPTYSTR(benchopts.szfile)){
+	if('\0' == benchopts.szfile){
 		result = pk2hshm->AttachMem(benchopts.maskcnt, benchopts.cmaskcnt, benchopts.elementcnt, benchopts.pagesize);
 	}else{
 		result = pk2hshm->Create(&benchopts.szfile[0], benchopts.is_fullmap, benchopts.maskcnt, benchopts.cmaskcnt, benchopts.elementcnt, benchopts.pagesize);
@@ -833,8 +833,8 @@ static void PrintResult(const PEXECCNTL pexeccntl, const PCHLDCNTL pchldcntl, st
 	PRN("===========================================================");
 	PRN("K2Hash bench mark");
 	PRN("-----------------------------------------------------------");
-	PRN("K2Hash type                   %s",			pexeccntl->opt.is_temp_mode ? "Temporary file" : ISEMPTYSTR(pexeccntl->opt.szfile) ? "Memory(no file)" : "Permanent file");
-	PRN("File path                     %s",			pexeccntl->opt.is_temp_mode ? "tmpfile on system" : ISEMPTYSTR(pexeccntl->opt.szfile) ? "no file" : pexeccntl->opt.szfile);
+	PRN("K2Hash type                   %s",			pexeccntl->opt.is_temp_mode ? "Temporary file" : ('\0' == pexeccntl->opt.szfile[0]) ? "Memory(no file)" : "Permanent file");
+	PRN("File path                     %s",			pexeccntl->opt.is_temp_mode ? "tmpfile on system" : ('\0' == pexeccntl->opt.szfile[0]) ? "no file" : pexeccntl->opt.szfile);
 	PRN("Attach type                   %s",			pexeccntl->opt.is_read_only ? "Read only" : "Read/Write");
 	PRN("Mapping type                  %s",			pexeccntl->opt.is_fullmap ? "Full mapping" : "Partial mapping");
 	PRN("Data structure");
@@ -1290,7 +1290,7 @@ int main(int argc, char** argv)
 	PrintResult(pexeccntl, pchldcntl, realtime);
 
 	// cleanup
-	if(!ISEMPTYSTR(benchopts.szfile)){
+	if('\0' != benchopts.szfile[0]){
 		unlink(benchopts.szfile);
 	}
 	munmap(pShmBase, totalsize);

@@ -288,11 +288,10 @@ bool AttrSet(K2HShm* k2hash)
 	time_t *argExpire = NULL ;
 	if (expiretime) argExpire = &expiretime ;
 
-	const bool* is_defenc = false ; 
-	const char* passfile = "" ; 
+	const char*	passfile = "" ; 
 
 	return k2hash->SetCommonAttribute(
-		&is_mtime, is_defenc, passfile, &is_history, argExpire, pluginlibs) ;
+		&is_mtime, NULL, passfile, &is_history, argExpire, pluginlibs) ;
 }
 
 bool AttrClear(K2HShm* k2hash)

@@ -29,7 +29,6 @@ before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config
  - git submodule update --init --recursive
- - git clone --recursive git://github.com/nakatani-yj/nakatani_yj_test_pj
  - cd fullock
  - ./autogen.sh
  - ./configure --prefix=/usr
