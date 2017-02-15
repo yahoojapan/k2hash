@@ -1,3 +1,16 @@
+k2hash (1.0.54) trusty; urgency=low
+
+  * Updated dependency for fixing bugs in libfullock
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 14 Feb 2017 11:57:56 +0900
+
+k2hash (1.0.53) trusty; urgency=low
+
+  * Fixed mistaking codes - #3
+  * Fixed error/warning for compiling and changed travis.yaml - #2
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 06 Feb 2017 15:13:24 +0900
+
 k2hash (1.0.52) trusty; urgency=low
 
   * First version of open sorce on Github
