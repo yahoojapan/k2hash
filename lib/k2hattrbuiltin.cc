@@ -876,7 +876,7 @@ bool K2hAttrBuiltin::UpdateAttr(K2HAttrs& attrs)
 	}
 
 	// encrypt
-	if(!IS_ATTR_MASK_ENCRYPT(AttrMask) && (!EncPass.empty() || pBuiltinAttrPack->IsDefaultEncrypt)){
+	if(!IS_ATTR_MASK_ENCRYPT(AttrMask) && (!EncPass.empty() || pBuiltinAttrPack->IsDefaultEncrypt) && byValue && 0 < ValLen){
 		// get pass
 		string	pass = EncPass;
 		string	strmd5;
@@ -1171,6 +1171,10 @@ unsigned char* K2hAttrBuiltin::GetDecryptValue(K2HAttrs& attrs, const char* encp
 		return NULL;
 	}
 	unsigned char*	presult = NULL;
+	declen					= 0;
+	if(!byValue || 0 == ValLen){
+		return presult;
+	}
 
 	string	enckeymd5;
 	if(GetEncryptKeyMd5(attrs, enckeymd5)){
@@ -1182,7 +1186,7 @@ unsigned char* K2hAttrBuiltin::GetDecryptValue(K2HAttrs& attrs, const char* encp
 				// not found in list, so compare object's EncPass
 				if(EncPass.empty() || enckeymd5 != to_md5_string(EncPass.c_str())){
 					ERR_K2HPRN("There is no match encrypt pass in list.");
-					return NULL;
+					return presult;
 				}
 				strPass = EncPass;
 			}else{
@@ -1192,7 +1196,7 @@ unsigned char* K2hAttrBuiltin::GetDecryptValue(K2HAttrs& attrs, const char* encp
 			// specified encrypt pass, so check it's md5
 			if(enckeymd5 != to_md5_string(encpass)){
 				ERR_K2HPRN("Specified pass is not as same as encrypted value's pass.");
-				return NULL;
+				return presult;
 			}
 			strPass = encpass;
 		}
@@ -1200,13 +1204,13 @@ unsigned char* K2hAttrBuiltin::GetDecryptValue(K2HAttrs& attrs, const char* encp
 		// do decrypt
 		if(NULL == (presult = k2h_decrypt_aes256_cbc(strPass.c_str(), byValue, ValLen, declen))){
 			ERR_K2HPRN("Failed to decrypt value by pass.");
-			return NULL;
+			return presult;
 		}
 	}else{
 		// value is not encrypted, so copy value to result
 		if(NULL == (presult = reinterpret_cast<unsigned char*>(malloc(ValLen)))){
 			ERR_K2HPRN("Could not allcation memory.");
-			return NULL;
+			return presult;
 		}
 		memcpy(presult, byValue, ValLen);
 		declen = ValLen;
