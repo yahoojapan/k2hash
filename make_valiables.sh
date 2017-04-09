@@ -29,7 +29,7 @@ TOP_DIR=`cd ${PROGRAM_DIR}; pwd`
 
 if [ $# -ne 1 ]; then
 	echo "ERROR: ${PROGRAM_NAME} needs parameter."
-	echo "Usage: ${PROGRAM_NAME} [-pkg_version | -lib_version_info | -major_number]"
+	echo "Usage: ${PROGRAM_NAME} [-pkg_version | -lib_version_info | -lib_version_for_link | -major_number]"
 	exit 1
 fi
 
@@ -43,15 +43,48 @@ if [ "X$1" = "X-h" -o "X$1" = "X--help" ]; then
 elif [ "X$1" = "X-pkg_version" ]; then
 	RESULT=`cat ${TOP_DIR}/RELEASE_VERSION`
 
-elif [ "X$1" = "X-lib_version_info" ]; then
-	RESULT=`cat ${TOP_DIR}/RELEASE_VERSION | sed 's/["|\.]/ /g' | awk '{print $1":"$3":0"}'`
+elif [ "X$1" = "X-lib_version_info" -o "X$1" = "X-lib_version_for_link" ]; then
+	MAJOR_VERSION=`cat ${TOP_DIR}/RELEASE_VERSION | sed 's/["|\.]/ /g' | awk '{print $1}'`
+	MID_VERSION=`cat ${TOP_DIR}/RELEASE_VERSION | sed 's/["|\.]/ /g' | awk '{print $2}'`
+	LAST_VERSION=`cat ${TOP_DIR}/RELEASE_VERSION | sed 's/["|\.]/ /g' | awk '{print $3}'`
+
+	# check version number
+	expr "${MAJOR_VERSION}" + 1 >/dev/null 2>&1
+	if [ $? -ge 2 ]; then
+		echo "ERROR: wrong version number in RELEASE_VERSION file"
+		exit 1
+	fi
+	expr "${MID_VERSION}" + 1 >/dev/null 2>&1
+	if [ $? -ge 2 ]; then
+		echo "ERROR: wrong version number in RELEASE_VERSION file"
+		exit 1
+	fi
+	expr "${LAST_VERSION}" + 1 >/dev/null 2>&1
+	if [ $? -ge 2 ]; then
+		echo "ERROR: wrong version number in RELEASE_VERSION file"
+		exit 1
+	fi
+
+	# make library revision number
+	if [ ${MID_VERSION} -gt 0 ]; then
+		REV_VERSION=`expr ${MID_VERSION} \* 1000`
+		REV_VERSION=`expr ${LAST_VERSION} + ${REV_VERSION}`
+	else
+		REV_VERSION=${LAST_VERSION}
+	fi
+
+	if [ "X$1" = "X-lib_version_info" ]; then
+		RESULT="${MAJOR_VERSION}:${REV_VERSION}:0"
+	else
+		RESULT="${MAJOR_VERSION}.0.${REV_VERSION}"
+	fi
 
 elif [ "X$1" = "X-major_number" ]; then
 	RESULT=`cat ${TOP_DIR}/RELEASE_VERSION | sed 's/["|\.]/ /g' | awk '{print $1}'`
 
 else
 	echo "ERROR: unkown parameter $1"
-	echo "Usage: ${PROGRAM_NAME} [-pkg_version | -lib_version_info | -major_number]"
+	echo "Usage: ${PROGRAM_NAME} [-pkg_version | -lib_version_info | -lib_version_for_link | -major_number]"
 	exit 1
 fi
 
