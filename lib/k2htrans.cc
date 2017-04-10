@@ -37,7 +37,7 @@ using namespace std;
 //---------------------------------------------------------
 // K2HTransaction Class
 //---------------------------------------------------------
-K2HTransaction::K2HTransaction(const K2HShm* pk2hshm) : pShm(pk2hshm)
+K2HTransaction::K2HTransaction(const K2HShm* pk2hshm, bool isstack) : K2HCommandArchive(), pShm(pk2hshm), IsStackMode(isstack)
 {
 }
 
@@ -73,6 +73,30 @@ bool K2HTransaction::Put(long type, const unsigned char* byKey, size_t keylength
 		return false;
 	}
 
+	if(IsStackMode){
+		// only stacking, not put
+		return true;
+	}
+	return K2HTransManager::Get()->Put(pShm, pBinCom);
+}
+
+//
+// Only push stacked data
+//
+bool K2HTransaction::Put(void)
+{
+	if(!pShm){
+		ERR_K2HPRN("Parameter is wrong.");
+		return false;
+	}
+	if(!IsStackMode || !pBinCom){
+		// do not need transaction.
+		return true;
+	}
+	if(!IsEnable()){
+		// do not need transaction.
+		return true;
+	}
 	return K2HTransManager::Get()->Put(pShm, pBinCom);
 }
 

@@ -29,6 +29,13 @@
 
 using namespace std;
 
+//---------------------------------------------------------
+// Utility function
+//---------------------------------------------------------
+// This function in k2hash.cc
+//
+extern PK2HATTRPCK k2h_cvt_attrs_to_bin(K2HAttrs* pAttrs, int& attrspckcnt);
+
 // [NOTE]
 // About attribute in Queue
 //
@@ -163,103 +170,60 @@ bool K2HShm::IsEmptyK2HMarker(PBK2HMARKER pmarker)
 // Methods for Queue
 //---------------------------------------------------------
 //
-// Retrieving key from K2HMaker always is top of list.
+// Get current marker
 //
-// [NOTE]
-// This method find not expired key in queue marker list.
-// If the key is expired, the key is removed in k2hash and this method continues to find next key.
-// After finding the key, return next marker and set attributes if ppAttrs is not NULL.
-//
-PBK2HMARKER K2HShm::PopK2HMarker(PBK2HMARKER pmarker, size_t& marklen, unsigned char** ppKey, size_t& keylength, K2HAttrs** ppAttrs)
+PBK2HMARKER K2HShm::GetMarker(const unsigned char* byMark, size_t marklength, K2HLock* pALObjCKI) const
 {
-	if(!pmarker || !ppKey){
+	if(!byMark || 0 == marklength){
 		ERR_K2HPRN("Some parameters are wrong.");
-		K2H_Free(pmarker);
+		return NULL;
+	}
+	if(!IsAttached()){
+		ERR_K2HPRN("There is no attached K2HASH.");
 		return NULL;
 	}
 
-	bool		is_expire	= false;
-	K2HAttrs*	pKeyAttrs	= NULL;
-	*ppKey					= NULL;
-	keylength				= 0;
-	if(ppAttrs){
-		*ppAttrs			= NULL;
+	// lock object
+	K2HLock	ALObjCKI(K2HLock::RDLOCK);
+	if(!pALObjCKI){
+		pALObjCKI = &ALObjCKI;
 	}
 
-	// loop until finding not expired key in queue.
-	do{
-		//
-		// clean up and remove expired key in queue.
-		//
-		K2H_Delete(pKeyAttrs);
-		if(*ppKey){
-			if(!Remove(*ppKey, keylength, false, NULL, true)){			// Remove key without subkey & history
-				WAN_K2HPRN("Failed to remove key in expired queue, but continue...");
-			}
-			*ppKey		= NULL;
-			keylength	= 0;
-		}
+	// make hash and lock cindex
+	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
+	PCKINDEX	pCKIndex;
+	if(NULL == (pCKIndex = GetCKIndex(hash, *pALObjCKI))){
+		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
+		return NULL;							// automatically unlock ALObjCKI if it is local
+	}
 
-		// check marker
-		if(0 == pmarker->marker.startlen){
-			K2H_Free(pmarker);
-			return K2HShm::InitK2HMarker(marklen);
-		}
+	// get element
+	PELEMENT	pMarkerElement;
+	if(NULL == (pMarkerElement = GetElement(byMark, marklength, *pALObjCKI))){
+		MSG_K2HPRN("Could not get element for marker, probabry it is not existed.");
+		return NULL;							// automatically unlock ALObjCKI if it is local
+	}
 
-		// copy current start key
-		*ppKey		= k2hbindup((&(pmarker->byData[0]) + pmarker->marker.startoff), pmarker->marker.startlen);
-		keylength	= pmarker->marker.startlen;
+	// get marker's value
+	unsigned char*	pmkval	= NULL;
+	ssize_t			mkvallen= Get(pMarkerElement, &pmkval, PAGEOBJ_VALUE);
+	if(!pmkval || 0 == mkvallen){
+		MSG_K2HPRN("Marker does not have value, probabry queue is empty.");
+		return NULL;							// automatically unlock ALObjCKI if it is local
+	}
 
-		// Get subkeys in current start key.(without checking attribute)
-		K2HSubKeys*	psubkeys;
-		if(NULL == (psubkeys = GetSubKeys(*ppKey, keylength, false))){
-			// There is no key nor subkeys
-			K2H_Free(pmarker);
-			return K2HShm::InitK2HMarker(marklen);
-		}
-
-		// Check subkeys
-		K2HSubKeys::iterator iter = psubkeys->begin();
-		if(iter == psubkeys->end()){
-			// Current key does not have any subkey.
-			K2H_Delete(psubkeys);
-			K2H_Free(pmarker);
-			return K2HShm::InitK2HMarker(marklen);
-		}
-
-		// Get attribute and check expire
-		is_expire = false;
-		if(NULL != (pKeyAttrs = GetAttrs(*ppKey, keylength))){
-			K2hAttrOpsMan	attrman;
-			if(attrman.Initialize(this, *ppKey, keylength, NULL, 0UL, NULL)){
-				if(attrman.IsExpire(*pKeyAttrs)){
-					// key is expired
-					is_expire = true;
-				}
-			}else{
-				WAN_K2HPRN("Something error occurred during initializing attributes manager class, but continue...");
-			}
-		}
-
-		// Make new next K2HMaker
-		PBK2HMARKER	pnewmarker;
-		if(NULL == (pnewmarker = K2HShm::InitK2HMarker(marklen, iter->pSubKey, iter->length, (0 == pmarker->marker.endlen ? NULL : (&(pmarker->byData[0]) + pmarker->marker.endoff)), pmarker->marker.endlen))){
-			ERR_K2HPRN("Something error is occurred.");
-			K2H_Delete(psubkeys);
-			K2H_Delete(pKeyAttrs);
-			K2H_Free(pmarker);
-			return NULL;
-		}
-		K2H_Delete(psubkeys);
-		K2H_Free(pmarker);
-
-		// set new next marker
-		pmarker = pnewmarker;
-
-	}while(is_expire);
-
-	if(ppAttrs){
-		*ppAttrs = pKeyAttrs;
+	// Check empty marker
+	PBK2HMARKER		pmarker = reinterpret_cast<PBK2HMARKER>(pmkval);
+	size_t			marklen = static_cast<size_t>(mkvallen);
+	if(K2HShm::IsEmptyK2HMarker(pmarker)){
+		MSG_K2HPRN("Marker exists, but it is empty.");
+		K2H_Free(pmkval);
+		return NULL;							// automatically unlock ALObjCKI if it is local
+	}
+	if(marklen != (sizeof(K2HMARKER) + pmarker->marker.startlen + pmarker->marker.endlen)){
+		MSG_K2HPRN("Marker exists, but the marker size is wrong.");
+		K2H_Free(pmkval);
+		return NULL;							// automatically unlock ALObjCKI if it is local
 	}
 	return pmarker;
 }
@@ -280,12 +244,6 @@ bool K2HShm::UpdateStartK2HMarker(const unsigned char* byMark, size_t marklength
 		return false;
 	}
 	K2HFILE_UPDATE_CHECK(this);
-
-	// [NOTE]
-	// This method keeps locking CKIndex area during some operation.
-	// So we need to lock current mask area for escaping deadlock.
-	//
-	K2HLock	ALObjCMask(ShmFd, Rel(&(pHead->cur_mask)), K2HLock::RWLOCK);		// LOCK
 
 	// Lock cindex for writing marker.
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
@@ -345,7 +303,6 @@ bool K2HShm::UpdateStartK2HMarker(const unsigned char* byMark, size_t marklength
 
 	// Unlock
 	ALObjCKI.Unlock();
-	ALObjCMask.Unlock();
 
 	return true;
 }
@@ -409,7 +366,6 @@ int K2HShm::GetCountQueue(const unsigned char* byMark, size_t marklength) const
 		// There is no marker
 		return 0;
 	}
-
 	// Check empty marker
 	PBK2HMARKER		pmarker = reinterpret_cast<PBK2HMARKER>(pmkval);
 	size_t			marklen = static_cast<size_t>(mkvallength);
@@ -417,40 +373,34 @@ int K2HShm::GetCountQueue(const unsigned char* byMark, size_t marklength) const
 		K2H_Free(pmkval);
 		return 0;
 	}
-
 	// Check current marker size
 	if(marklen != (sizeof(K2HMARKER) + pmarker->marker.startlen + pmarker->marker.endlen)){
 		ERR_K2HPRN("The marker is not same size which is calculated.");
 		K2H_Free(pmkval);
 		return 0;
 	}
-
-	// loop for counting
+	// copy start key
 	unsigned char*	pKey		= k2hbindup(&(pmarker->byData[pmarker->marker.startoff]), pmarker->marker.startlen);
 	size_t			keylength	= pmarker->marker.startlen;
-	int				count;
-	for(count = 0; pKey; count++){
+
+	// loop for counting
+	int	count;
+	for(count = 1; pKey; ++count){
 		// check end of queue
 		if(0 == k2hbincmp(pKey, keylength, &(pmarker->byData[pmarker->marker.endoff]), pmarker->marker.endlen)){
-			K2H_Free(pKey);
-			count++;
 			break;
 		}
 
 		// get subkeys
 		K2HSubKeys*	psubkeys;
-		if(NULL == (psubkeys = GetSubKeys(pKey, keylength))){
+		if(NULL == (psubkeys = GetSubKeys(pKey, keylength, false))){	// not check expired
 			// There is no key nor subkeys
-			K2H_Free(pKey);
-			count++;
 			break;
 		}
 		K2HSubKeys::iterator iter = psubkeys->begin();
 		if(iter == psubkeys->end()){
 			// Current key does not have any subkey.
-			K2H_Free(pKey);
 			K2H_Delete(psubkeys);
-			count++;
 			break;
 		}
 
@@ -462,6 +412,7 @@ int K2HShm::GetCountQueue(const unsigned char* byMark, size_t marklength) const
 		K2H_Delete(psubkeys);
 	}
 	K2H_Free(pmkval);
+	K2H_Free(pKey);
 
 	return count;
 }
@@ -534,6 +485,7 @@ bool K2HShm::ReadQueue(const unsigned char* byMark, size_t marklength, unsigned 
 			// check end of queue
 			if(0 == k2hbincmp(*ppKey, keylength, &(pmarker->byData[pmarker->marker.endoff]), pmarker->marker.endlen)){
 				K2H_Free(*ppKey);
+				keylength = 0;
 				break;
 			}
 
@@ -542,13 +494,15 @@ bool K2HShm::ReadQueue(const unsigned char* byMark, size_t marklength, unsigned 
 			if(NULL == (psubkeys = GetSubKeys(*ppKey, keylength, false))){
 				// There is no key nor subkeys
 				K2H_Free(*ppKey);
+				keylength = 0;
 				break;
 			}
 			K2HSubKeys::iterator iter = psubkeys->begin();
 			if(iter == psubkeys->end()){
 				// Current key does not have any subkey.
-				K2H_Free(*ppKey);
 				K2H_Delete(psubkeys);
+				K2H_Free(*ppKey);
+				keylength = 0;
 				break;
 			}
 
@@ -563,6 +517,7 @@ bool K2HShm::ReadQueue(const unsigned char* byMark, size_t marklength, unsigned 
 		if(!*ppKey){
 			// not found or there is no key by position.
 			K2H_Free(pmkval);
+			keylength = 0;
 			return false;
 		}
 	}
@@ -603,177 +558,6 @@ bool K2HShm::ReadQueue(const unsigned char* byMark, size_t marklength, unsigned 
 // If making FIFO(LIFO) type queue, sets is_fifo flag as true(false).
 // So that, adding new key into tail(top) of queue list.
 //
-// [NOTICE]
-// It is also the case that the end key in K2HMaker has subkeys, but it is correct.
-// *** Even if end key had subkeys, never the subkeys is used. ***
-//
-bool K2HShm::AddQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, bool is_fifo, bool update_chain, bool check_update_file)
-{
-	if(!byMark || 0 == marklength || !byKey || 0 == keylength){
-		ERR_K2HPRN("Some parameters are wrong.");
-		return false;
-	}
-	if(!IsAttached()){
-		ERR_K2HPRN("There is no attached K2HASH.");
-		return false;
-	}
-	if(check_update_file){
-		K2HFILE_UPDATE_CHECK(this);
-	}
-
-	// [NOTE]
-	// This method keeps locking CKIndex area during some operation.
-	// So we need to lock current mask area for escaping deadlock.
-	//
-	K2HLock	ALObjCMask(ShmFd, Rel(&(pHead->cur_mask)), K2HLock::RWLOCK);		// LOCK
-
-	// Lock cindex for writing marker.
-	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
-
-	K2HLock		ALObjCKI(K2HLock::RWLOCK);			// LOCK
-	PCKINDEX	pCKIndex;
-	if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI))){
-		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
-		if(!Remove(byKey, keylength, true, NULL, true)){					// Remove key without history
-			ERR_K2HPRN("Failed to remove key for recovering, so the key has been staying in k2hash.");
-		}
-		return false;
-	}
-
-	// Read marker.(without checking expire)
-	PBK2HMARKER		pmarker;
-	size_t			marklen = 0;
-	unsigned char*	pmkval	= NULL;
-	ssize_t			mkvallength;
-	bool			is_need_update_marker = true;
-	if(-1 == (mkvallength = Get(byMark, marklength, &pmkval, false, NULL))){
-		// There is no marker, so make new marker
-		if(NULL == (pmarker = K2HShm::InitK2HMarker(marklen))){
-			ERR_K2HPRN("Could not make new marker value.");
-			return false;
-		}
-
-	}else{
-		// found marker
-		pmarker = reinterpret_cast<PBK2HMARKER>(pmkval);
-
-		// Check marker size
-		if(static_cast<size_t>(mkvallength) != (sizeof(K2HMARKER) + pmarker->marker.startlen + pmarker->marker.endlen)){
-			ERR_K2HPRN("The marker is not same size which is calculated.");
-			K2H_Free(pmkval);
-			return false;
-		}
-
-		// [NOTE]
-		// if using this method directly not from another K2HShm::AddQueue method
-		// (thus do not need change subkey list in key), set update_chain
-		// as false.
-		// But you must set subkey list in key manually.
-		//
-		if(update_chain){
-			// Update chain
-			if(is_fifo){
-				// Update subkey in end key
-				if(0 < pmarker->marker.endlen){
-					if(0 != k2hbincmp(byKey, keylength, (&(pmarker->byData[0]) + pmarker->marker.endoff), pmarker->marker.endlen)){
-						// add key to subkey at end of keys.
-						K2HSubKeys		k2hsubkeys;
-						unsigned char*	bySubkeys = NULL;
-						size_t			skeylength= 0UL;
-
-						k2hsubkeys.insert(byKey, keylength);
-						if(!k2hsubkeys.Serialize(&bySubkeys, skeylength)){
-							ERR_K2HPRN("Failed to serialize subkey.");
-							K2H_Free(pmkval);
-							return false;
-						}
-
-						if(!ReplaceSubkeys((&(pmarker->byData[0]) + pmarker->marker.endoff), pmarker->marker.endlen, bySubkeys, skeylength)){
-							ERR_K2HPRN("Failed to insert key as subkey into end of key.");
-							K2H_Free(bySubkeys);
-							K2H_Free(pmkval);
-							return false;
-						}
-						K2H_Free(bySubkeys);
-
-					}else{
-						// end key is as same as key name, so do not need to update merker
-						is_need_update_marker = false;
-					}
-				}
-			}else{
-				// Update subkey in key
-				if(0 < pmarker->marker.startlen){
-					if(0 != k2hbincmp((&(pmarker->byData[0]) + pmarker->marker.startoff), pmarker->marker.startlen, byKey, keylength)){
-						// add start key to subkey at key.
-						K2HSubKeys		k2hsubkeys;
-						unsigned char*	bySubkeys = NULL;
-						size_t			skeylength= 0UL;
-
-						k2hsubkeys.insert((&(pmarker->byData[0]) + pmarker->marker.startoff), pmarker->marker.startlen);
-						if(!k2hsubkeys.Serialize(&bySubkeys, skeylength)){
-							ERR_K2HPRN("Failed to serialize subkey.");
-							K2H_Free(pmkval);
-							return false;
-						}
-
-						if(!ReplaceSubkeys(byKey, keylength, bySubkeys, skeylength)){
-							ERR_K2HPRN("Failed to insert start key as subkey into key.");
-							K2H_Free(bySubkeys);
-							K2H_Free(pmkval);
-							return false;
-						}
-						K2H_Free(bySubkeys);
-
-					}else{
-						// start key is as same as key name, so do not need update marker
-						is_need_update_marker = false;
-					}
-				}
-			}
-		}
-	}
-
-	if(is_need_update_marker){
-		// Update marker data
-		if(NULL == (pmarker = K2HShm::UpdateK2HMarker(pmarker, marklen, byKey, keylength, is_fifo))){
-			ERR_K2HPRN("Could not make new marker value.");
-			//
-			// If is_fifo is false, do not recover end key's subkey.
-			// Please see top of this method comment.
-			//
-			K2H_Free(pmkval);
-			return false;
-		}
-
-		// Set new marker
-		//
-		// marker does not have any attribute.
-		//
-		if(!Set(byMark, marklength, &(pmarker->byData[0]), marklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
-			if(0 == mkvallength){
-				ERR_K2HPRN("Could not set new marker.");
-			}else{
-				// on this case, give up fore recovering...
-				ERR_K2HPRN("Could not set new marker, we could not recover data...");
-			}
-			K2H_Free(pmarker);
-			return false;
-		}
-	}
-	K2H_Free(pmarker);
-
-	return true;
-}
-
-//
-// If making FIFO(LIFO) type queue, sets is_fifo flag as true(false).
-// So that, adding new key into tail(top) of queue list.
-//
-// [NOTICE]
-// It is also the case that the end key in K2HMaker has subkeys, but it is correct.
-// *** Even if end key had subkeys, never the subkeys is used. ***
-//
 bool K2HShm::AddQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, const unsigned char* byValue, size_t vallength, bool is_fifo, K2hAttrOpsMan::ATTRINITTYPE attrtype, K2HAttrs* pAttrs, const char* encpass, const time_t* expire)
 {
 	if(!byMark || 0 == marklength || !byKey || 0 == keylength){
@@ -786,23 +570,690 @@ bool K2HShm::AddQueue(const unsigned char* byMark, size_t marklength, const unsi
 	}
 	K2HFILE_UPDATE_CHECK(this);
 
+	bool	result;
+	if(is_fifo){
+		result = AddFifoQueue(byMark, marklength, byKey, keylength, byValue, vallength, attrtype, pAttrs, encpass, expire);
+	}else{
+		result = AddLifoQueue(byMark, marklength, byKey, keylength, byValue, vallength, attrtype, pAttrs, encpass, expire);
+	}
+	return result;
+}
+
+//
+// Add data to FIFO queue
+//
+bool K2HShm::AddFifoQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, const unsigned char* byValue, size_t vallength, K2hAttrOpsMan::ATTRINITTYPE attrtype, K2HAttrs* pAttrs, const char* encpass, const time_t* expire)
+{
+	//--------------------------------------
 	// Make new key in K2hash
+	//--------------------------------------
 	//
-	// attrtype should be allowed OPSMAN_MASK_QUEUEKEY, OPSMAN_MASK_TRANSQUEUEKEY, OPSMAN_MASK_QUEUEMARKER
-	// and OPSMAN_MASK_KEYQUEUEKEY for Queue
+	// attrtype should be allowed OPSMAN_MASK_QUEUEKEY, OPSMAN_MASK_TRANSQUEUEKEY, OPSMAN_MASK_QUEUEMARKER and OPSMAN_MASK_KEYQUEUEKEY for Queue
 	//
 	if(!Set(byKey, keylength, byValue, vallength, NULL, true, pAttrs, encpass, expire, attrtype)){
 		ERR_K2HPRN("Could not make new key.");
 		return false;
 	}
 
-	// set key to marker
-	if(!AddQueue(byMark, marklength, byKey, keylength, is_fifo, true, false)){	// [NOTE] update chain, not check update file
-		ERR_K2HPRN("Something error occurred during set key to marker.");
-		if(!Remove(byKey, keylength, true, NULL, true)){						// Remove key without history
-			ERR_K2HPRN("Failed to remove key for recovering, so the key has been staying in k2hash.");
+	// Read marker
+	PBK2HMARKER				before_marker	= GetMarker(byMark, marklength);
+	const unsigned char*	before_endkey	= before_marker ? &(before_marker->byData[before_marker->marker.endoff]) : NULL;
+	size_t					before_endlen	= before_marker ? before_marker->marker.endlen : 0;
+	PBK2HMARKER				after_marker	= NULL;
+	const unsigned char*	after_endkey	= NULL;
+	size_t					after_endlen	= 0;
+	PBK2HMARKER				last_marker		= NULL;		// for broken marker checking
+	const unsigned char*	last_endkey		= NULL;
+	size_t					last_endlen		= 0;
+	bool					result			= false;	// result code and for loop flag
+
+	do{
+		//--------------------------------------
+		// Set new key into end key's subkey
+		//--------------------------------------
+		if(before_marker && 0 < before_endlen){
+			// marker has end of queue key
+
+			// Get endkey's element with WRITE LOCK
+			K2HLock		ALObjCKI_Endkey(K2HLock::RWLOCK);		// auto release locking at leaving in this scope.
+			PELEMENT	pEndKeyElement;
+			if(NULL == (pEndKeyElement = GetElement(before_endkey, before_endlen, ALObjCKI_Endkey))){
+				// end key is not found.
+				MSG_K2HPRN("Key(%s) is not found, so retry to get marker.", reinterpret_cast<const char*>(before_endkey));
+
+				if(0 == k2hbincmp(before_endkey, before_endlen, last_endkey, last_endlen)){
+					// before end key in marker is as same as now, so marker is not updated with wrong end key.
+					ERR_K2HPRN("Key(%s) is not found, probabry marker end key is broken.", reinterpret_cast<const char*>(before_endkey));
+					break;
+				}
+				// retry(switch before -> last)
+				ALObjCKI_Endkey.Unlock();						// Unlock
+				K2H_Free(last_marker);
+				last_marker		= before_marker;
+				last_endkey		= k2hbindup(before_endkey, before_endlen);
+				last_endlen		= before_endlen;
+
+				before_marker	= GetMarker(byMark, marklength);
+				before_endkey	= before_marker ? &(before_marker->byData[before_marker->marker.endoff]) : NULL;
+				before_endlen	= before_marker ? before_marker->marker.endlen : 0;
+				continue;
+			}else{
+				K2H_Free(last_marker);
+				last_endkey	= NULL;
+				last_endlen	= 0;
+			}
+
+			// Get end of queue key's subkey and check it is empty.
+			K2HSubKeys*	endkey_subkeys;
+			if(NULL != (endkey_subkeys = GetSubKeys(pEndKeyElement, false)) && 0 < endkey_subkeys->size()){
+				// end of queue key has subkeys, retry to loop at reading marker
+				K2H_Free(before_marker);
+				K2H_Delete(endkey_subkeys);
+				before_marker	= GetMarker(byMark, marklength);
+				before_endkey	= before_marker ? &(before_marker->byData[before_marker->marker.endoff]) : NULL;
+				before_endlen	= before_marker ? before_marker->marker.endlen : 0;
+				continue;
+			}
+			K2H_Delete(endkey_subkeys);
+
+			// Replace subkeys of end by new key in it.
+			K2HSubKeys		endkey_newskeys;
+			unsigned char*	byNewSubkeys	= NULL;
+			size_t			new_skeylen		= 0UL;
+			endkey_newskeys.insert(byKey, keylength);
+			if(!endkey_newskeys.Serialize(&byNewSubkeys, new_skeylen)){
+				ERR_K2HPRN("Failed to serialize subkey for adding queue.");
+				break;
+			}
+			if(!ReplacePage(pEndKeyElement, byNewSubkeys, new_skeylen, PAGEOBJ_SUBKEYS)){
+				ERR_K2HPRN("Failed to replace subkey list into end of key.");
+				K2H_Free(byNewSubkeys);
+				break;
+			}
+			K2H_Free(byNewSubkeys);
+		}else{
+			K2H_Free(last_marker);
+			last_endkey	= NULL;
+			last_endlen	= 0;
 		}
+
+		//--------------------------------------
+		// Re-Read marker with WRITE LOCK
+		//--------------------------------------
+		// [NOTE]
+		// At first, we lock marker and call Set method which locks marker.
+		// Then twice locking for marker, but it does not deadlock because
+		// marker does not have subkeys
+		//
+		K2H_Free(after_marker);
+		K2HLock			ALObjCKI_Marker(K2HLock::RWLOCK);					// manually release locking
+		after_marker	= GetMarker(byMark, marklength, &ALObjCKI_Marker);
+		after_endkey	= after_marker ? &(after_marker->byData[after_marker->marker.endoff]) : NULL;
+		after_endlen	= after_marker ? after_marker->marker.endlen : 0;
+
+		//--------------------------------------
+		// Update marker
+		//--------------------------------------
+		if(after_marker && 0 < after_endlen){
+			// now marker has end of queue key
+			if(!before_marker || 0 == before_endlen){
+				//
+				// marker's end key is changed since reading before( before end key is not there. )
+				// ---> thus retry all processing
+				//
+				ALObjCKI_Marker.Unlock();									// Unlock
+
+				// switch(after -> before)
+				K2H_Free(after_marker);
+				K2H_Free(before_marker);
+				before_marker	= GetMarker(byMark, marklength);
+				before_endkey	= before_marker ? &(before_marker->byData[before_marker->marker.endoff]) : NULL;
+				before_endlen	= before_marker ? before_marker->marker.endlen : 0;
+
+			}else if(0 == k2hbincmp(before_endkey, before_endlen, after_endkey, after_endlen)){
+				//
+				// now marker's end key is as same as before end key.
+				// ---> update marker
+				//
+				size_t	marklen	= 0;
+				if(NULL == (after_marker = K2HShm::UpdateK2HMarker(after_marker, marklen, byKey, keylength, true))){		// FIFO
+					ERR_K2HPRN("Could not make new marker value.");
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+
+				// Set new marker(marker does not have any attribute.)
+				if(!Set(byMark, marklength, &(after_marker->byData[0]), marklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
+					ERR_K2HPRN("Could not set new marker.");
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+				result = true;												// automatically unlock ALObjCKI_Marker
+
+			}else if(0 == k2hbincmp(byKey, keylength, after_endkey, after_endlen)){
+				//
+				// marker's end key is changed, and is as same as new key
+				// ---> thus we do not any processing.
+				//
+				result = true;												// automatically unlock ALObjCKI_Marker
+
+			}else{
+				//
+				// marker's end key(yyy) is changed since reading before(xxx)
+				// ---> we must check deep!
+				//
+
+				// Unlock marker
+				ALObjCKI_Marker.Unlock();									// Unlock
+
+				//
+				// Lock new key(exist?) and check new key's subkeys
+				//
+				K2HLock		ALObjCKI_Newkey(K2HLock::RWLOCK);				// auto release locking at leaving in this scope.
+				PELEMENT	pNewkeyElement;
+				if(NULL == (pNewkeyElement = GetElement(byKey, keylength, ALObjCKI_Newkey))){
+					//
+					// there is no new key, probabry already popped it.
+					// ---> thus we do not any processing.
+					//
+					result = true;											// automatically unlock ALObjCKI_Newkey
+
+				}else{
+					//
+					// there is new key yet, check it's subkeys
+					//
+					K2HSubKeys*	newkey_subkeys;
+					if(NULL != (newkey_subkeys = GetSubKeys(pNewkeyElement, false)) && 0 < newkey_subkeys->size()){
+						//
+						// new key is set subkey in it, this means new key is not end key.
+						// ---> thus we do not any processing.
+						//
+						K2H_Delete(newkey_subkeys);
+						result = true;										// automatically unlock ALObjCKI_Newkey
+
+					}else{
+						//
+						// new key does not have subkey
+						// ---> unknown reason, but we should retry all processing.
+						//
+						K2H_Delete(newkey_subkeys);
+						ALObjCKI_Newkey.Unlock();							// Unlock
+
+						// switch(after -> before)
+						K2H_Free(before_marker);
+						before_marker	= after_marker;						// using marker which is read after.
+						before_endkey	= after_endkey;
+						before_endlen	= after_endlen;
+						after_marker	= NULL;
+						after_endkey	= NULL;
+						after_endlen	= 0;
+					}
+				}
+			}
+		}else{
+			//
+			// now marker does not exist, or does not have end of key
+			//
+			if(0 == k2hbincmp(before_endkey, before_endlen, after_endkey, after_endlen)){
+				//
+				// before marker does not exist, or does not have end of key.
+				// ---> we did not add new key into subkey list for end key(=not exist)
+				//
+				size_t	marklen	= 0;
+				if(after_marker){
+					//
+					// there is now marker, but it does not have end key
+					// ---> update marker
+					//
+					if(NULL == (after_marker = K2HShm::UpdateK2HMarker(after_marker, marklen, byKey, keylength, true))){		// FIFO
+						ERR_K2HPRN("Could not make new marker value.");
+						break;												// automatically unlock ALObjCKI_Marker
+					}
+				}else{
+					//
+					// both before and now marker do not exist.
+					// ---> update(create new) marker
+					//
+					if(NULL == (after_marker = K2HShm::InitK2HMarker(marklen, byKey, keylength))){
+						ERR_K2HPRN("Could not create marker.");
+						break;												// automatically unlock ALObjCKI_Marker
+					}
+				}
+
+				// Set new marker(marker does not have any attribute.)
+				if(!Set(byMark, marklength, &(after_marker->byData[0]), marklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
+					ERR_K2HPRN("Could not set new marker.");
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+			}else{
+				//
+				// before marker exists, and it has end of key.
+				// ---> we already added new key into subkey list for end key(=exists)
+				//
+				if(after_marker){
+					//
+					// there is now marker, but it's end key does not exist. probabry aready popped new key.
+					// ---> thus we do not any processing.
+					//
+				}else{
+					//
+					// there is not now marker. probabry aready popped new key(and all queued keys). thus we had already added new key in it.
+					// ---> thus we do not any processing.
+					//
+				}
+			}
+			result = true;													// automatically unlock ALObjCKI_Marker
+		}
+	}while(!result);
+
+	K2H_Free(before_marker);
+	K2H_Free(after_marker);
+	K2H_Free(last_marker);
+
+	return result;
+}
+
+//
+// Add data to LIFO queue
+//
+bool K2HShm::AddLifoQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, const unsigned char* byValue, size_t vallength, K2hAttrOpsMan::ATTRINITTYPE attrtype, K2HAttrs* pAttrs, const char* encpass, const time_t* expire)
+{
+	// Read marker
+	PBK2HMARKER				before_marker	= GetMarker(byMark, marklength);
+	const unsigned char*	before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
+	size_t					before_startlen	= before_marker ? before_marker->marker.startlen : 0;
+	PBK2HMARKER				after_marker	= NULL;
+	const unsigned char*	after_startkey	= NULL;
+	size_t					after_startlen	= 0;
+	bool					result			= false;	// result code and for loop flag
+
+	do{
+		//--------------------------------------
+		// (Re)Make new key with subkey list which is from marker
+		//--------------------------------------
+		K2HSubKeys*	newkey_subkeys = NULL;
+		if(before_marker && 0 < before_startlen){
+			// there is start key
+			// ---> make subkey list data
+			//
+			newkey_subkeys	= new K2HSubKeys();
+			newkey_subkeys->insert(before_startkey, before_startlen);
+		}
+		// Make new key in K2hash
+		//
+		// attrtype should be allowed OPSMAN_MASK_QUEUEKEY, OPSMAN_MASK_TRANSQUEUEKEY, OPSMAN_MASK_QUEUEMARKER and OPSMAN_MASK_KEYQUEUEKEY for Queue
+		//
+		if(!Set(byKey, keylength, byValue, vallength, newkey_subkeys, true, pAttrs, encpass, expire, attrtype)){
+			ERR_K2HPRN("Could not make new key.");
+			K2H_Delete(newkey_subkeys);
+			break;
+		}
+		K2H_Delete(newkey_subkeys);
+
+		//--------------------------------------
+		// Re-Read marker with WRITE LOCK
+		//--------------------------------------
+		// [NOTE]
+		// At first, we lock marker and call Set method which locks marker.
+		// Then twice locking for marker, but it does not deadlock because
+		// marker does not have subkeys
+		//
+		K2HLock		ALObjCKI_Marker(K2HLock::RWLOCK);						// manually release locking
+		after_marker	= GetMarker(byMark, marklength, &ALObjCKI_Marker);
+		after_startkey	= after_marker ? &(after_marker->byData[after_marker->marker.startoff]) : NULL;
+		after_startlen	= after_marker ? after_marker->marker.startlen : 0;
+
+		//--------------------------------------
+		// Add new key into subkeys for start key in marker
+		//--------------------------------------
+		if(after_marker && 0 < after_startlen){
+			// now marker has start of queue key
+			if(!before_marker || 0 == before_startlen){
+				//
+				// marker's start key is changed since reading before( before start key is not there. )
+				// ---> thus retry all processing
+				//
+				ALObjCKI_Marker.Unlock();									// Unlock
+
+				// switch(after -> before)
+				K2H_Free(after_marker);
+				K2H_Free(before_marker);
+				before_marker	= GetMarker(byMark, marklength);
+				before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
+				before_startlen	= before_marker ? before_marker->marker.startlen : 0;
+
+			}else if(0 == k2hbincmp(before_startkey, before_startlen, after_startkey, after_startlen)){
+				//
+				// now marker's start key is as same as before start key.
+				// ---> update marker
+				//
+				size_t	marklen	= 0;
+				if(NULL == (after_marker = K2HShm::UpdateK2HMarker(after_marker, marklen, byKey, keylength, false))){		// LIFO
+					ERR_K2HPRN("Could not make new marker value.");
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+
+				// Set new marker(marker does not have any attribute.)
+				if(!Set(byMark, marklength, &(after_marker->byData[0]), marklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
+					ERR_K2HPRN("Could not set new marker.");
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+				result = true;												// automatically unlock ALObjCKI_Marker
+
+			}else if(0 == k2hbincmp(byKey, keylength, after_startkey, after_startlen)){
+				//
+				// marker's start key is changed, and is as same as new key
+				// ---> thus we do not any processing.
+				//
+				result = true;												// automatically unlock ALObjCKI_Marker
+
+			}else{
+				//
+				// marker's start key(yyy) is changed since reading before(xxx)
+				// ---> thus retry all processing
+				//
+				ALObjCKI_Marker.Unlock();									// Unlock
+
+				// switch(after -> before)
+				K2H_Free(after_marker);
+				K2H_Free(before_marker);
+				before_marker	= GetMarker(byMark, marklength);
+				before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
+				before_startlen	= before_marker ? before_marker->marker.startlen : 0;
+			}
+		}else{
+			//
+			// now marker does not exist, or does not have start of key
+			//
+			if(0 == k2hbincmp(before_startkey, before_startlen, after_startkey, after_startlen)){
+				//
+				// before marker does not exist, or does not have start of key.
+				// ---> we did not add new key into subkey list for start key(=not exist)
+				//
+				size_t	marklen	= 0;
+				if(after_marker){
+					//
+					// there is now marker, but it does not have start key
+					// ---> update marker
+					//
+					if(NULL == (after_marker = K2HShm::UpdateK2HMarker(after_marker, marklen, byKey, keylength, false))){		// LIFO
+						ERR_K2HPRN("Could not make new marker value.");
+						break;												// automatically unlock ALObjCKI_Marker
+					}
+				}else{
+					//
+					// both before and now marker do not exist.
+					// ---> update(create new) marker
+					//
+					if(NULL == (after_marker = K2HShm::InitK2HMarker(marklen, byKey, keylength))){
+						ERR_K2HPRN("Could not create marker.");
+						break;												// automatically unlock ALObjCKI_Marker
+					}
+				}
+
+				// Set new marker(marker does not have any attribute.)
+				if(!Set(byMark, marklength, &(after_marker->byData[0]), marklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
+					ERR_K2HPRN("Could not set new marker.");
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+				result = true;												// automatically unlock ALObjCKI_Marker
+
+			}else{
+				//
+				// before marker exists, and it has start of key.
+				// ---> thus retry all processing
+				//
+				ALObjCKI_Marker.Unlock();									// Unlock
+
+				// switch(after -> before)
+				K2H_Free(after_marker);
+				K2H_Free(before_marker);
+				before_marker	= GetMarker(byMark, marklength);
+				before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
+				before_startlen	= before_marker ? before_marker->marker.startlen : 0;
+			}
+		}
+	}while(!result);
+
+	K2H_Free(before_marker);
+	K2H_Free(after_marker);
+
+	return result;
+}
+
+//
+// This method does not update any queued key and queued key's subkey.
+// For calling this from K2HLowOpsQueue class.
+//
+bool K2HShm::AddQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, bool is_fifo)
+{
+	if(!byMark || 0 == marklength || !byKey || 0 == keylength){
+		ERR_K2HPRN("Some parameters are wrong.");
 		return false;
+	}
+	if(!IsAttached()){
+		ERR_K2HPRN("There is no attached K2HASH.");
+		return false;
+	}
+	K2HFILE_UPDATE_CHECK(this);
+
+	K2HLock			ALObjCKI(K2HLock::RWLOCK);								// auto release locking at leaving in this scope.
+	PBK2HMARKER		pmarker	= GetMarker(byMark, marklength, &ALObjCKI);
+	size_t			marklen = 0;
+	if(!pmarker){
+		// There is no marker, so make new marker
+		if(NULL == (pmarker = K2HShm::InitK2HMarker(marklen))){
+			ERR_K2HPRN("Could not make new marker value.");
+			return false;
+		}
+	}
+
+	// Update marker data
+	if(NULL == (pmarker = K2HShm::UpdateK2HMarker(pmarker, marklen, byKey, keylength, is_fifo))){
+		ERR_K2HPRN("Could not make new marker value.");
+		K2H_Free(pmarker);
+		return false;
+	}
+
+	// Set new marker
+	//
+	// marker does not have any attribute.
+	//
+	if(!Set(byMark, marklength, &(pmarker->byData[0]), marklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
+		ERR_K2HPRN("Could not set new/update marker.");
+		K2H_Free(pmarker);
+		return false;
+	}
+	K2H_Free(pmarker);
+
+	return true;
+}
+
+//
+// Get/Retrieve one top key in queue list.
+//
+//	[arguments]
+//	const unsigned char*		byMark			: marker binary pointer
+//	size_t						marklength		: marker length
+//	bool&						is_found		: the result of whether or not the queued key existed is stored in this buffer
+//	bool&						is_expired		: the result of whether or not the queued key is expired is stored in this buffer
+//	unsigned char**				ppKey			: returns popped key binary pointer
+//	size_t&						keylength		: returns popped key binary length
+//	unsigned char**				ppValue			: returns popped key's value binary pointer
+//	size_t&						vallength		: returns popped key's value binary length
+//	K2HAttrs**					ppAttrs			: returns popped key's attibutes object pointer if ppAttrs is not NULL.(allowed null to this pointer)
+//	const char*					encpass			: encrypt pass phrase
+//
+//	[return]
+//	true										: one key is popped(updated marker) or there is no poped key(including expired key)
+//	false										: somthing error occurred.
+//
+bool K2HShm::PopQueueEx(const unsigned char* byMark, size_t marklength, bool& is_found, bool& is_expired, unsigned char** ppKey, size_t& keylength, unsigned char** ppValue, size_t& vallength, K2HAttrs** ppAttrs, const char* encpass)
+{
+	if(!byMark || 0 == marklength || !ppKey || !ppValue){
+		ERR_K2HPRN("Some parameters are wrong.");
+		return false;
+	}
+	if(!IsAttached()){
+		ERR_K2HPRN("There is no attached K2HASH.");
+		return false;
+	}
+
+	// This method returns true when there is no queue data.
+	// So caller is check following value.
+	//
+	*ppKey		= NULL;
+	keylength	= 0;
+	*ppValue	= NULL;
+	vallength	= 0;
+	if(ppAttrs){
+		*ppAttrs= NULL;
+	}
+
+	while(true){
+		is_found	= false;
+		is_expired	= false;
+
+		//--------------------------------------
+		// Read marker without WRITE LOCK
+		//--------------------------------------
+		PBK2HMARKER				before_marker	= GetMarker(byMark, marklength);
+		const unsigned char*	before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
+		size_t					before_startlen	= before_marker ? before_marker->marker.startlen : 0;
+
+		if(!before_marker || !before_startkey || 0 == before_startlen){
+			// there is no marker or no start key of queue, it means no stacked key in queue.
+			K2H_Free(before_marker);
+			break;
+		}
+		is_found = true;
+
+		// Get subkeys in current start key for next marker's start key(without checking attribute)
+		K2HSubKeys*				psubkeys	= GetSubKeys(before_startkey, before_startlen, false);
+		const unsigned char*	pnextstart	= NULL;
+		size_t					nextstartLen= 0;
+		if(psubkeys){
+			K2HSubKeys::iterator	iter = psubkeys->begin();
+			if(iter != psubkeys->end()){
+				pnextstart	= iter->pSubKey;
+				nextstartLen= iter->length;
+			}
+		}
+
+		// Get attribute and check expire
+		K2HAttrs*	pKeyAttrs;
+		if(NULL != (pKeyAttrs = GetAttrs(before_startkey, before_startlen))){
+			K2hAttrOpsMan	attrman;
+			if(attrman.Initialize(this, before_startkey, before_startlen, NULL, 0UL, NULL)){
+				if(attrman.IsExpire(*pKeyAttrs)){
+					is_expired = true;								// key is expired
+				}
+			}else{
+				WAN_K2HPRN("Something error occurred during initializing attributes manager class, but continue...");
+			}
+			K2H_Delete(pKeyAttrs);
+		}
+
+		// Get value(with checking attribute)
+		ssize_t	tmpvallen;
+		if(-1 == (tmpvallen = Get(before_startkey, before_startlen, ppValue, true, encpass))){
+			MSG_K2HPRN("Could not get popped key value(there is no value or key is expired.)");
+		}else{
+			vallength = static_cast<size_t>(tmpvallen);
+		}
+
+		//--------------------------------------
+		// Re-Read marker with WRITE LOCK
+		//--------------------------------------
+		// [NOTE]
+		// At first, we lock marker and call Set method which locks marker.
+		// Then twice locking for marker, but it does not deadlock because
+		// marker does not have subkeys
+		//
+		K2HLock					ALObjCKI_Marker(K2HLock::RWLOCK);	// auto release locking at leaving in this scope.
+		PBK2HMARKER				after_marker	= GetMarker(byMark, marklength, &ALObjCKI_Marker);
+		const unsigned char*	after_startkey	= after_marker ? &(after_marker->byData[after_marker->marker.startoff]) : NULL;
+		size_t					after_startlen	= after_marker ? after_marker->marker.startlen : 0;
+		if(!after_marker){
+			MSG_K2HPRN("After reading marker, the marker is empty or wrong size.");
+
+			K2H_Free(before_marker);
+			K2H_Delete(psubkeys);
+			K2H_Delete(pKeyAttrs);
+			K2H_Free(*ppValue);
+			vallength	= 0;
+			is_found	= false;
+			is_expired	= false;
+			return false;											// automatically unlock ALObjCKI_Marker
+		}
+
+		// Check popped key name, compare it and before reading key name.
+		if(0 != k2hbincmp(before_startkey, before_startlen, after_startkey, after_startlen)){
+			MSG_K2HPRN("Different popped key name before and after reading, thus retry from first.");
+
+			K2H_Free(before_marker);
+			K2H_Free(after_marker);
+			K2H_Delete(psubkeys);
+			K2H_Delete(pKeyAttrs);
+			K2H_Free(*ppValue);
+			vallength = 0;
+			ALObjCKI_Marker.Unlock();									// manually unlock
+			continue;
+		}
+
+		// Make new next K2HMaker
+		PBK2HMARKER	pnewmarker;
+		size_t		newmarklen	= 0;
+		if(NULL == (pnewmarker = K2HShm::InitK2HMarker(newmarklen, pnextstart, nextstartLen, (0 == after_marker->marker.endlen ? NULL : (&(after_marker->byData[0]) + after_marker->marker.endoff)), after_marker->marker.endlen))){
+			ERR_K2HPRN("Something error is occurred to make new marker.");
+
+			K2H_Free(before_marker);
+			K2H_Free(after_marker);
+			K2H_Delete(psubkeys);
+			K2H_Delete(pKeyAttrs);
+			K2H_Free(*ppValue);
+			vallength	= 0;
+			is_found	= false;
+			is_expired	= false;
+			return false;											// automatically unlock ALObjCKI_Marker
+		}
+		K2H_Delete(psubkeys);
+
+		// Set new marker(marker does not have any attribute)
+		if(!Set(byMark, marklength, &(pnewmarker->byData[0]), newmarklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
+			ERR_K2HPRN("Could not set new marker.");
+
+			K2H_Free(before_marker);
+			K2H_Free(after_marker);
+			K2H_Free(pnewmarker);
+			K2H_Delete(pKeyAttrs);
+			K2H_Free(*ppValue);
+			vallength	= 0;
+			is_found	= false;
+			is_expired	= false;
+			return false;											// automatically unlock ALObjCKI_Marker
+		}
+		K2H_Free(pnewmarker);
+
+		// Unlock marker
+		ALObjCKI_Marker.Unlock();									// manually unlock
+
+		// Remove key(without subkey & history)
+		if(!Remove(after_startkey, after_startlen, false, NULL, true)){
+			ERR_K2HPRN("Could not remove popped key, but continue...");
+		}
+
+		// Copy key name
+		*ppKey		= k2hbindup(before_startkey, before_startlen);
+		keylength	= before_startlen;
+		if(ppAttrs){
+			*ppAttrs = pKeyAttrs;
+		}else{
+			K2H_Delete(pKeyAttrs);
+		}
+
+		K2H_Free(before_marker);
+		K2H_Free(after_marker);
+
+		break;
 	}
 	return true;
 }
@@ -834,107 +1285,27 @@ bool K2HShm::PopQueue(const unsigned char* byMark, size_t marklength, unsigned c
 	}
 	K2HFILE_UPDATE_CHECK(this);
 
-	// This method returns true when there is no queue data.
-	// So caller is check following value.
 	//
-	*ppKey		= NULL;
-	keylength	= 0;
-	*ppValue	= NULL;
-	vallength	= 0;
-	if(ppAttrs){
-		*ppAttrs= NULL;
-	}
-
-	// [NOTE]
-	// This method keeps locking CKIndex area during some operation.
-	// So we need to lock current mask area for escaping deadlock.
+	// Pop from queue until not expired key.
 	//
-	K2HLock	ALObjCMask(ShmFd, Rel(&(pHead->cur_mask)), K2HLock::RWLOCK);		// LOCK
-
-	// Lock cindex for writing marker.
-	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
-
-	K2HLock		ALObjCKI(K2HLock::RWLOCK);			// LOCK
-	PCKINDEX	pCKIndex;
-	if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI))){
-		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
-		return false;
-	}
-
-	// Read current marker.(without checking expire)
-	unsigned char*	pmkval	= NULL;
-	ssize_t			mkvallength;
-	if(-1 == (mkvallength = Get(byMark, marklength, &pmkval, false)) || !pmkval){
-		// There is no marker
-		return true;
-	}
-
-	PBK2HMARKER		pmarker = reinterpret_cast<PBK2HMARKER>(pmkval);
-	size_t			marklen = static_cast<size_t>(mkvallength);
-
-	// Check current marker size
-	if(marklen != (sizeof(K2HMARKER) + pmarker->marker.startlen + pmarker->marker.endlen)){
-		ERR_K2HPRN("The marker is not same size which is calculated.");
-		K2H_Free(pmkval);
-		return false;
-	}
-	if(K2HShm::IsEmptyK2HMarker(pmarker)){
-		// There is no queued key in marker
-		K2H_Free(pmkval);
-		return true;
-	}
-
-	// Pop top of key & make new marker.(with checking expired key)
-	if(NULL == (pmarker = PopK2HMarker(pmarker, marklen, ppKey, keylength, ppAttrs))){
-		ERR_K2HPRN("Coult not pop key from marker.");
-		K2H_Free(pmkval);
-		K2H_Free(*ppKey);		// if set it
-		return false;
-	}
-
-	// Set new marker
-	//
-	// marker does not have any attribute.
-	//
-	if(!Set(byMark, marklength, &(pmarker->byData[0]), marklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
-		ERR_K2HPRN("Could not set new marker.");
-		K2H_Free(*ppKey);		// if set it
-		keylength = 0;
-
-		K2H_Free(pmarker);
-		return false;
-	}
-	K2H_Free(pmarker);
-
-	// Unlock
-	ALObjCKI.Unlock();
-	ALObjCMask.Unlock();
-
-	if(!(*ppKey)){
-		// There is no pop key.
-		return true;
-	}
-
-	// Get value.(with checking attribute)
-	ssize_t	tmpvallen;
-	if(-1 == (tmpvallen = Get(*ppKey, keylength, ppValue, true, encpass))){
-		ERR_K2HPRN("Could not get poped key value.");
-
-		// Remove key.(without subkey & history)
-		if(!Remove(*ppKey, keylength, false, NULL, true)){
-			ERR_K2HPRN("Could not remove poped key, but continue...");
+	bool	result		= true;
+	bool	is_found	= true;
+	bool	is_expired	= false;
+	for(result = true, is_found = true, is_expired = false; result && is_found; is_expired = false){
+		if(false == (result = PopQueueEx(byMark, marklength, is_found, is_expired, ppKey, keylength, ppValue, vallength, ppAttrs, encpass))){
+			ERR_K2HPRN("Something error occurred during poping from queue.");
+		}else{
+			if(!is_expired && is_found){
+				break;
+			}
 		}
 		K2H_Free(*ppKey);
-		keylength = 0;
-		return false;
+		K2H_Free(*ppValue);
+		if(ppAttrs){
+			K2H_Delete(*ppAttrs);
+		}
 	}
-	vallength = static_cast<size_t>(tmpvallen);
-
-	// Remove key.(without subkey & history)
-	if(!Remove(*ppKey, keylength, false, NULL, true)){
-		ERR_K2HPRN("Could not remove poped key, but continue...");
-	}
-	return true;
+	return result;
 }
 
 int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned int count, bool rmkeyval, k2h_q_remove_trial_callback fp, void* pExtData, const char* encpass)
@@ -949,262 +1320,419 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 	}
 	K2HFILE_UPDATE_CHECK(this);
 
-	int	removed_count = 0;
-	if(0 == count){
-		return removed_count;
-	}
+	int				removed_count	= 0;
+	unsigned char*	ptopkey			= NULL;
+	size_t			topkeylen		= 0;
 
-	// [NOTE]
-	// This method keeps locking CKIndex area during some operation.
-	// So we need to lock current mask area for escaping deadlock.
-	//
-	K2HLock	ALObjCMask(ShmFd, Rel(&(pHead->cur_mask)), K2HLock::RWLOCK);		// LOCK
+	for(unsigned int cnt = 0; cnt < count; ++cnt){
+		if(!ptopkey){
+			// Case of removing from top of queue
 
-	// Lock cindex for writing marker.
-	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
+			//--------------------------------------
+			// Read marker without WRITE LOCK
+			//--------------------------------------
+			PBK2HMARKER				before_marker	= GetMarker(byMark, marklength);
+			const unsigned char*	before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
+			size_t					before_startlen	= before_marker ? before_marker->marker.startlen : 0;
 
-	K2HLock		ALObjCKI(K2HLock::RWLOCK);			// LOCK
-	PCKINDEX	pCKIndex;
-	if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI))){
-		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
-		return -1;
-	}
-
-	// Read current marker.(without checking expire)
-	unsigned char*	pmkval	= NULL;
-	ssize_t			mkvallength;
-	if(-1 == (mkvallength = Get(byMark, marklength, &pmkval, false))){
-		// There is no marker
-		return removed_count;
-	}
-
-	PBK2HMARKER		pmarker = reinterpret_cast<PBK2HMARKER>(pmkval);
-	size_t			marklen = static_cast<size_t>(mkvallength);
-
-	// Check current marker size
-	if(marklen != (sizeof(K2HMARKER) + pmarker->marker.startlen + pmarker->marker.endlen)){
-		ERR_K2HPRN("The marker is not same size which is calculated.");
-		K2H_Free(pmkval);
-		return -1;
-	}
-	if(K2HShm::IsEmptyK2HMarker(pmarker)){
-		// There is no data in queue
-		K2H_Free(pmkval);
-		return removed_count;
-	}
-
-	// Get start queue key
-	unsigned char*	pQueueKey	= k2hbindup((&(pmarker->byData[0]) + pmarker->marker.startoff), pmarker->marker.startlen);
-	size_t			qkeylen		= pmarker->marker.startlen;
-
-	// Remove loop
-	unsigned char*	pStartQKey	= NULL;
-    size_t			startqkeylen= 0;
-	unsigned char*	pLastQKey	= NULL;
-    size_t			lastqkeylen	= 0;
-	unsigned char*	pDataKey	= NULL;
-	ssize_t			datakeylen	= -1;
-	bool			is_rm_last	= false;
-	PK2HATTRPCK		pattrspck	= NULL;
-	int				attrspckcnt	= 0;
-	K2HQRMCBRES		res			= K2HQRMCB_RES_CON_RM;
-
-	for(unsigned int cnt = 0; cnt < count; cnt++){
-		pattrspck	= NULL;
-		attrspckcnt	= 0;
-
-		// Get data key( is queued by queue key ) with checking attribute
-		if(rmkeyval || fp){
-			if(-1 == (datakeylen = Get(pQueueKey, qkeylen, &pDataKey, true, encpass))){
-				// not found data key
-				WAN_K2HPRN("Could not get poped key value(one of case is unabling decrypt), something is wrong.");
+			if(!before_marker || !before_startkey || 0 == before_startlen){
+				// there is no marker or no start key of queue, it means no stacked key in queue.
+				K2H_Free(before_marker);
+				break;
 			}
-			// get attribute as structure array
-			k2h_get_attrs(reinterpret_cast<k2h_h>(this), pQueueKey, qkeylen, &pattrspck, &attrspckcnt);
-		}
 
-		// check by callback function
-		if(!fp){
-			res	= K2HQRMCB_RES_CON_RM;
-		}else{
-			if(!pQueueKey || -1 == datakeylen){
-				// not found data key
-				WAN_K2HPRN("There is no poped key value, so remove this key is automatically.");
-				res = K2HQRMCB_RES_CON_RM;
+			// Get subkeys in current start key for next marker's start key(without checking attribute)
+			K2HSubKeys*				psubkeys	= GetSubKeys(before_startkey, before_startlen, false);
+			const unsigned char*	pnextstart	= NULL;
+			size_t					nextstartLen= 0;
+			if(psubkeys){
+				K2HSubKeys::iterator	iter = psubkeys->begin();
+				if(iter != psubkeys->end()){
+					pnextstart	= iter->pSubKey;
+					nextstartLen= iter->length;
+				}
+			}
 
-			}else{
-				// found data key -> check by callback
-				if(K2HQRMCB_RES_ERROR == (res = fp(pDataKey, static_cast<size_t>(datakeylen), pattrspck, attrspckcnt, pExtData))){
-					// Stop loop ASSAP.
-					if(pLastQKey){
-						// replace last key's subkey as now queue key.
-						if(0 < removed_count){
-							K2HSubKeys		k2hsubkeys;
-							unsigned char*	bySubkeys = NULL;
-							size_t			skeylength= 0UL;
+			// Get attribute and check expire(convert to binary structure for callback)
+			PK2HATTRPCK	pattrspck	= NULL;
+			int			attrspckcnt	= 0;
+			if(fp){
+				K2HAttrs*	pKeyAttrs;
+				if(NULL != (pKeyAttrs = GetAttrs(before_startkey, before_startlen))){
+					pattrspck = k2h_cvt_attrs_to_bin(pKeyAttrs, attrspckcnt);
+					K2H_Delete(pKeyAttrs);
+				}
+			}
 
-							k2hsubkeys.insert(pQueueKey, qkeylen);
-							if(!k2hsubkeys.Serialize(&bySubkeys, skeylength)){
-								// error...
-								ERR_K2HPRN("Failed to serialize subkey in closing, thus broken queue and leaked...");
-							}else{
-								// replace
-								if(!ReplaceSubkeys(pLastQKey, lastqkeylen, bySubkeys, skeylength)){
-									// error...
-									ERR_K2HPRN("Failed to insert now queue key into last queue key's subkey in closing, thus broken queue and leaked...");
-								}
-							}
-							K2H_Free(bySubkeys);
-						}
-					}
-					K2H_Free(pLastQKey);
+			// Get value(with checking attribute)
+			unsigned char*	pTmpValue = NULL;
+			ssize_t			tmpvallen = 0;
+			if(rmkeyval){
+				if(-1 == (tmpvallen = Get(before_startkey, before_startlen, &pTmpValue, true, encpass))){
+					MSG_K2HPRN("Could not get read key value(there is no value or key is expired.)");
+					tmpvallen = 0;
+				}
+			}
+
+			// check by callback function
+			K2HQRMCBRES	res = K2HQRMCB_RES_CON_RM;			// default(if null == fp)
+			if(fp && pTmpValue){
+				// pTmpValue(Poped key's value) is data key for callback
+				if(K2HQRMCB_RES_ERROR == (res = fp(pTmpValue, static_cast<size_t>(tmpvallen), pattrspck, attrspckcnt, pExtData))){
+					// Stop loop
+					K2H_Free(before_marker);
 					k2h_free_attrpack(pattrspck, attrspckcnt);
-
-					if(!pStartQKey){
-						pStartQKey	= pQueueKey;
-						startqkeylen= qkeylen;
-						pQueueKey	= NULL;
-						qkeylen		= 0;
-					}
-					K2H_Free(pDataKey);
-					datakeylen = -1;
+					K2H_Delete(psubkeys);
+					K2H_Free(pTmpValue);
 					break;
 				}
 			}
-		}
-		k2h_free_attrpack(pattrspck, attrspckcnt);
+			k2h_free_attrpack(pattrspck, attrspckcnt);
 
-		// Get next queue key in queued key's subkey.(do not check attribute for no expire)
-		K2HSubKeys*		psubkeys;
-		unsigned char*	pNextQKey	= NULL;
-		ssize_t			nextqkeylen	= 0;
-		if(NULL != (psubkeys = GetSubKeys(pQueueKey, qkeylen, false))){
-			// Check subkeys
-			K2HSubKeys::iterator iter = psubkeys->begin();
-			if(iter != psubkeys->end()){
-				pNextQKey	= k2hbindup(iter->pSubKey, iter->length);
-				nextqkeylen	= iter->length;
-			}else{
-				// Current key does not have any subkey.
-			}
-		}else{
-			// There is no key nor subkeys
-		}
-		K2H_Delete(psubkeys);
+			//--------------------------------------
+			// Removing
+			//--------------------------------------
+			if(K2HQRMCB_RES_CON_RM == res || K2HQRMCB_RES_FIN_RM == res){
+				//--------------------------------------
+				// Re-Read marker with WRITE LOCK
+				//--------------------------------------
+				// [NOTE]
+				// At first, we lock marker and call Set method which locks marker.
+				// Then twice locking for marker, but it does not deadlock because
+				// marker does not have subkeys
+				//
+				K2HLock					ALObjCKI_Marker(K2HLock::RWLOCK);	// auto release locking at leaving in this scope.
+				PBK2HMARKER				after_marker	= GetMarker(byMark, marklength, &ALObjCKI_Marker);
+				const unsigned char*	after_startkey	= after_marker ? &(after_marker->byData[after_marker->marker.startoff]) : NULL;
+				size_t					after_startlen	= after_marker ? after_marker->marker.startlen : 0;
+				if(!after_marker){
+					MSG_K2HPRN("After reading marker, the marker is empty or wrong size.");
 
-		// Remove or Set last/start queue key
-		if(K2HQRMCB_RES_CON_RM == res || K2HQRMCB_RES_FIN_RM == res){
-			// Remove data key and it's value from k2hash
-			if(rmkeyval){
-				if(pDataKey){
-					if(!Remove(pDataKey, static_cast<size_t>(datakeylen), true)){			// with attributes
+					K2H_Free(before_marker);
+					K2H_Free(after_marker);
+					K2H_Delete(psubkeys);
+					K2H_Free(pTmpValue);
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+
+				// Check read key name, compare it and before reading key name.
+				if(0 != k2hbincmp(before_startkey, before_startlen, after_startkey, after_startlen)){
+					MSG_K2HPRN("Different read key name before and after reading, thus retry from first.");
+
+					K2H_Free(before_marker);
+					K2H_Free(after_marker);
+					K2H_Delete(psubkeys);
+					K2H_Free(pTmpValue);
+					ALObjCKI_Marker.Unlock();								// manually unlock
+					continue;
+				}
+
+				// Make new next K2HMaker
+				PBK2HMARKER	pnewmarker;
+				size_t		newmarklen	= 0;
+				if(NULL == (pnewmarker = K2HShm::InitK2HMarker(newmarklen, pnextstart, nextstartLen, (0 == after_marker->marker.endlen ? NULL : (&(after_marker->byData[0]) + after_marker->marker.endoff)), after_marker->marker.endlen))){
+					ERR_K2HPRN("Something error is occurred to make new marker.");
+
+					K2H_Free(before_marker);
+					K2H_Free(after_marker);
+					K2H_Delete(psubkeys);
+					K2H_Free(pTmpValue);
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+
+				// Set new marker(marker does not have any attribute)
+				if(!Set(byMark, marklength, &(pnewmarker->byData[0]), newmarklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
+					ERR_K2HPRN("Could not set new marker.");
+
+					K2H_Free(before_marker);
+					K2H_Free(after_marker);
+					K2H_Delete(psubkeys);
+					K2H_Free(pTmpValue);
+					K2H_Free(pnewmarker);
+					break;													// automatically unlock ALObjCKI_Marker
+				}
+				K2H_Free(pnewmarker);
+
+				// Unlock marker
+				ALObjCKI_Marker.Unlock();									// manually unlock
+
+				// Remove key(without subkey & history)
+				if(!Remove(after_startkey, after_startlen, false, NULL, true)){
+					ERR_K2HPRN("Could not remove read key, but continue...");
+				}
+				K2H_Free(after_marker);
+
+				// Remove value(key) with attributes
+				if(rmkeyval && pTmpValue){
+					if(!Remove(pTmpValue, static_cast<size_t>(tmpvallen), true)){
 						ERR_K2HPRN("Could not remove key from k2hash, but continue...");
 					}
 				}
-			}
-			// Remove queue key
-			if(!Remove(pQueueKey, qkeylen, false, NULL, true)){								// without history
-				ERR_K2HPRN("Could not remove poped key, but continue...");
-			}
+				removed_count++;
 
-			// check last key
-			if(0 == k2hbincmp(pQueueKey, qkeylen, &(pmarker->byData[pmarker->marker.endoff]), pmarker->marker.endlen)){
-				is_rm_last = true;
+			}else{
+				// Set next key, it is not top of queue
+				ptopkey		= k2hbindup(before_startkey, before_startlen);
+				topkeylen	= before_startlen;
 			}
-			removed_count++;
+			K2H_Free(before_marker);
+			K2H_Delete(psubkeys);
+			K2H_Free(pTmpValue);
 
 		}else{
-			if(pLastQKey){
-				if(0 < removed_count){
-					// replace last key's subkey as now queue key.
-					K2HSubKeys		k2hsubkeys;
-					unsigned char*	bySubkeys = NULL;
-					size_t			skeylength= 0UL;
+			// Case of removing from middle of queue
 
-					k2hsubkeys.insert(pQueueKey, qkeylen);
-					if(!k2hsubkeys.Serialize(&bySubkeys, skeylength)){
-						// error...
-						ERR_K2HPRN("Failed to serialize subkey in closing, thus broken queue and leaked. but continue...");
-					}else{
-						// replace
-						if(!ReplaceSubkeys(pLastQKey, lastqkeylen, bySubkeys, skeylength)){
-							// error...
-							ERR_K2HPRN("Failed to insert now queue key into last queue key's subkey in closing, thus broken queue and leaked. but continue...");
-						}
-					}
-					K2H_Free(bySubkeys);
+			// check end of queue key
+			PBK2HMARKER				current_marker	= GetMarker(byMark, marklength);
+			const unsigned char*	current_endkey	= current_marker ? &(current_marker->byData[current_marker->marker.endoff]) : NULL;
+			size_t					current_endlen	= current_marker ? current_marker->marker.endlen : 0;
+			if(!current_marker || !current_endkey || 0 == current_endlen){
+				// there is no marker or no end key of queue, thus we do not check end key.
+				K2H_Free(current_marker);
+				break;
+			}
+			if(0 == k2hbincmp(current_endkey, current_endlen, ptopkey, topkeylen)){
+				MSG_K2HPRN("top normal key is end of queue key. thus stop removing.");
+				K2H_Free(current_marker);
+				break;
+			}
+
+			//--------------------------------------
+			// Read key without WRITE LOCK
+			//--------------------------------------
+			// Get subkeys in top key for next key(without checking attribute)
+			K2HSubKeys*				psubkeys	= GetSubKeys(ptopkey, topkeylen, false);
+			if(!psubkeys){
+				MSG_K2HPRN("reached end of key in top normal key during removing, so stop removing.");
+				K2H_Free(current_marker);
+				break;
+			}
+			K2HSubKeys::iterator	iter		= psubkeys->begin();
+			if(iter == psubkeys->end()){
+				MSG_K2HPRN("reached end of key in top normal key during removing, so stop removing.");
+				K2H_Free(current_marker);
+				break;
+			}
+			const unsigned char*	pnextkey	= iter->pSubKey;
+			size_t					nextkeyLen	= iter->length;
+
+			// check marker end key as same as top to next key
+			bool	is_update_marker = false;
+			if(0 == k2hbincmp(current_endkey, current_endlen, pnextkey, nextkeyLen)){
+				// need to update marker key
+				is_update_marker = true;
+			}
+
+			// Get attribute and check expire(convert to binary structure for callback)
+			PK2HATTRPCK	pattrspck	= NULL;
+			int			attrspckcnt	= 0;
+			if(fp){
+				K2HAttrs*	pKeyAttrs;
+				if(NULL != (pKeyAttrs = GetAttrs(pnextkey, nextkeyLen))){
+					pattrspck = k2h_cvt_attrs_to_bin(pKeyAttrs, attrspckcnt);
+					K2H_Delete(pKeyAttrs);
 				}
 			}
-			K2H_Free(pLastQKey);
 
-			if(!pStartQKey){
-				pStartQKey	= k2hbindup(pQueueKey, qkeylen);
-				startqkeylen= qkeylen;
+			// Get value(with checking attribute)
+			unsigned char*	pTmpValue = NULL;
+			ssize_t			tmpvallen = 0;
+			if(rmkeyval){
+				if(-1 == (tmpvallen = Get(pnextkey, nextkeyLen, &pTmpValue, true, encpass))){
+					MSG_K2HPRN("Could not get read key value(there is no value or key is expired.)");
+					tmpvallen = 0;
+				}
 			}
-			pLastQKey	= pQueueKey;
-			lastqkeylen	= qkeylen;
-			pQueueKey	= NULL;
-			qkeylen		= 0;
-		}
 
-		// Set next key
-		K2H_Free(pQueueKey);
-		pQueueKey	= pNextQKey;
-		qkeylen		= nextqkeylen;
-		pNextQKey	= NULL;
-		nextqkeylen	= 0;
+			// check by callback function
+			K2HQRMCBRES	res = K2HQRMCB_RES_CON_RM;			// default(if null == fp)
+			if(fp && pTmpValue){
+				// pTmpValue(Poped key's value) is data key for callback
+				if(K2HQRMCB_RES_ERROR == (res = fp(pTmpValue, static_cast<size_t>(tmpvallen), pattrspck, attrspckcnt, pExtData))){
+					// Stop loop
+					K2H_Free(current_marker);
+					k2h_free_attrpack(pattrspck, attrspckcnt);
+					K2H_Delete(psubkeys);
+					K2H_Free(pTmpValue);
+					break;
+				}
+			}
+			k2h_free_attrpack(pattrspck, attrspckcnt);
 
-		// check finish
-		if(K2HQRMCB_RES_FIN_RM == res || K2HQRMCB_RES_FIN_NOTRM == res || !pQueueKey){
-			break;
+			//--------------------------------------
+			// Removing
+			//--------------------------------------
+			if(K2HQRMCB_RES_CON_RM == res || K2HQRMCB_RES_FIN_RM == res){
+				// get next end key
+				K2HSubKeys*		pnextendskeys = GetSubKeys(pnextkey, nextkeyLen, false);
+
+				//--------------------------------------
+				// Re-Read Key with WRITE LOCK
+				//--------------------------------------
+				// [NOTE]
+				// At first, we lock key and call GetSubkeys/Set method which locks this key.
+				// Then twice locking for key, but it does not deadlock because
+				// we only read it, and remove subkeys.
+				//
+				K2HLock		ALObjCKI_TopKey(K2HLock::RWLOCK);				// auto release locking at leaving in this scope.
+				k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(ptopkey), topkeylen);
+				PCKINDEX	pCKIndex;
+				if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI_TopKey))){
+					MSG_K2HPRN("normal top queue key does not exist, probabry removing it.");
+
+					K2H_Free(current_marker);
+					K2H_Delete(psubkeys);
+					K2H_Delete(pnextendskeys);
+					K2H_Free(pTmpValue);
+					break;													// automatically unlock ALObjCKI_TopKey
+				}
+
+				// re-get subkeys and check it
+				K2HSubKeys*				presubkeys	= GetSubKeys(ptopkey, topkeylen, false);
+				if(!presubkeys){
+					MSG_K2HPRN("reached end of key in top normal key during removing, so stop removing.");
+					K2H_Free(current_marker);
+					K2H_Delete(psubkeys);
+					K2H_Delete(pnextendskeys);
+					K2H_Free(pTmpValue);
+					break;													// automatically unlock ALObjCKI_TopKey
+				}
+				K2HSubKeys::iterator	reiter		= presubkeys->begin();
+				if(reiter == presubkeys->end()){
+					MSG_K2HPRN("reached end of key in top normal key during removing, so stop removing.");
+					K2H_Free(current_marker);
+					K2H_Delete(psubkeys);
+					K2H_Delete(pnextendskeys);
+					K2H_Delete(presubkeys);
+					K2H_Free(pTmpValue);
+					break;													// automatically unlock ALObjCKI_TopKey
+				}
+				// compare subkey
+				if(0 == k2hbincmp(pnextkey, nextkeyLen, reiter->pSubKey, reiter->length)){
+					MSG_K2HPRN("top normal key is end of queue key. thus stop removing.");
+					K2H_Free(current_marker);
+					K2H_Delete(psubkeys);
+					K2H_Delete(pnextendskeys);
+					K2H_Delete(presubkeys);
+					K2H_Free(pTmpValue);
+					break;													// automatically unlock ALObjCKI_TopKey
+				}
+				K2H_Delete(presubkeys);
+
+				// replace subkeys to top key
+				unsigned char*	bySubkeys = NULL;
+				size_t			skeylength= 0UL;
+				pnextendskeys->Serialize(&bySubkeys, skeylength);
+				if(!ReplaceSubkeys(ptopkey, topkeylen, bySubkeys, skeylength)){
+					ERR_K2HPRN("Failed to insert new subkeys into normal top key in queue.");
+
+					K2H_Free(current_marker);
+					K2H_Delete(psubkeys);
+					K2H_Delete(pnextendskeys);
+					K2H_Free(pTmpValue);
+					K2H_Free(bySubkeys);
+					break;													// automatically unlock ALObjCKI_TopKey
+				}
+				K2H_Delete(pnextendskeys);
+				K2H_Free(bySubkeys);
+
+				// Unlock marker
+				ALObjCKI_TopKey.Unlock();									// manually unlock
+
+				// Remove key(without subkey & history)
+				if(!Remove(pnextkey, nextkeyLen, false, NULL, true)){
+					ERR_K2HPRN("Could not remove read key, but continue...");
+				}
+
+				// Remove value(key) with attributes
+				if(rmkeyval && pTmpValue){
+					if(!Remove(pTmpValue, static_cast<size_t>(tmpvallen), true)){
+						ERR_K2HPRN("Could not remove key from k2hash, but continue...");
+					}
+				}
+				removed_count++;
+
+				// special update marker end key if it's needed.
+				if(is_update_marker){
+					//--------------------------------------
+					// Read marker with WRITE LOCK
+					//--------------------------------------
+					// [NOTE]
+					// At first, we lock marker and call Set method which locks marker.
+					// Then twice locking for marker, but it does not deadlock because
+					// marker does not have subkeys
+					//
+					K2HLock					ALObjCKI_Marker(K2HLock::RWLOCK);	// auto release locking at leaving in this scope.
+					PBK2HMARKER				after_marker	= GetMarker(byMark, marklength, &ALObjCKI_Marker);
+					const unsigned char*	after_endkey	= after_marker ? &(after_marker->byData[after_marker->marker.endoff]) : NULL;
+					size_t					after_endlen	= after_marker ? after_marker->marker.endlen : 0;
+					if(!after_marker){
+						MSG_K2HPRN("After reading marker, the marker is empty or wrong size.");
+
+						K2H_Free(current_marker);
+						K2H_Free(after_marker);
+						K2H_Delete(psubkeys);
+						K2H_Free(pTmpValue);
+						break;													// automatically unlock ALObjCKI_Marker
+					}
+
+					// Check read key name, compare it and before reading key name.
+					if(0 != k2hbincmp(after_endkey, after_endlen, pnextkey, nextkeyLen)){
+						MSG_K2HPRN("Different read end key name before and after reading.");
+
+						K2H_Free(current_marker);
+						K2H_Free(after_marker);
+						K2H_Delete(psubkeys);
+						K2H_Free(pTmpValue);
+						break;													// automatically unlock ALObjCKI_Marker
+					}
+					// Make new next K2HMaker
+					PBK2HMARKER	pnewmarker;
+					size_t		newmarklen	= 0;
+					if(NULL == (pnewmarker = K2HShm::InitK2HMarker(newmarklen, (0 == after_marker->marker.startlen ? NULL : (&(after_marker->byData[0]) + after_marker->marker.startoff)), after_marker->marker.startlen, ptopkey, topkeylen))){
+						ERR_K2HPRN("Something error is occurred to make new marker.");
+
+						K2H_Free(current_marker);
+						K2H_Free(after_marker);
+						K2H_Delete(psubkeys);
+						K2H_Free(pTmpValue);
+						break;													// automatically unlock ALObjCKI_Marker
+					}
+
+					// Set new marker(marker does not have any attribute)
+					if(!Set(byMark, marklength, &(pnewmarker->byData[0]), newmarklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
+						ERR_K2HPRN("Could not set new marker.");
+
+						K2H_Free(current_marker);
+						K2H_Free(after_marker);
+						K2H_Delete(psubkeys);
+						K2H_Free(pTmpValue);
+						K2H_Free(pnewmarker);
+						break;													// automatically unlock ALObjCKI_Marker
+					}
+					K2H_Free(pnewmarker);
+					K2H_Free(after_marker);
+
+					// Unlock marker
+					ALObjCKI_Marker.Unlock();									// manually unlock
+				}
+			}else{
+				// Set next key, it is not top of queue
+				K2H_Free(ptopkey);
+				ptopkey		= k2hbindup(pnextkey, nextkeyLen);
+				topkeylen	= nextkeyLen;
+			}
+			K2H_Free(current_marker);
+			K2H_Delete(psubkeys);
+			K2H_Free(pTmpValue);
+
+			// check next top key
+			if(!ptopkey){
+				break;
+			}
 		}
 	}
-	if(!pStartQKey){
-		pStartQKey	= pQueueKey;
-		startqkeylen= qkeylen;
-		pQueueKey	= NULL;
-		qkeylen		= 0;
-	}
-	K2H_Free(pQueueKey);
-
-	// Reset marker
-	if(0 < removed_count){
-		if(pStartQKey){
-			// Update marker data
-			pmarker = K2HShm::UpdateK2HMarker(pmarker, marklen, pStartQKey, startqkeylen, false);
-		}else{
-			// There is no start queue key, it means the queue is empty.
-			K2H_Free(pmkval);
-			pmarker = K2HShm::InitK2HMarker(marklen);
-		}
-
-		if(is_rm_last && pLastQKey){
-			// end key is changed.
-			if(!ReplaceSubkeys(pLastQKey, lastqkeylen, NULL, 0)){
-				ERR_K2HPRN("Failed to remove subkey for end of queue key, but continue...");
-			}
-			// Update marker data
-			pmarker = K2HShm::UpdateK2HMarker(pmarker, marklen, pLastQKey, lastqkeylen, true);
-		}
-
-		if(pmarker){
-			// Set new marker
-			//
-			// marker does not have any attribute.
-			//
-			if(!Set(byMark, marklength, &(pmarker->byData[0]), marklen, NULL, true, NULL, NULL, NULL, K2hAttrOpsMan::OPSMAN_MASK_ALL)){
-				ERR_K2HPRN("Could not set new marker...");
-				removed_count = -1;
-			}
-		}else{
-			// Why...
-			ERR_K2HPRN("Somthing wrong about updating marker...");
-			removed_count = -1;
-		}
-		K2H_Free(pmarker);
-	}
-	K2H_Free(pStartQKey);
-	K2H_Free(pLastQKey);
+	K2H_Free(ptopkey);
 
 	return removed_count;
 }

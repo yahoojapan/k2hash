@@ -66,6 +66,7 @@ static inline void PRN(const char* format, ...)
 		va_end(ap);
 	}
 	fprintf(stdout, "\n");
+	fflush(stdout);
 }
 
 static inline void ERR(const char* format, ...)
@@ -78,6 +79,7 @@ static inline void ERR(const char* format, ...)
 		va_end(ap);
 	}
 	fprintf(stderr, "\n");
+	fflush(stderr);
 }
 
 #endif

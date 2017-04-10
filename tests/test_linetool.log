@@ -12,7 +12,7 @@ Attached paraemters:
 Permanent file(/tmp/k2hash_test_linetool.k2h) is completely initialied.
 
 
-K2HASH library Version 1.0.37 (commit: 735b5b0)
+K2HASH library Version 1.0.55 (commit: e8109f9)
 
 Copyright 2013 Yahoo! JAPAN corporation.
 
@@ -23,7 +23,7 @@ which Key can layer. And can support multi-processing and
 multi-thread, and is provided safely as available KVS.
 
 
-FULLOCK Version 1.0.17 (commit: cd05001)
+FULLOCK Version 1.0.24 (commit: eea4e33)
 
 Copyright 2015 Yahoo! JAPAN corporation.
 
@@ -155,8 +155,8 @@ sleep <second>                                               sleep seconds
 > l
 > fill testkey_ fillvalue 10
 > l
-+"testkey_-0" => "fillvalue"
 +"testkey_-1" => "fillvalue"
++"testkey_-0" => "fillvalue"
 +"testkey_-2" => "fillvalue"
 +"testkey_-3" => "fillvalue"
 +"testkey_-4" => "fillvalue"
@@ -178,8 +178,8 @@ sleep <second>                                               sleep seconds
 > set parentkey parentvalue
 > fillsub parentkey testsub_ fillsubvalue 10
 > l
-+"testsub_-6" => "fillsubvalue"
 +"testsub_-8" => "fillsubvalue"
++"testsub_-6" => "fillsubvalue"
 +"testsub_-7" => "fillsubvalue"
 +"testsub_-5" => "fillsubvalue"
 +"testsub_-4" => "fillsubvalue"
@@ -334,7 +334,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -408,7 +408,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 pass=testpass expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -596,7 +596,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -680,7 +680,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -1406,8 +1406,8 @@ sleep <second>                                               sleep seconds
 > l
 > fill testkey_ fillvalue 10
 > l
-+"testkey_-0" => "fillvalue"
 +"testkey_-1" => "fillvalue"
++"testkey_-0" => "fillvalue"
 +"testkey_-2" => "fillvalue"
 +"testkey_-3" => "fillvalue"
 +"testkey_-4" => "fillvalue"
@@ -1429,8 +1429,8 @@ sleep <second>                                               sleep seconds
 > set parentkey parentvalue
 > fillsub parentkey testsub_ fillsubvalue 10
 > l
-+"testsub_-6" => "fillsubvalue"
 +"testsub_-8" => "fillsubvalue"
++"testsub_-6" => "fillsubvalue"
 +"testsub_-7" => "fillsubvalue"
 +"testsub_-5" => "fillsubvalue"
 +"testsub_-4" => "fillsubvalue"
@@ -1585,7 +1585,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -1659,7 +1659,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 pass=testpass expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -1847,7 +1847,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -1931,7 +1931,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -2106,8 +2106,8 @@ sleep <second>                                               sleep seconds
 > l
 > fill testkey_ fillvalue 10
 > l
-+"testkey_-0" => "fillvalue"
 +"testkey_-1" => "fillvalue"
++"testkey_-0" => "fillvalue"
 +"testkey_-2" => "fillvalue"
 +"testkey_-3" => "fillvalue"
 +"testkey_-4" => "fillvalue"
@@ -2129,8 +2129,8 @@ sleep <second>                                               sleep seconds
 > set parentkey parentvalue
 > fillsub parentkey testsub_ fillsubvalue 10
 > l
-+"testsub_-6" => "fillsubvalue"
 +"testsub_-8" => "fillsubvalue"
++"testsub_-6" => "fillsubvalue"
 +"testsub_-7" => "fillsubvalue"
 +"testsub_-5" => "fillsubvalue"
 +"testsub_-4" => "fillsubvalue"
@@ -2285,7 +2285,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -2359,7 +2359,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 pass=testpass expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -2547,7 +2547,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -2631,7 +2631,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.

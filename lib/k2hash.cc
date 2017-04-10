@@ -1022,7 +1022,7 @@ bool k2h_free_keyarray(char** pkeys)
 }
 
 // Utility for converting
-static PK2HATTRPCK k2h_cvt_attrs_to_bin(K2HAttrs* pAttrs, int& attrspckcnt)
+PK2HATTRPCK k2h_cvt_attrs_to_bin(K2HAttrs* pAttrs, int& attrspckcnt)
 {
 	if(!pAttrs || 0 == pAttrs->size()){
 		attrspckcnt = 0;

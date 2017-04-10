@@ -22,6 +22,7 @@
 #define	K2HSHM_H
 
 #include <string>
+#include <vector>
 
 #include "k2hstructure.h"
 #include "k2hmmapinfo.h"
@@ -33,6 +34,7 @@
 #include "k2hfilemonitor.h"
 #include "k2hqueue.h"
 #include "k2hshmdirect.h"
+#include "k2htrans.h"
 
 //---------------------------------------------------------
 // Templates
@@ -85,6 +87,12 @@ class K2HAttrs;
 class K2HIterator;
 class K2HDAccess;
 class K2HDALock;
+class K2HTransaction;
+
+//---------------------------------------------------------
+// Typedefs
+//---------------------------------------------------------
+typedef std::vector<K2HTransaction*>		k2htransobjlist_t;
 
 //---------------------------------------------------------
 // Class K2HShm
@@ -218,7 +226,7 @@ class K2HShm
 
 		// Remove/Replace
 		bool Remove(const char* pKey, bool isSubKeys);
-		bool Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys = true) { return Remove(byKey, keylength, isSubKeys, NULL, false); }
+		bool Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys = true);
 		bool Remove(const char* pKey, const char* pSubKey);
 		bool Remove(const unsigned char* byKey, size_t keylength, const unsigned char* bySubKey, size_t sklength);
 		bool ReplaceAll(const unsigned char* byKey, size_t keylength, const unsigned char* byValue, size_t vallength, const unsigned char* bySubkeys, size_t sklength, const unsigned char* byAttrs, size_t attrlength);
@@ -261,7 +269,8 @@ class K2HShm
 		K2HLowOpsQueue* GetLowOpsQueueObj(bool is_fifo = true, const unsigned char* pref = NULL, size_t preflen = 0L);
 		bool UpdateStartK2HMarker(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength);
 		bool ReadQueue(const unsigned char* byMark, size_t marklength, unsigned char** ppKey, size_t& keylength, int pos = 0) const;
-		bool AddQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, bool is_fifo, bool update_chain = false, bool check_update_file = true);
+		bool AddQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, bool is_fifo);
+		bool PopQueueEx(const unsigned char* byMark, size_t marklength, bool& is_found, bool& is_expired, unsigned char** ppKey, size_t& keylength, unsigned char** ppValue, size_t& vallength, K2HAttrs** ppAttrs, const char* encpass);
 
 		// Dump
 		bool Dump(FILE* stream = stdout, int dumpmask = DUMP_KINDEX_ARRAY) const;
@@ -375,12 +384,16 @@ class K2HShm
 		// Set
 		PELEMENT AllocateElement(k2h_hash_t hash, k2h_hash_t subhash, const unsigned char* byKey, size_t keylength, const unsigned char* byValue, size_t vallength, const unsigned char* bySubKeys, size_t sublength, const unsigned char* byAttrs, size_t attrlength);
 
-		// Remove/Replace
-		bool Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys, char** ppUniqid, bool hismask = false);
-		bool Remove(PELEMENT pElement, const char* pSubKey, K2HLock& ALObjCKI);
-		bool Remove(PELEMENT pElement, const unsigned char* bySubKey, size_t length, K2HLock& ALObjCKI);
-		bool Remove(PELEMENT pElement, bool isSubKeys = true);
-		bool RemoveAllSubkeys(PELEMENT pElement, bool isRemoveSubKeyLists = true);
+		// Remove
+		bool Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys, char** ppUniqid, bool hismask = false);		// DO NOT USE : For only downward compatibility
+		bool RemoveEx(const unsigned char* byKey, size_t keylength, bool isSubKeys, K2HSubKeys*& pSubKeys, char** ppUniqid, bool hismask, k2htransobjlist_t* ptranslist, bool& is_check_updated);
+		bool RemoveEx(PELEMENT pElement, const unsigned char* bySubKey, size_t length, K2HLock& ALObjCKI, bool& is_check_updated);
+		bool RemoveEx(PELEMENT pElement, k2htransobjlist_t* ptranslist, bool& is_check_updated);
+		bool RemoveEx(const unsigned char* byKey, size_t keylength, k2htransobjlist_t* ptranslist, bool& is_check_updated);
+		bool RemoveSubkeys(K2HSubKeys* pSubKeys, k2htransobjlist_t* ptranslist, bool& is_check_updated);
+		bool GetSubKeys(PELEMENT pElement, K2HSubKeys*& pSubKeys);																// Using only for removing subkeys
+
+		// Replace
 		bool Replace(const unsigned char* byKey, size_t keylength, const unsigned char* byData, size_t dlength, int type);
 		bool ReplacePage(PELEMENT pElement, const char* pData, int type);
 		bool ReplacePage(PELEMENT pElement, const unsigned char* byData, size_t length, int type);
@@ -388,16 +401,17 @@ class K2HShm
 		bool ReplacePage(PELEMENT pElement, PPAGEHEAD pRelPageHead, size_t totallength, int type);
 
 		// Rename(for history)
-		bool RenameForHistory(const char* pKey, std::string* puniqid);
-		bool RenameForHistory(const unsigned char* byKey, size_t keylen, std::string* puniqid);
+		bool RenameForHistory(const unsigned char* byKey, size_t keylen, std::string* puniqid, k2htransobjlist_t* ptranslist);
 
 		// Direct get/set
 		PBALLEDATA GetElementToBinary(PELEMENT pAbsElement) const;
 		PK2HBIN GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, const struct timespec* pstartts, const struct timespec* pendts, const k2h_hash_t target_hash, const k2h_hash_t target_max_hash, const k2h_hash_t old_hash, const k2h_hash_t old_max_hash, const long target_hash_range, bool is_expire_check) const;
 
 		// Queue
-		PBK2HMARKER PopK2HMarker(PBK2HMARKER pmarker, size_t& marklen, unsigned char** ppKey, size_t& keylength, K2HAttrs** ppAttrs);
+		PBK2HMARKER GetMarker(const unsigned char* byMark, size_t marklength, K2HLock* pALObjCKI = NULL) const;
 		bool AddQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, const unsigned char* byValue, size_t vallength, bool is_fifo, K2hAttrOpsMan::ATTRINITTYPE attrtype, K2HAttrs* pAttrs, const char* encpass, const time_t* expire);
+		bool AddFifoQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, const unsigned char* byValue, size_t vallength, K2hAttrOpsMan::ATTRINITTYPE attrtype, K2HAttrs* pAttrs, const char* encpass, const time_t* expire);
+		bool AddLifoQueue(const unsigned char* byMark, size_t marklength, const unsigned char* byKey, size_t keylength, const unsigned char* byValue, size_t vallength, K2hAttrOpsMan::ATTRINITTYPE attrtype, K2HAttrs* pAttrs, const char* encpass, const time_t* expire);
 
 		// Dumping
 		bool DumpFreeElements(FILE* stream, int nest, PELEMENT pRelElements, long count) const;
