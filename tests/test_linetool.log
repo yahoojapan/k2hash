@@ -334,7 +334,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -408,7 +408,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 pass=testpass expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -596,7 +596,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -680,7 +680,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -1585,7 +1585,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -1659,7 +1659,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 pass=testpass expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -1847,7 +1847,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -1931,7 +1931,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -2285,7 +2285,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -2359,7 +2359,7 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue5 pass=testpass expire=1
 > sleep 2
 > que count
- Data count in Queue : 1
+ Data count in Queue : 5
 
 > que empty
  Queue is NOT empty.
@@ -2547,7 +2547,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.
@@ -2631,7 +2631,7 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > sleep 2
 > kque count
- Data count in Key Queue : 1
+ Data count in Key Queue : 5
 
 > kque empty
  Key Queue is NOT empty.

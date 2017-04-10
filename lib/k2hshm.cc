@@ -2134,7 +2134,7 @@ bool K2HShm::Set(const unsigned char* byKey, size_t keylength, const unsigned ch
 		string			parent_uid;
 		{
 			char*	pUniqId = NULL;
-			if(!RemoveEx(byKey, keylength, isRemoveSubKeys, &pRmSubKeys, &pUniqId, false, &translist, is_check_updated)){
+			if(!RemoveEx(byKey, keylength, isRemoveSubKeys, pRmSubKeys, &pUniqId, false, &translist, is_check_updated)){
 				ERR_K2HPRN("Could not remove(or rename for history) key.");
 				return false;
 			}
@@ -2532,7 +2532,7 @@ bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys
 	k2htransobjlist_t	toptranslist;
 	K2HSubKeys*			pSubKeys		= NULL;
 	bool				is_check_updated = false;
-	if(!RemoveEx(byKey, keylength, isSubKeys, &pSubKeys, ppUniqid, hismask, &toptranslist, is_check_updated)){
+	if(!RemoveEx(byKey, keylength, isSubKeys, pSubKeys, ppUniqid, hismask, &toptranslist, is_check_updated)){
 		return false;
 	}
 	// remove subkeys and put transaction
@@ -2639,7 +2639,7 @@ bool K2HShm::RemoveEx(PELEMENT pElement, const unsigned char* bySubKey, size_t l
 
 	// Remove subkey
 	k2htransobjlist_t	translist;
-	if(!RemoveEx(bySubKey, length, true, &pSubKeys, NULL, false, &translist, is_check_updated)){
+	if(!RemoveEx(bySubKey, length, true, pSubKeys, NULL, false, &translist, is_check_updated)){
 		ERR_K2HPRN("Failed to remove subkey");
 		return false;
 	}
@@ -2741,7 +2741,7 @@ bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, k2htransobjl
 
 	// Remove top key
 	K2HSubKeys*		pSubKeys = NULL;
-	if(!RemoveEx(byKey, keylength, true, &pSubKeys, NULL, false, ptranslist, is_check_updated)){
+	if(!RemoveEx(byKey, keylength, true, pSubKeys, NULL, false, ptranslist, is_check_updated)){
 		ERR_K2HPRN("Failed to remove key");
 		return false;
 	}
@@ -2771,7 +2771,7 @@ bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, k2htransobjl
 	return true;
 }
 
-bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, bool isSubKeys, K2HSubKeys** ppSubKeys, char** ppUniqid, bool hismask, k2htransobjlist_t* ptranslist, bool& is_check_updated)
+bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, bool isSubKeys, K2HSubKeys*& pSubKeys, char** ppUniqid, bool hismask, k2htransobjlist_t* ptranslist, bool& is_check_updated)
 {
 	if(!byKey || 0 == keylength){
 		ERR_K2HPRN("Some parameters are wrong.");
@@ -2806,7 +2806,7 @@ bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, bool isSubKe
 
 	// get(keep) subkeys if needs
 	if(isSubKeys){
-		if(!GetSubKeys(pElement, ppSubKeys)){
+		if(!GetSubKeys(pElement, pSubKeys)){
 			MSG_K2HPRN("Failed to get subkeys, but continue...");
 		}
 	}
@@ -2880,7 +2880,7 @@ bool K2HShm::RemoveSubkeys(K2HSubKeys* pSubKeys, k2htransobjlist_t* ptranslist, 
 	return true;
 }
 
-bool K2HShm::GetSubKeys(PELEMENT pElement, K2HSubKeys** ppSubKeys)
+bool K2HShm::GetSubKeys(PELEMENT pElement, K2HSubKeys*& pSubKeys)
 {
 	if(!pElement){
 		ERR_K2HPRN("PELEMENT is NULL.");
@@ -2889,9 +2889,6 @@ bool K2HShm::GetSubKeys(PELEMENT pElement, K2HSubKeys** ppSubKeys)
 	if(!IsAttached()){
 		ERR_K2HPRN("There is no attached K2HASH.");
 		return false;
-	}
-	if(!ppSubKeys){
-		return true;
 	}
 
 	// get subkey page/array
@@ -2905,16 +2902,16 @@ bool K2HShm::GetSubKeys(PELEMENT pElement, K2HSubKeys** ppSubKeys)
 	K2H_Delete(pTgSKeyPage);
 
 	// add subkeys to buffer
-	if(*ppSubKeys){
+	if(pSubKeys){
 		// add this element's subkeys to subkey buffer delivered
 		for(K2HSubKeys::iterator iter = pTgSubKeys->begin(); iter != pTgSubKeys->end(); iter = pTgSubKeys->erase(iter)){
-			if((*ppSubKeys)->end() == (*ppSubKeys)->insert(iter->pSubKey, iter->length)){
+			if(pSubKeys->end() == pSubKeys->insert(iter->pSubKey, iter->length)){
 				WAN_K2HPRN("Failed to add subkey to subkey list stack, but continue...");
 			}
 		}
 	}else{
 		// The subkey delivered is empty, so that this element's subkey list to set it.
-		*ppSubKeys	= pTgSubKeys;
+		pSubKeys	= pTgSubKeys;
 		pTgSubKeys	= NULL;
 	}
 	K2H_Delete(pTgSubKeys);

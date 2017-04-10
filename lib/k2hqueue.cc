@@ -540,7 +540,7 @@ bool K2HLowOpsQueue::Push(const unsigned char* bydata, size_t datalen, K2HAttrs*
 		ERR_K2HPRN("This object is not safe.");
 		return false;
 	}
-	return pK2HShm->AddQueue(marker, marker_len, bydata, datalen, isFIFO, false);	// [NOTE] not update chain, check update file
+	return pK2HShm->AddQueue(marker, marker_len, bydata, datalen, isFIFO);
 }
 
 //
