@@ -35,11 +35,13 @@ class K2HTransaction : public K2HCommandArchive
 {
 	protected:
 		const K2HShm*	pShm;
+		bool			IsStackMode;
 
 	public:
-		K2HTransaction(const K2HShm* pk2hshm = NULL);
+		K2HTransaction(const K2HShm* pk2hshm = NULL, bool isstack = false);
 		virtual ~K2HTransaction();
 
+		bool Put(void);
 		bool IsEnable(void) const;
 
 	protected:

@@ -1001,21 +1001,36 @@ bool K2HShm::MoveElementToUpperMask(PELEMENT pElement, PCKINDEX pSrcCKIndex, PCK
 
 	// Does the element have children?
 	if(pElement->same){
-		if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->same)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
-			ERR_K2HPRN("Failed to move same cildren elements.");
-			return false;
+		if(pElement->same == pElement){
+			WAN_K2HPRN("Found element->same is as same as itself, thus try to repair it.");
+			pElement->same = NULL;
+		}else{
+			if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->same)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
+				ERR_K2HPRN("Failed to move same cildren elements.");
+				return false;
+			}
 		}
 	}
 	if(pElement->small){
-		if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->small)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
-			ERR_K2HPRN("Failed to move small cildren elements.");
-			return false;
+		if(pElement->small == pElement){
+			WAN_K2HPRN("Found element->small is as same as itself, thus try to repair it.");
+			pElement->small = NULL;
+		}else{
+			if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->small)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
+				ERR_K2HPRN("Failed to move small cildren elements.");
+				return false;
+			}
 		}
 	}
 	if(pElement->big){
-		if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->big)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
-			ERR_K2HPRN("Failed to move big cildren elements.");
-			return false;
+		if(pElement->big == pElement){
+			WAN_K2HPRN("Found element->big is as same as itself, thus try to repair it.");
+			pElement->big = NULL;
+		}else{
+			if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->big)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
+				ERR_K2HPRN("Failed to move big cildren elements.");
+				return false;
+			}
 		}
 	}
 
@@ -2100,149 +2115,215 @@ bool K2HShm::Set(const unsigned char* byKey, size_t keylength, const unsigned ch
 	}
 	K2HFILE_UPDATE_CHECK(this);
 
-	// make hash
-	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
-	k2h_hash_t	subhash	= K2H_2ND_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
-
-	// make strarr to buffer
-	unsigned char*	bySubKeys = NULL;			// Do not change this value for transaction in this function end.
-	size_t			sublength = 0UL;			// Do not change this value for transaction in this function end.
-	if(pSubKeys && !pSubKeys->Serialize(&bySubKeys, sublength)){
-		ERR_K2HPRN("Could not set subkeys binary data from subkeys object.");
-		return false;
-	}
-
-	// Lock CKIndex before remove key
+	// [NOTE]
+	// We remove key at first, and free lock to reget lock.
+	// Then there is a possibility that the same key may be created by another process
+	// in a very short period of time after deleting the key and creating a new key.
+	// In the case of this conflict, redo from the key deletion.
 	//
-	// For attribute, we have to remove existed key for making history key name.
-	// Thus we must lock during the period from removing key to remaking it.
-	//
-	K2HLock		ALObjCKI(K2HLock::RWLOCK);		// LOCK
-	PCKINDEX	pCKIndex;
-	if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI))){
-		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
-		K2H_Free(bySubKeys);
-		return false;
-	}
-
-	// remove old key if existed.(we need uniqid before make attr binary data)
-	string		parent_uid;
-	{
-		char*	pUniqId = NULL;
-		if(!Remove(byKey, keylength, isRemoveSubKeys, &pUniqId)){
-			ERR_K2HPRN("Could not remove(or rename for history) key.");
-			return false;
-		}
-		if(pUniqId){
-			parent_uid = pUniqId;
-			K2H_Free(pUniqId);
-		}
-	}
-
-	// make attribute
-	K2hAttrOpsMan	attrman;					// Do not destroy this object until set value to page.
-	unsigned char*	byAttrs		= NULL;			// Do not change this value for transaction in this function end.
-	size_t			attrlength	= 0UL;			// Do not change this value for transaction in this function end.
-	{
-		K2HAttrs		attrs;
-		if(!pAttrs){
-			pAttrs = &attrs;
-		}
-		if(!attrman.Initialize(this, byKey, keylength, byValue, vallength, encpass, expire, attrtype)){
-			ERR_K2HPRN("Could not initialize attribute manager object.");
-			K2H_Free(bySubKeys);
-			return false;
-		}
-		if(!attrman.UpdateAttr(*pAttrs)){
-			ERR_K2HPRN("Failed to update attributes.");
-			K2H_Free(bySubKeys);
-			return false;
-		}
-
-		const char*	pOldUid = attrman.IsUpdateUniqID();
-		if(ISEMPTYSTR(pOldUid)){
-			if(!parent_uid.empty()){
-				// [NOTE]
-				// there is no parent uniqid in attrs after updating, but we have it after removing.
-				// so force to set parent uniqid and remake uniqid.
-				//
-				if(!attrman.DirectSetUniqId(*pAttrs, parent_uid.c_str())){
-					ERR_K2HPRN("Could not update uniqid and set old uniqid to attrs object.");
-					K2H_Free(bySubKeys);
-					return false;
-				}
-			}else{
-				// [NOTE]
-				// If history is OFF, both parent_uid and pOldUid are empty.
-				// Thus come here, and nothing to do.
+	k2htransobjlist_t	translist;
+	bool				is_check_updated = true;
+	while(true){
+		// remove old key if existed.(we need uniqid before make attr binary data)
+		//
+		// [NOTE]
+		// "K2HFILE_UPDATE_CHECK(this)" is called in Remove() method.
+		// Thus we do not need call it here. 
+		//
+		K2HSubKeys*		pRmSubKeys = NULL;
+		string			parent_uid;
+		{
+			char*	pUniqId = NULL;
+			if(!RemoveEx(byKey, keylength, isRemoveSubKeys, &pRmSubKeys, &pUniqId, false, &translist, is_check_updated)){
+				ERR_K2HPRN("Could not remove(or rename for history) key.");
+				return false;
 			}
+			if(pUniqId){
+				parent_uid = pUniqId;
+				K2H_Free(pUniqId);
+			}
+		}
+
+		// make subkeys to buffer
+		unsigned char*	bySubKeys = NULL;			// Do not change this value for transaction in this function end.
+		size_t			sublength = 0UL;			// Do not change this value for transaction in this function end.
+		if(isRemoveSubKeys && pRmSubKeys && pSubKeys){
+			// If new subkeys list has subkey which is listed for removing,
+			// that subkey retrive from removing list.
+			for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); ++iter){
+				if(pRmSubKeys->end() != pRmSubKeys->find(iter->pSubKey, iter->length)){
+					pRmSubKeys->erase(iter->pSubKey, iter->length);
+				}
+			}
+			if(0 == pRmSubKeys->size()){
+				K2H_Delete(pRmSubKeys);
+			}
+		}
+		if(pSubKeys && !pSubKeys->Serialize(&bySubKeys, sublength)){
+			ERR_K2HPRN("Could not set subkeys binary data from subkeys object.");
+			K2H_Delete(pRmSubKeys);
+			return false;
+		}
+
+		// make hash
+		k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
+		k2h_hash_t	subhash	= K2H_2ND_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
+
+		// Lock CKIndex before remove key
+		//
+		// For attribute, we have to remove existed key for making history key name.
+		// Thus we must lock during the period from removing key to remaking it.
+		//
+		K2HLock		ALObjCKI(K2HLock::RWLOCK);		// LOCK
+		PCKINDEX	pCKIndex;
+		if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI))){
+			ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
+			K2H_Free(bySubKeys);
+			K2H_Delete(pRmSubKeys);
+			return false;
 		}else{
-			if(parent_uid != pOldUid){
+			// check removed key existing.
+			PELEMENT	pElementList;
+			if(NULL != (pElementList = GetElementList(pCKIndex, hash, subhash)) && NULL != GetElement(pElementList, byKey, keylength)){
 				// [NOTE]
-				// there is parent uniqid in attrs after updating, but that uniqid is different from the uniqid after removing.
-				// so force to set parent uniqid and remake uniqid.
+				// found removed key which probabry create for unlocking time.
+				// thus retry.
+				// Notice about translist is kept.
 				//
-				if(!attrman.DirectSetUniqId(*pAttrs, parent_uid.c_str())){
-					ERR_K2HPRN("Could not update uniqid and set old uniqid to attrs object.");
-					K2H_Free(bySubKeys);
-					return false;
-				}
-			}else{
-				// parent uniqid is same, so nothing to do because of aready setting it in attrs.
+				MSG_K2HPRN("Created same key during removing it to locking.");
+				ALObjCKI.Unlock();					// Unlock
+				parent_uid.clear();
+				K2H_Delete(pRmSubKeys);
+				K2H_Free(bySubKeys);
+				sublength = 0UL;
+				continue;
 			}
 		}
 
-		if(!pAttrs->Serialize(&byAttrs, attrlength)){
-			ERR_K2HPRN("Could not set binary array from attribute list.");
-			K2H_Free(bySubKeys);
-			return false;
+		// make attribute
+		K2hAttrOpsMan	attrman;					// Do not destroy this object until set value to page.
+		unsigned char*	byAttrs		= NULL;			// Do not change this value for transaction in this function end.
+		size_t			attrlength	= 0UL;			// Do not change this value for transaction in this function end.
+		{
+			K2HAttrs		attrs;
+			if(!pAttrs){
+				pAttrs = &attrs;
+			}
+			if(!attrman.Initialize(this, byKey, keylength, byValue, vallength, encpass, expire, attrtype)){
+				ERR_K2HPRN("Could not initialize attribute manager object.");
+				K2H_Free(bySubKeys);
+				K2H_Delete(pRmSubKeys);
+				return false;
+			}
+			if(!attrman.UpdateAttr(*pAttrs)){
+				ERR_K2HPRN("Failed to update attributes.");
+				K2H_Free(bySubKeys);
+				K2H_Delete(pRmSubKeys);
+				return false;
+			}
+
+			const char*	pOldUid = attrman.IsUpdateUniqID();
+			if(ISEMPTYSTR(pOldUid)){
+				if(!parent_uid.empty()){
+					// [NOTE]
+					// there is no parent uniqid in attrs after updating, but we have it after removing.
+					// so force to set parent uniqid and remake uniqid.
+					//
+					if(!attrman.DirectSetUniqId(*pAttrs, parent_uid.c_str())){
+						ERR_K2HPRN("Could not update uniqid and set old uniqid to attrs object.");
+						K2H_Free(bySubKeys);
+						K2H_Delete(pRmSubKeys);
+						return false;
+					}
+				}else{
+					// [NOTE]
+					// If history is OFF, both parent_uid and pOldUid are empty.
+					// Thus come here, and nothing to do.
+				}
+			}else{
+				if(parent_uid != pOldUid){
+					// [NOTE]
+					// there is parent uniqid in attrs after updating, but that uniqid is different from the uniqid after removing.
+					// so force to set parent uniqid and remake uniqid.
+					//
+					if(!attrman.DirectSetUniqId(*pAttrs, parent_uid.c_str())){
+						ERR_K2HPRN("Could not update uniqid and set old uniqid to attrs object.");
+						K2H_Free(bySubKeys);
+						K2H_Delete(pRmSubKeys);
+						return false;
+					}
+				}else{
+					// parent uniqid is same, so nothing to do because of aready setting it in attrs.
+				}
+			}
+
+			if(!pAttrs->Serialize(&byAttrs, attrlength)){
+				ERR_K2HPRN("Could not set binary array from attribute list.");
+				K2H_Free(bySubKeys);
+				K2H_Delete(pRmSubKeys);
+				return false;
+			}
+			byValue = attrman.GetValue(vallength);		// get (new) value through attribute manager.
 		}
-		byValue = attrman.GetValue(vallength);		// get (new) value through attribute manager.
-	}
 
-	// make new element
-	PELEMENT	pNewElement;
-	if(NULL == (pNewElement = AllocateElement(hash, subhash, byKey, keylength, byValue, vallength, bySubKeys, sublength, byAttrs, attrlength))){
-		ERR_K2HPRN("Failed to allocate new element and to set datas to it.");
-		K2H_Free(bySubKeys);
-		K2H_Free(byAttrs);
-		return false;
-	}
-
-	// Insert new element
-	if(pCKIndex->element_list){
-		if(!InsertElement(static_cast<PELEMENT>(Abs(pCKIndex->element_list)), pNewElement)){
-			ERR_K2HPRN("Failed to insert element");
+		// make new element
+		PELEMENT	pNewElement;
+		if(NULL == (pNewElement = AllocateElement(hash, subhash, byKey, keylength, byValue, vallength, bySubKeys, sublength, byAttrs, attrlength))){
+			ERR_K2HPRN("Failed to allocate new element and to set datas to it.");
 			K2H_Free(bySubKeys);
 			K2H_Free(byAttrs);
-			FreeElement(pNewElement);
+			K2H_Delete(pRmSubKeys);
 			return false;
 		}
-	}else{
-		pCKIndex->element_list = reinterpret_cast<PELEMENT>(Rel(pNewElement));
-	}
-	pCKIndex->element_count	+= 1UL;
 
-	ALObjCKI.Unlock();								// Unlock
+		// Insert new element
+		if(pCKIndex->element_list){
+			if(!InsertElement(static_cast<PELEMENT>(Abs(pCKIndex->element_list)), pNewElement)){
+				ERR_K2HPRN("Failed to insert element");
+				K2H_Free(bySubKeys);
+				K2H_Free(byAttrs);
+				FreeElement(pNewElement);
+				K2H_Delete(pRmSubKeys);
+				return false;
+			}
+		}else{
+			pCKIndex->element_list = reinterpret_cast<PELEMENT>(Rel(pNewElement));
+		}
+		pCKIndex->element_count	+= 1UL;
 
-	// check element count in ckey for increasing cur_mask(expanding key/ckey area)
-	if(!CheckExpandingKeyArea(pCKIndex)){					// Do not care for locking
-		ERR_K2HPRN("Something error occurred by checking/expanding key/ckey area.");
+		ALObjCKI.Unlock();								// Unlock
+
+		// transaction for setting new key
+		K2HTransaction*	ptransobj = new K2HTransaction(this, true);		// stacking mode
+		if(ptransobj->IsEnable()){
+			if(!ptransobj->SetAll(byKey, keylength, byValue, vallength, bySubKeys, sublength, byAttrs, attrlength)){
+				WAN_K2HPRN("Failed to put setting transaction.");
+				K2H_Delete(ptransobj);
+			}else{
+				translist.push_back(ptransobj);							// stacked
+			}
+		}else{
+			K2H_Delete(ptransobj);
+		}
 		K2H_Free(bySubKeys);
 		K2H_Free(byAttrs);
-		return false;
-	}
 
-	// transaction
-	K2HTransaction	transobj(this);
-	if(!transobj.SetAll(byKey, keylength, byValue, vallength, bySubKeys, sublength, byAttrs, attrlength)){
-		WAN_K2HPRN("Failed to put setting transaction.");
-	}
-	K2H_Free(bySubKeys);
-	K2H_Free(byAttrs);
+		// remove subkeys and put transaction
+		if(!RemoveSubkeys(pRmSubKeys, &translist, is_check_updated)){
+			WAN_K2HPRN("Failed to remove subkeys or put transaction for removing subkeys.");
+		}
+		K2H_Delete(pRmSubKeys);
 
-	if(!UpdateTimeval()){
-		WAN_K2HPRN("Failed to update timeval for data update.");
+		if(!UpdateTimeval()){
+			WAN_K2HPRN("Failed to update timeval for data update.");
+		}
+
+		// check element count in ckey for increasing cur_mask(expanding key/ckey area)
+		if(!CheckExpandingKeyArea(pCKIndex)){					// Do not care for locking
+			ERR_K2HPRN("Something error occurred by checking/expanding key/ckey area.");
+			return false;
+		}
+		break;
 	}
 	return true;
 }
@@ -2431,20 +2512,77 @@ bool K2HShm::AddAttr(const unsigned char* byKey, size_t keylength, const unsigne
 //---------------------------------------------------------
 // Remove Methods
 //---------------------------------------------------------
-// [NOTICE]
-// Before calling this method, MUST LOCK ALObjCKI.
-// And ALObjCKI is unlocked in this method.
-//
-bool K2HShm::Remove(PELEMENT pElement, const char* pSubKey, K2HLock& ALObjCKI)
+bool K2HShm::Remove(const char* pKey, bool isSubKeys)
 {
-	return Remove(pElement, reinterpret_cast<const unsigned char*>(pSubKey), (pSubKey ? strlen(pSubKey) + 1 : 0UL), ALObjCKI);
+	return Remove(reinterpret_cast<const unsigned char*>(pKey), (pKey ? strlen(pKey) + 1 : 0UL), isSubKeys);
 }
 
-// [NOTICE]
-// Before calling this method, MUST LOCK ALObjCKI.
-// And ALObjCKI is unlocked in this method.
+bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys)
+{
+	return Remove(byKey, keylength, isSubKeys, NULL, false);
+}
+
 //
-bool K2HShm::Remove(PELEMENT pElement, const unsigned char* bySubKey, size_t length, K2HLock& ALObjCKI)
+// [NOTE]
+// hismask parameter is specified, this method does not make history for removing key.
+//
+bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys, char** ppUniqid, bool hismask)
+{
+	// remove keys
+	k2htransobjlist_t	toptranslist;
+	K2HSubKeys*			pSubKeys		= NULL;
+	bool				is_check_updated = false;
+	if(!RemoveEx(byKey, keylength, isSubKeys, &pSubKeys, ppUniqid, hismask, &toptranslist, is_check_updated)){
+		return false;
+	}
+	// remove subkeys and put transaction
+	bool	result = RemoveSubkeys(pSubKeys, &toptranslist, is_check_updated);
+
+	K2H_Delete(pSubKeys);
+	toptranslist.clear();
+
+	return result;
+}
+
+bool K2HShm::Remove(const char* pKey, const char* pSubKey)
+{
+	return Remove(reinterpret_cast<const unsigned char*>(pKey), pKey ? strlen(pKey) + 1 : 0UL, reinterpret_cast<const unsigned char*>(pSubKey), pSubKey ? strlen(pSubKey) + 1 : 0UL);
+}
+
+bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, const unsigned char* bySubKey, size_t sklength)
+{
+	if(!byKey || 0UL == keylength || !bySubKey || 0UL == sklength){
+		ERR_K2HPRN("Some parameters are wrong.");
+		return false;
+	}
+	if(!IsAttached()){
+		ERR_K2HPRN("There is no attached K2HASH.");
+		return false;
+	}
+	K2HFILE_UPDATE_CHECK(this);
+	bool	is_check_updated = true;
+
+	// make hash
+	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
+	k2h_hash_t	subhash	= K2H_2ND_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
+
+	// get element
+	K2HLock		ALObjCKI(K2HLock::RWLOCK);					// LOCK
+	PCKINDEX	pCKIndex;
+	PELEMENT	pElementList;
+	PELEMENT	pElement;
+	if(	NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI)) ||
+		NULL == (pElementList = GetElementList(pCKIndex, hash, subhash)) ||
+		NULL == (pElement = GetElement(pElementList, byKey, keylength)) )
+	{
+		// Not found
+		MSG_K2HPRN("Not found Key in k2hash.");
+		return true;
+	}
+	return RemoveEx(pElement, bySubKey, sklength, ALObjCKI, is_check_updated);
+}
+
+bool K2HShm::RemoveEx(PELEMENT pElement, const unsigned char* bySubKey, size_t length, K2HLock& ALObjCKI, bool& is_check_updated)
 {
 	if(!pElement || !bySubKey || 0L == length){
 		ERR_K2HPRN("Paramters are wrong.");
@@ -2454,6 +2592,11 @@ bool K2HShm::Remove(PELEMENT pElement, const unsigned char* bySubKey, size_t len
 		ERR_K2HPRN("There is no attached K2HASH.");
 		return false;
 	}
+	if(!is_check_updated){
+		K2HFILE_UPDATE_CHECK(this);
+		is_check_updated = true;
+	}
+
 	// get subkey page/array
 	K2HPage*	pSKeyPage = NULL;
 	K2HSubKeys*	pSubKeys;
@@ -2479,7 +2622,7 @@ bool K2HShm::Remove(PELEMENT pElement, const unsigned char* bySubKey, size_t len
 		K2H_Delete(pSubKeys);
 		return false;
 	}
-	K2H_Delete(pSubKeys);
+	K2H_Delete(pSubKeys);		// NOTE : pSubKeys = NULL;
 
 	// Replace
 	if(!ReplacePage(pElement, bySubkeys, SKLength, PAGEOBJ_SUBKEYS)){
@@ -2489,70 +2632,26 @@ bool K2HShm::Remove(PELEMENT pElement, const unsigned char* bySubKey, size_t len
 	}
 	K2H_Free(bySubkeys);
 
+	// Unlock
 	if(ALObjCKI.IsLocked()){
 		ALObjCKI.Unlock();
 	}
-	if(!Remove(bySubKey, length, true)){
+
+	// Remove subkey
+	k2htransobjlist_t	translist;
+	if(!RemoveEx(bySubKey, length, true, &pSubKeys, NULL, false, &translist, is_check_updated)){
 		ERR_K2HPRN("Failed to remove subkey");
-		K2H_Delete(pSubKeys);
 		return false;
 	}
-	return true;
-}
 
-// [NOTICE]
-// MUST take off pElement from CKIndex before calling this method.
-// Before you call these method, MUST UNLOCK all CKIndex.
-//
-bool K2HShm::RemoveAllSubkeys(PELEMENT pElement, bool isRemoveSubKeyLists)
-{
-	if(!pElement){
-		ERR_K2HPRN("PELEMENT is NULL.");
-		return false;
-	}
-	if(!IsAttached()){
-		ERR_K2HPRN("There is no attached K2HASH.");
-		return false;
-	}
-	// get subkey page/array
-	K2HPage*	pSKeyPage = NULL;
-	K2HSubKeys*	pSubKeys;
-	if(!pElement->subkeys || NULL == (pSKeyPage = GetPageObject(pElement->subkeys)) || NULL == (pSubKeys = pSKeyPage->GetSubKeys())){
-		MSG_K2HPRN("Element already does not have subkeys.");
-		K2H_Delete(pSKeyPage);
-		return true;
-	}
-
-	if(isRemoveSubKeyLists){
-		if(!pSKeyPage->Free()){
-			WAN_K2HPRN("Could not free subkeys in element, but continue...");
-		}
-		pElement->subkeys	= NULL;
-		pElement->skeylength= 0UL;
-
-		// update time
-		if(!UpdateTimeval()){
-			WAN_K2HPRN("Failed to update timeval for data update.");
-		}
-	}
-	K2H_Delete(pSKeyPage);
-
-	// remove earch subkey and takeoff from subkeys array
-	for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); iter = pSubKeys->erase(iter)){
-		if(!Remove(iter->pSubKey, iter->length, true)){
-			WAN_K2HPRN("Failed to remove subkey, but continue....");
-		}
-	}
+	// Remove subkeys in subkey's list and put transaction
+	bool	result = RemoveSubkeys(pSubKeys, &translist, is_check_updated);
 	K2H_Delete(pSubKeys);
 
-	return true;
+	return result;
 }
 
-// [NOTICE]
-// MUST take off pElement from CKIndex before calling this method.
-// Before you call these method, MUST UNLOCK all CKIndex.
-//
-bool K2HShm::Remove(PELEMENT pElement, bool isSubKeys)
+bool K2HShm::RemoveEx(PELEMENT pElement, k2htransobjlist_t* ptranslist, bool& is_check_updated)
 {
 	if(!pElement){
 		ERR_K2HPRN("PELEMENT is NULL.");
@@ -2562,21 +2661,17 @@ bool K2HShm::Remove(PELEMENT pElement, bool isSubKeys)
 		ERR_K2HPRN("There is no attached K2HASH.");
 		return false;
 	}
-
-	// check subkey
-	if(isSubKeys){
-		if(!RemoveAllSubkeys(pElement, false)){
-			ERR_K2HPRN("Failed removing subkeys.");
-			return false;
-		}
+	if(!is_check_updated){
+		K2HFILE_UPDATE_CHECK(this);
+		is_check_updated = true;
 	}
 
 	// for transaction
-	K2HTransaction			transobj(this);
+	K2HTransaction*			ptransobj	= new K2HTransaction(this, (NULL != ptranslist));
 	K2HPage*				pPage		= NULL;
 	const unsigned char*	byKey		= NULL;
 	size_t					keylength	= 0UL;
-	if(transobj.IsEnable()){
+	if(ptransobj->IsEnable()){
 		if(NULL == (pPage = GetPage(pElement, PAGEOBJ_KEY)) || !pPage->GetData(&byKey, &keylength)){
 			WAN_K2HPRN("Failed to get key & length for removing transaction.");
 		}
@@ -2592,18 +2687,24 @@ bool K2HShm::Remove(PELEMENT pElement, bool isSubKeys)
 	}
 
 	// transaction
-	if(transobj.IsEnable()){
+	if(ptransobj->IsEnable()){
 		if(byKey){
 			// [TODO]
 			// At first, checking transaction enable for cost of getting key value now.
 			// If can, calling transaction before converting key value to element pointer.
 			//
-			if(!transobj.DelKey(byKey, keylength)){
+			if(!ptransobj->DelKey(byKey, keylength)){
 				WAN_K2HPRN("Failed to put removing transaction.");
+			}else{
+				if(ptranslist){
+					ptranslist->push_back(ptransobj);								// stacking
+					ptransobj = NULL;
+				}
 			}
 		}
 		K2H_Delete(pPage);
 	}
+	K2H_Delete(ptransobj);
 
 	// update time
 	if(!UpdateTimeval()){
@@ -2612,16 +2713,65 @@ bool K2HShm::Remove(PELEMENT pElement, bool isSubKeys)
 	return true;
 }
 
-bool K2HShm::Remove(const char* pKey, bool isSubKeys)
-{
-	return Remove(reinterpret_cast<const unsigned char*>(pKey), (pKey ? strlen(pKey) + 1 : 0UL), isSubKeys);
-}
-
 //
 // [NOTE]
-// hismask parameter is specified, this method does not make history for removing key.
+// Remove key and subkeys, this method runs reantrant.
 //
-bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys, char** ppUniqid, bool hismask)
+bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, k2htransobjlist_t* ptranslist, bool& is_check_updated)
+{
+	if(!byKey || 0L == keylength){
+		ERR_K2HPRN("Paramters are wrong.");
+		return false;
+	}
+	if(!IsAttached()){
+		ERR_K2HPRN("There is no attached K2HASH.");
+		return false;
+	}
+	if(!is_check_updated){
+		K2HFILE_UPDATE_CHECK(this);
+		is_check_updated = true;
+	}
+
+	// transaction stack if no stack
+	k2htransobjlist_t	toptranslist;
+	if(!ptranslist){
+		// this is top level
+		ptranslist = &toptranslist;
+	}
+
+	// Remove top key
+	K2HSubKeys*		pSubKeys = NULL;
+	if(!RemoveEx(byKey, keylength, true, &pSubKeys, NULL, false, ptranslist, is_check_updated)){
+		ERR_K2HPRN("Failed to remove key");
+		return false;
+	}
+
+	// Remove subkeys
+	if(pSubKeys){
+		for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); iter = pSubKeys->erase(iter)){
+			// reentrant
+			if(!RemoveEx(iter->pSubKey, iter->length, ptranslist, is_check_updated)){
+				WAN_K2HPRN("Failed to remove one subkey from subkey list, but continue...");
+			}
+		}
+		K2H_Delete(pSubKeys);
+	}
+
+	// Put transaction
+	if(0 < toptranslist.size()){
+		for(k2htransobjlist_t::iterator iter = toptranslist.begin(); toptranslist.end() != iter; ++iter){
+			K2HTransaction*	ptransobj = *iter;
+			if(!ptransobj->Put()){
+				WAN_K2HPRN("Failed to put one transaction data in stacking, but continue...");
+			}
+			K2H_Delete(ptransobj);
+		}
+		toptranslist.clear();
+	}
+	return true;
+}
+
+bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, bool isSubKeys, K2HSubKeys** ppSubKeys, char** ppUniqid, bool hismask, k2htransobjlist_t* ptranslist, bool& is_check_updated)
 {
 	if(!byKey || 0 == keylength){
 		ERR_K2HPRN("Some parameters are wrong.");
@@ -2631,7 +2781,10 @@ bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys
 		ERR_K2HPRN("There is no attached K2HASH.");
 		return false;
 	}
-	K2HFILE_UPDATE_CHECK(this);
+	if(!is_check_updated){
+		K2HFILE_UPDATE_CHECK(this);
+		is_check_updated = true;
+	}
 
 	// make hash
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
@@ -2651,37 +2804,22 @@ bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys
 		return true;
 	}
 
+	// get(keep) subkeys if needs
+	if(isSubKeys){
+		if(!GetSubKeys(pElement, ppSubKeys)){
+			MSG_K2HPRN("Failed to get subkeys, but continue...");
+		}
+	}
+
 	// remove or make history
 	bool	result;
 	if(!hismask && K2hAttrOpsMan::IsMarkHistory(this)){
 		// make history
-
-		// get subkey page/array
-		if(isSubKeys && !pElement->subkeys){
-			K2HPage*	pSKeyPage	= NULL;
-			K2HSubKeys*	pSubKeys	= NULL;
-			if(NULL != (pSKeyPage = GetPageObject(pElement->subkeys)) || NULL == (pSubKeys = pSKeyPage->GetSubKeys())){
-				ALObjCKI.Unlock();					// Unlock
-
-				// make history for earch subkey and takeoff from subkeys array
-				for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); iter = pSubKeys->erase(iter)){
-					if(!Remove(iter->pSubKey, iter->length, true)){
-						WAN_K2HPRN("Failed to remove subkey, but continue....");
-					}
-				}
-			}else{
-				WAN_K2HPRN("Could not get subkeys objects");
-				ALObjCKI.Unlock();					// Unlock
-			}
-			K2H_Delete(pSubKeys);
-			K2H_Delete(pSKeyPage);
-		}else{
-			ALObjCKI.Unlock();						// Unlock
-		}
+		ALObjCKI.Unlock();							// Unlock
 
 		// rename key
 		string	uniqid;
-		result = RenameForHistory(byKey, keylength, &uniqid);
+		result = RenameForHistory(byKey, keylength, &uniqid, ptranslist);
 		if(ppUniqid){
 			if(!uniqid.empty()){
 				*ppUniqid = strdup(uniqid.c_str());
@@ -2689,7 +2827,6 @@ bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys
 				*ppUniqid = NULL;
 			}
 		}
-
 	}else{
 		// not need to make history
 
@@ -2698,53 +2835,91 @@ bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, bool isSubKeys
 			ERR_K2HPRN("Failed to take off element from ckey index.");
 			return false;
 		}
-		ALObjCKI.Unlock();								// Unlock
+		ALObjCKI.Unlock();							// Unlock
 
-		// remove key
-		result = Remove(pElement, isSubKeys);
+		// remove key(pelement already take off from ckeyindex, so do not need to lock)
+		result = RemoveEx(pElement, ptranslist, is_check_updated);
 		if(ppUniqid){
 			*ppUniqid = NULL;
 		}
 	}
-
 	return result;
 }
 
-bool K2HShm::Remove(const char* pKey, const char* pSubKey)
+bool K2HShm::RemoveSubkeys(K2HSubKeys* pSubKeys, k2htransobjlist_t* ptranslist, bool& is_check_updated)
 {
-	return Remove(reinterpret_cast<const unsigned char*>(pKey), pKey ? strlen(pKey) + 1 : 0UL, reinterpret_cast<const unsigned char*>(pSubKey), pSubKey ? strlen(pSubKey) + 1 : 0UL);
+	if(!IsAttached()){
+		ERR_K2HPRN("There is no attached K2HASH.");
+		return false;
+	}
+	if(!is_check_updated){
+		K2HFILE_UPDATE_CHECK(this);
+		is_check_updated = true;
+	}
+
+	// Remove subkeys in list
+	if(pSubKeys){
+		for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); iter = pSubKeys->erase(iter)){
+			if(!RemoveEx(iter->pSubKey, iter->length, ptranslist, is_check_updated)){
+				WAN_K2HPRN("Failed to remove one subkey from subkey list, but continue...");
+			}
+		}
+	}
+
+	// Put transaction
+	if(0 < ptranslist->size()){
+		for(k2htransobjlist_t::iterator iter = ptranslist->begin(); ptranslist->end() != iter; ++iter){
+			K2HTransaction*	ptransobj = *iter;
+			if(!ptransobj->Put()){
+				WAN_K2HPRN("Failed to put one transaction data in stacking, but continue...");
+			}
+			K2H_Delete(ptransobj);
+		}
+		ptranslist->clear();
+	}
+	return true;
 }
 
-bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, const unsigned char* bySubKey, size_t sklength)
+bool K2HShm::GetSubKeys(PELEMENT pElement, K2HSubKeys** ppSubKeys)
 {
-	if(!byKey || 0UL == keylength || !bySubKey || 0UL == sklength){
-		ERR_K2HPRN("Some parameters are wrong.");
+	if(!pElement){
+		ERR_K2HPRN("PELEMENT is NULL.");
 		return false;
 	}
 	if(!IsAttached()){
 		ERR_K2HPRN("There is no attached K2HASH.");
 		return false;
 	}
-	K2HFILE_UPDATE_CHECK(this);
-
-	// make hash
-	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
-	k2h_hash_t	subhash	= K2H_2ND_HASH_FUNC(reinterpret_cast<const void*>(byKey), keylength);
-
-	// get element
-	K2HLock		ALObjCKI(K2HLock::RWLOCK);					// LOCK
-	PCKINDEX	pCKIndex;
-	PELEMENT	pElementList;
-	PELEMENT	pElement;
-	if(	NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI)) ||
-		NULL == (pElementList = GetElementList(pCKIndex, hash, subhash)) ||
-		NULL == (pElement = GetElement(pElementList, byKey, keylength)) )
-	{
-		// Not found
-		MSG_K2HPRN("Not found Key in k2hash.");
+	if(!ppSubKeys){
 		return true;
 	}
-	return Remove(pElement, bySubKey, sklength, ALObjCKI);
+
+	// get subkey page/array
+	K2HPage*	pTgSKeyPage = NULL;
+	K2HSubKeys*	pTgSubKeys	= NULL;
+	if(!pElement->subkeys || NULL == (pTgSKeyPage = GetPageObject(pElement->subkeys)) || NULL == (pTgSubKeys = pTgSKeyPage->GetSubKeys())){
+		MSG_K2HPRN("Element does not have any subkeys.");
+		K2H_Delete(pTgSKeyPage);
+		return true;
+	}
+	K2H_Delete(pTgSKeyPage);
+
+	// add subkeys to buffer
+	if(*ppSubKeys){
+		// add this element's subkeys to subkey buffer delivered
+		for(K2HSubKeys::iterator iter = pTgSubKeys->begin(); iter != pTgSubKeys->end(); iter = pTgSubKeys->erase(iter)){
+			if((*ppSubKeys)->end() == (*ppSubKeys)->insert(iter->pSubKey, iter->length)){
+				WAN_K2HPRN("Failed to add subkey to subkey list stack, but continue...");
+			}
+		}
+	}else{
+		// The subkey delivered is empty, so that this element's subkey list to set it.
+		*ppSubKeys	= pTgSubKeys;
+		pTgSubKeys	= NULL;
+	}
+	K2H_Delete(pTgSubKeys);
+
+	return true;
 }
 
 //---------------------------------------------------------
@@ -3317,12 +3492,7 @@ bool K2HShm::Rename(const unsigned char* byOldKey, size_t oldkeylen, const unsig
 //
 // Like rename() method, but this method genarates new key name automatically and marks history into attributes.
 //
-bool K2HShm::RenameForHistory(const char* pKey, string* puniqid)
-{
-	return RenameForHistory(reinterpret_cast<const unsigned char*>(pKey), (pKey ? strlen(pKey) + 1UL : 0UL), puniqid);
-}
-
-bool K2HShm::RenameForHistory(const unsigned char* byKey, size_t keylen, string* puniqid)
+bool K2HShm::RenameForHistory(const unsigned char* byKey, size_t keylen, string* puniqid, k2htransobjlist_t* ptranslist)
 {
 	if(!byKey || 0 == keylen){
 		ERR_K2HPRN("Some parameters are wrong.");
@@ -3510,10 +3680,16 @@ bool K2HShm::RenameForHistory(const unsigned char* byKey, size_t keylen, string*
 	}
 
 	// transaction
-	K2HTransaction	transobj(this);
-	if(!transobj.Rename(byKey, keylen, byNewKey, newkeylen, byNewAttrs, newattrlen)){
+	K2HTransaction*	ptransobj = new K2HTransaction(this, (NULL != ptranslist));		// ptranslist for stacking transaction data
+	if(!ptransobj->Rename(byKey, keylen, byNewKey, newkeylen, byNewAttrs, newattrlen)){
 		WAN_K2HPRN("Failed to put setting transaction.");
+	}else{
+		if(ptranslist){
+			ptranslist->push_back(ptransobj);										// stacking
+			ptransobj = NULL;
+		}
 	}
+	K2H_Delete(ptransobj);
 	K2H_Free(byNewAttrs);
 	K2H_Free(byNewKey);
 
