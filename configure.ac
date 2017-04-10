@@ -96,7 +96,7 @@ AC_ARG_ENABLE(std-fnv-function,
 
 # chek for LIBFULLOCK
 if test "x${CHECK_LIBFULLOCK}" != "xno"; then
-	PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.23], [have_fullock=yes], [have_fullock=no])
+	PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.24], [have_fullock=yes], [have_fullock=no])
 	if test "x${have_fullock}" = "xno"; then
 		AC_MSG_ERROR([not found libfullock-dev package.])
 	fi
