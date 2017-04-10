@@ -1,3 +1,10 @@
+k2hash (1.0.56) trusty; urgency=low
+
+  * Strict/Robust queue processing for conflicting
+  * Fixed deadlock at updating key with subkeys
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 28 Mar 2017 10:52:24 +0900
+
 k2hash (1.0.55) trusty; urgency=low
 
   * Updated fullock submodule v1.0.24
