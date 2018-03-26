@@ -137,7 +137,7 @@ class K2HCommandArchive
 		bool DelKey(const unsigned char* byKey, size_t keylength);
 		bool OverWriteValue(const unsigned char* byKey, size_t keylength, const unsigned char* byVal, size_t vallength, off_t valoffset);
 		bool Rename(const unsigned char* byOldKey, size_t oldkeylength, const unsigned char* byNewKey, size_t newkeylength, const unsigned char* byAttrs, size_t attrlength);
-		const PBCOM Get(void) const;
+		const BCOM* Get(void) const;
 
 	protected:
 		virtual bool Put(long type, const unsigned char* byKey, size_t keylength, const unsigned char* byVal, size_t vallength, const unsigned char* bySKey, size_t skeylength, const unsigned char* byAttrs, size_t attrlength, const unsigned char* byExdata, size_t exdatalength);

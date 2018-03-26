@@ -24,6 +24,9 @@ Yahoo! JAPAN. K2HASH is following specifications.
   - [WIKI](https://github.com/yahoojapan/k2hash/wiki)
 
 ### License
-This software is released under the MIT License, see the LICENSE file.
+This software is released under the MIT License, see the license file.
 
-Copyright 2013 Yahoo! JAPAN corporation.
+### AntPickax
+k2hash is one of [AntPickax](https://yahoojapan.github.io/AntPickax/) products.
+
+Copyright(C) 2013 Yahoo Japan corporation.

@@ -174,7 +174,7 @@ bool K2HArchive::Save(K2HShm* pShm) const
 				break;
 			}
 		}
-		const PBCOM	pBinCom	= ArCom.Get();
+		const BCOM*	pBinCom	= ArCom.Get();
 
 		// write to archve
 		size_t	write_length = scom_total_length(pBinCom->scom);
@@ -218,7 +218,7 @@ bool K2HArchive::Save(K2HShm* pShm) const
 					looperr = true;
 					break;
 				}
-				const PBCOM	pBinCom2 = ArCom.Get();
+				const BCOM*	pBinCom2 = ArCom.Get();
 
 				// write to archve
 				write_length = scom_total_length(pBinCom2->scom);

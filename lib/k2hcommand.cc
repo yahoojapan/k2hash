@@ -215,7 +215,7 @@ bool K2HCommandArchive::Rename(const unsigned char* byOldKey, size_t oldkeylengt
 	return Put(SCOM_RENAME, byOldKey, oldkeylength, NULL, 0UL, NULL, 0UL, byAttrs, attrlength, byNewKey, newkeylength);
 }
 
-const PBCOM K2HCommandArchive::Get(void) const
+const BCOM* K2HCommandArchive::Get(void) const
 {
 	return pBinCom;
 }
