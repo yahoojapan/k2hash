@@ -12,9 +12,9 @@ Attached paraemters:
 Permanent file(/tmp/k2hash_test_linetool.k2h) is completely initialied.
 
 
-K2HASH library Version 1.0.55 (commit: e8109f9)
+K2HASH library Version 1.0.57 (commit: 36eb21e) with OpenSSL
 
-Copyright 2013 Yahoo! JAPAN corporation.
+Copyright(C) 2013 Yahoo Japan Corporation.
 
 K2HASH is key-valuew store base libraries. K2HASH is made for
 the purpose of the construction of original KVS system and the
@@ -23,9 +23,9 @@ which Key can layer. And can support multi-processing and
 multi-thread, and is provided safely as available KVS.
 
 
-FULLOCK Version 1.0.24 (commit: eea4e33)
+FULLOCK Version 1.0.27 (commit: 7d68fdc)
 
-Copyright 2015 Yahoo! JAPAN corporation.
+Copyright(C) 2015 Yahoo Japan Corporation.
 
 FULLOCK is fast locking library on user level by Yahoo! JAPAN.
 FULLOCK is following specifications.

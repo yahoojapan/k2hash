@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Dec 18 2015
@@ -29,6 +29,13 @@
 //---------------------------------------------------------
 // Structure
 //---------------------------------------------------------
+#define	K2H_PPBKDF2_KEY_ITERATION_COUNT			1000	// default iteration count
+
+typedef enum _k2hattr_enc_type{							// k2hattr encrypt type
+	K2H_ENC_AES256_PBKDF1	= 0,						// AES256 CBC PAD with PBKDF1
+	K2H_ENC_AES256_PBKDF2	= 1							// AES256 CBC PAD with PBKDF2
+}K2HATTR_ENC_TYPE;
+
 // [NOTE]
 // In the future, k2hash could also support encryption of not AES256.
 // In that case, it would be better to add the type of encryption to
@@ -45,14 +52,16 @@ typedef struct k2h_encrypt_pass{
 typedef std::map<std::string, K2HENCPASS>		k2hepmap_t;
 
 typedef struct k2h_builtin_attr_pack{
-	bool			IsAttrMTime;			// whether stamp last modified time
-	bool			IsAttrHistory;			// whether build versioning
-	time_t			AttrExpireSec;			// expire second, -1 means not set
-	bool			IsDefaultEncrypt;		// whether encode as default
-	std::string		DefaultPassMD5;			// md5 for default encrypt pass
-	k2hepmap_t		EncPassMap;				// map for encrypt pass
+	bool				IsAttrMTime;			// whether stamp last modified time
+	bool				IsAttrHistory;			// whether build versioning
+	time_t				AttrExpireSec;			// expire second, -1 means not set
+	bool				IsDefaultEncrypt;		// whether encode as default
+	std::string			DefaultPassMD5;			// md5 for default encrypt pass
+	int					IterCount;				// iteration count for PBKDF2 key
+	K2HATTR_ENC_TYPE	EncType;				// encrypt type(default AES256 CBC with PBKDF2)
+	k2hepmap_t			EncPassMap;				// map for encrypt pass
 
-	k2h_builtin_attr_pack(void) : IsAttrMTime(false), IsAttrHistory(false), AttrExpireSec(-1), IsDefaultEncrypt(false), DefaultPassMD5("") { }	// -1 = K2hAttrBuiltin::NOT_EXPIRE
+	k2h_builtin_attr_pack(void) : IsAttrMTime(false), IsAttrHistory(false), AttrExpireSec(-1), IsDefaultEncrypt(false), DefaultPassMD5(""), IterCount(K2H_PPBKDF2_KEY_ITERATION_COUNT), EncType(K2H_ENC_AES256_PBKDF2) { }	// -1 = K2hAttrBuiltin::NOT_EXPIRE
 	~k2h_builtin_attr_pack(void) { }
 }K2HBATTRPACK, *PK2HBATTRPACK;
 
@@ -61,6 +70,8 @@ typedef std::map<const K2HShm*, PK2HBATTRPACK>	k2hbapackmap_t;
 //---------------------------------------------------------
 // Class K2hAttrBuiltin
 //---------------------------------------------------------
+class K2hCryptContext;
+
 class K2hAttrBuiltin : public K2hAttrOpsBase
 {
 	protected:
@@ -70,6 +81,8 @@ class K2hAttrBuiltin : public K2hAttrOpsBase
 		static const char*		ATTR_ENV_EXPIRE_SEC;
 		static const char*		ATTR_ENV_DEFAULT_ENC;
 		static const char*		ATTR_ENV_ENCFILE;
+		static const char*		ATTR_ENV_ENC_TYPE;
+		static const char*		ATTR_ENV_ENC_ITER;
 
 		static const time_t		NOT_EXPIRE = -1;
 
@@ -84,6 +97,7 @@ class K2hAttrBuiltin : public K2hAttrOpsBase
 		static const char*		ATTR_UNIQID;
 		static const char*		ATTR_PUNIQID;
 		static const char*		ATTR_AES256_MD5;
+		static const char*		ATTR_AES256_PBKDF2;
 		static const char*		ATTR_HISMARK;
 
 		// Mask values
@@ -103,15 +117,16 @@ class K2hAttrBuiltin : public K2hAttrOpsBase
 		static const int		ATTR_MASK_EXPIRE_KP	= 1 << 4;		// Special mask
 
 	protected:
-		static k2hbapackmap_t	AttrPackMap;		// builtin attribute setting map for each shm
-
 		PK2HBATTRPACK			pBuiltinAttrPack;
 		std::string				EncPass;
 		time_t					ExpireSec;
-		std::string				OldUniqID;			// Unique ID for old value after updating, it means to need to make history.
-		int						AttrMask;			// attribute mask for temporary on the object
+		std::string				OldUniqID;							// Unique ID for old value after updating, it means to need to make history.
+		int						AttrMask;							// attribute mask for temporary on the object
 
 	protected:
+		static K2hCryptContext& GetCryptLibContext(void);			// singleton for crypt library(initializer/destructor)
+		static k2hbapackmap_t& GetAttrPackMap(void);				// builtin attribute setting map for each shm
+
 		static PK2HBATTRPACK GetBuiltinAttrPack(const K2HShm* pshm);
 		static bool ClearEncryptPassMap(PK2HBATTRPACK pPack);
 		static int LoadEncryptPassMap(PK2HBATTRPACK pPack, const char* pfile);
@@ -124,6 +139,7 @@ class K2hAttrBuiltin : public K2hAttrOpsBase
 		bool GetTime(K2HAttrs& attrs, const char* key, struct timespec& time) const;
 		bool GetUniqId(K2HAttrs& attrs, bool is_parent, std::string& uniqid) const;
 		bool GetEncryptKeyMd5(K2HAttrs& attrs, std::string* enckeymd5) const;
+		bool GetEncryptType(K2HAttrs& attrs, K2HATTR_ENC_TYPE& enctype) const;
 
 	public:
 		static bool CleanAttrBuiltin(const K2HShm* pshm);

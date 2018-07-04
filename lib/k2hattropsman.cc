@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Tue Dec 22 2015
@@ -44,13 +44,17 @@ inline int GetBuiltinMaskValue(K2hAttrOpsMan::ATTRINITTYPE type)
 }
 
 //---------------------------------------------------------
-// K2hAttrOpsMan Class Variable
-//---------------------------------------------------------
-k2hattrlibmap_t				K2hAttrOpsMan::PluginLibs;
-
-//---------------------------------------------------------
 // K2hAttrOpsMan Class Methods
 //---------------------------------------------------------
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
+k2hattrlibmap_t& K2hAttrOpsMan::GetLibMap(void)
+{
+	static k2hattrlibmap_t	PluginLibs;					// singleton
+	return PluginLibs;
+}
+
 bool K2hAttrOpsMan::InitializeCommonAttr(const K2HShm* pshm, const bool* is_mtime, const bool* is_defenc, const char* passfile, const bool* is_history, const time_t* expire, const strarr_t* pluginlibs)
 {
 	if(!K2hAttrBuiltin::Initialize(pshm, is_mtime, is_defenc, passfile, is_history, expire)){
@@ -86,13 +90,13 @@ bool K2hAttrOpsMan::AddPluginLib(const K2HShm* pshm, const char* path)
 		return false;
 	}
 
-	k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::PluginLibs.find(pshm);
-	if(K2hAttrOpsMan::PluginLibs.end() == miter){
+	k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::GetLibMap().find(pshm);
+	if(K2hAttrOpsMan::GetLibMap().end() == miter){
 		// need to new list
 		k2hattrliblist_t*	plist = new k2hattrliblist_t;
 
 		plist->push_back(pLib);
-		K2hAttrOpsMan::PluginLibs[pshm] = plist;
+		K2hAttrOpsMan::GetLibMap()[pshm] = plist;
 	}else{
 		k2hattrliblist_t*	plist = miter->second;
 
@@ -128,7 +132,7 @@ bool K2hAttrOpsMan::RemovePluginLib(k2hattrliblist_t* plist)
 bool K2hAttrOpsMan::RemovePluginLib(const K2HShm* pshm)
 {
 	if(!pshm){
-		for(k2hattrlibmap_t::iterator miter = K2hAttrOpsMan::PluginLibs.begin(); miter != K2hAttrOpsMan::PluginLibs.end(); K2hAttrOpsMan::PluginLibs.erase(miter++)){
+		for(k2hattrlibmap_t::iterator miter = K2hAttrOpsMan::GetLibMap().begin(); miter != K2hAttrOpsMan::GetLibMap().end(); K2hAttrOpsMan::GetLibMap().erase(miter++)){
 			k2hattrliblist_t*	plist = miter->second;
 
 			// remove all libraries in list
@@ -141,8 +145,8 @@ bool K2hAttrOpsMan::RemovePluginLib(const K2HShm* pshm)
 		}
 	}else{
 		// search
-		k2hattrlibmap_t::iterator	miter = K2hAttrOpsMan::PluginLibs.find(pshm);
-		if(K2hAttrOpsMan::PluginLibs.end() == miter){
+		k2hattrlibmap_t::iterator	miter = K2hAttrOpsMan::GetLibMap().find(pshm);
+		if(K2hAttrOpsMan::GetLibMap().end() == miter){
 			WAN_K2HPRN("There is no library list for shm.");
 			return true;		// OK
 		}
@@ -157,7 +161,7 @@ bool K2hAttrOpsMan::RemovePluginLib(const K2HShm* pshm)
 		K2H_Delete(plist);
 
 		// retreive list from map
-		K2hAttrOpsMan::PluginLibs.erase(miter);
+		K2hAttrOpsMan::GetLibMap().erase(miter);
 	}
 	return true;
 }
@@ -192,8 +196,8 @@ bool K2hAttrOpsMan::GetVersionInfos(const K2HShm* pshm, strarr_t& verinfos)
 	}
 
 	// plugin libs
-	k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::PluginLibs.find(pshm);
-	if(K2hAttrOpsMan::PluginLibs.end() != miter){
+	k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::GetLibMap().find(pshm);
+	if(K2hAttrOpsMan::GetLibMap().end() != miter){
 		const k2hattrliblist_t*	plist = miter->second;
 		for(k2hattrliblist_t::const_iterator liter = plist->begin(); liter != plist->end(); ++liter){
 			const K2hAttrPluginLib*	ploaded = *liter;
@@ -241,8 +245,8 @@ bool K2hAttrOpsMan::Initialize(const K2HShm* pshm, const unsigned char* pkey, si
 
 	if(K2hAttrOpsMan::OPSMAN_MASK_ALL != type){
 		// if has lib list in map, make attr plugin objects from plugin library list, and push objct list.
-		k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::PluginLibs.find(pshm);
-		if(K2hAttrOpsMan::PluginLibs.end() != miter){
+		k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::GetLibMap().find(pshm);
+		if(K2hAttrOpsMan::GetLibMap().end() != miter){
 			const k2hattrliblist_t*	plist = miter->second;
 
 			for(k2hattrliblist_t::const_iterator liter = plist->begin(); liter != plist->end(); ++liter){

@@ -1,0 +1,8 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: @PACKAGE_NAME@
+Source: https://@GIT_DOMAIN@/@GIT_ORG@/@GIT_REPO@
+
+Files: *
+Copyright: 2013 Yahoo Japan Corporation
+License: @PKGLICENSE@
+@DEBCOPYING@

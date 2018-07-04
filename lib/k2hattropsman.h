@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Tue Dec 22 2015
@@ -32,15 +32,13 @@
 class K2hAttrOpsMan
 {
 	protected:
-		static k2hattrlibmap_t		PluginLibs;				// all libraries list map by each shm
-
-		k2hattroplist_t				attroplist;				// libraries list
-		const unsigned char*		byKey;
-		size_t						KeyLen;
-		const unsigned char*		byValue;
-		size_t						ValLen;
-		const unsigned char*		byUpdateValue;
-		size_t						UpdateValLen;
+		k2hattroplist_t			attroplist;								// libraries list
+		const unsigned char*	byKey;
+		size_t					KeyLen;
+		const unsigned char*	byValue;
+		size_t					ValLen;
+		const unsigned char*	byUpdateValue;
+		size_t					UpdateValLen;
 
 	public:
 		// [NOTE]
@@ -59,6 +57,8 @@ class K2hAttrOpsMan
 		}ATTRINITTYPE;
 
 	protected:
+		static k2hattrlibmap_t& GetLibMap(void);						// all libraries list map by each shm
+
 		static bool RemoveBuiltinAttr(const K2HShm* pshm);
 		static bool RemovePluginLib(k2hattrliblist_t* plist);
 		static bool RemovePluginLib(const K2HShm* pshm);

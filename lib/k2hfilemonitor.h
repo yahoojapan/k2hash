@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Wed Apr 16 2014
@@ -75,16 +75,16 @@ typedef union share_file_monitor_wrap{
 class K2HFileMonitor
 {
 	private:
-		static const std::string	base_prefix;
-		static mode_t				file_umask;						// umask for monitor file
+		static const char	base_prefix[];
+		static mode_t		file_umask;								// umask for monitor file
 
-		std::string		bup_shmfile;
-		std::string		bup_monfile;
-		PSFMON			psfmon;
-		int				fmfd;
-		unsigned char	bup_inode_cnt;
-		unsigned char	bup_area_cnt;
-		ino_t			bup_inode_val;
+		std::string			bup_shmfile;
+		std::string			bup_monfile;
+		PSFMON				psfmon;
+		int					fmfd;
+		unsigned char		bup_inode_cnt;
+		unsigned char		bup_area_cnt;
+		ino_t				bup_inode_val;
 
 	public:
 		K2HFileMonitor();

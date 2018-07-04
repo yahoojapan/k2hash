@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Dec 2 2013
@@ -26,92 +26,75 @@
 #include "k2hdbg.h"
 
 //---------------------------------------------------------
+// Global variable
+//---------------------------------------------------------
+K2hDbgMode	debug_mode	= K2HDBG_SILENT;
+FILE*		k2h_dbg_fp	= NULL;
+
+//---------------------------------------------------------
 // Class K2HDbgControl
 //---------------------------------------------------------
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
 class K2HDbgControl
 {
 	protected:
-		static const char*		DBGENVNAME;
-		static const char*		DBGENVFILE;
-		static K2HDbgControl	singleton;
-		static bool				isSetSignal;
+		static const char*	DBGENVNAME;
+		static const char*	DBGENVFILE;
+		static bool			isSetSignal;
+
+		K2hDbgMode*			pdebug_mode;			// pointer to global variable
+		FILE**				pk2h_dbg_fp;			// pointer to global variable
+
+	protected:
+		static void User1Handler(int Signal);
+
+		K2HDbgControl() : pdebug_mode(&debug_mode), pk2h_dbg_fp(&k2h_dbg_fp)
+		{
+			*pdebug_mode = K2HDBG_SILENT;
+			*pk2h_dbg_fp = NULL;
+			LoadEnv();
+		}
+
+		virtual ~K2HDbgControl()
+		{
+			SetUser1Handler(false);
+		}
+
+		bool LoadEnvName(void);
+		bool LoadEnvFile(void);
 
 	public:
-		static bool LoadEnv(void);
-		static bool LoadEnvName(void);
-		static bool LoadEnvFile(void);
-		static void User1Handler(int Signal);
-		static bool SetUser1Handler(bool isEnable);
+		static K2HDbgControl& GetDbgCntl(void)
+		{
+			static K2HDbgControl	singleton;		// singleton
+			return singleton;
+		}
 
-		K2HDbgControl();
-		virtual ~K2HDbgControl();
+		bool SetUser1Handler(bool isEnable);
+		bool LoadEnv(void);
+		K2hDbgMode SetDbgMode(K2hDbgMode mode);
+		K2hDbgMode BumpupDbgMode(void);
+		K2hDbgMode GetDbgMode(void);
+		bool SetDbgFile(const char* filepath);
+		bool UnsetDbgFile(void);
 };
 
+//
 // Class valiables
-const char*		K2HDbgControl::DBGENVNAME = "K2HDBGMODE";
-const char*		K2HDbgControl::DBGENVFILE = "K2HDBGFILE";
-K2HDbgControl	K2HDbgControl::singleton;
-bool			K2HDbgControl::isSetSignal=	false;
+//
+const char*	K2HDbgControl::DBGENVNAME = "K2HDBGMODE";
+const char*	K2HDbgControl::DBGENVFILE = "K2HDBGFILE";
+bool		K2HDbgControl::isSetSignal=	false;
 
-// Constructor / Destructor
-K2HDbgControl::K2HDbgControl()
-{
-	K2HDbgControl::LoadEnv();
-}
-K2HDbgControl::~K2HDbgControl()
-{
-	K2HDbgControl::SetUser1Handler(false);
-}
-
-// Class Methods
-bool K2HDbgControl::LoadEnv(void)
-{
-	if(!K2HDbgControl::LoadEnvName() || !K2HDbgControl::LoadEnvFile()){
-		return false;
-	}
-	return true;
-}
-
-bool K2HDbgControl::LoadEnvName(void)
-{
-	char*	pEnvVal;
-	if(NULL == (pEnvVal = getenv(K2HDbgControl::DBGENVNAME))){
-		MSG_K2HPRN("%s ENV is not set.", K2HDbgControl::DBGENVNAME);
-		return true;
-	}
-	if(0 == strcasecmp(pEnvVal, "SILENT")){
-		SetK2hDbgMode(K2HDBG_SILENT);
-	}else if(0 == strcasecmp(pEnvVal, "ERR")){
-		SetK2hDbgMode(K2HDBG_ERR);
-	}else if(0 == strcasecmp(pEnvVal, "WAN")){
-		SetK2hDbgMode(K2HDBG_WARN);
-	}else if(0 == strcasecmp(pEnvVal, "INFO")){
-		SetK2hDbgMode(K2HDBG_MSG);
-	}else{
-		MSG_K2HPRN("%s ENV is not unknown string(%s).", K2HDbgControl::DBGENVNAME, pEnvVal);
-		return false;
-	}
-	return true;
-}
-
-bool K2HDbgControl::LoadEnvFile(void)
-{
-	char*	pEnvVal;
-	if(NULL == (pEnvVal = getenv(K2HDbgControl::DBGENVFILE))){
-		MSG_K2HPRN("%s ENV is not set.", K2HDbgControl::DBGENVFILE);
-		return true;
-	}
-	if(!SetK2hDbgFile(pEnvVal)){
-		MSG_K2HPRN("%s ENV is unsafe string(%s).", K2HDbgControl::DBGENVFILE, pEnvVal);
-		return false;
-	}
-	return true;
-}
-
+//
+// Methods
+//
 void K2HDbgControl::User1Handler(int Signal)
 {
 	MSG_K2HPRN("Caught signal SIGUSR1(%d), bumpup the logging level.", Signal);
-	BumpupK2hDbgMode();
+	K2HDbgControl::GetDbgCntl().BumpupDbgMode();
 }
 
 bool K2HDbgControl::SetUser1Handler(bool isEnable)
@@ -133,22 +116,60 @@ bool K2HDbgControl::SetUser1Handler(bool isEnable)
 	return true;
 }
 
-//---------------------------------------------------------
-// Global variable
-//---------------------------------------------------------
-K2hDbgMode	debug_mode	= K2HDBG_SILENT;
-FILE*		k2h_dbg_fp	= NULL;
-
-K2hDbgMode SetK2hDbgMode(K2hDbgMode mode)
+bool K2HDbgControl::LoadEnv(void)
 {
-	K2hDbgMode oldmode = debug_mode;
-	debug_mode = mode;
+	if(!LoadEnvName() || !LoadEnvFile()){
+		return false;
+	}
+	return true;
+}
+
+bool K2HDbgControl::LoadEnvName(void)
+{
+	char*	pEnvVal;
+	if(NULL == (pEnvVal = getenv(K2HDbgControl::DBGENVNAME))){
+		MSG_K2HPRN("%s ENV is not set.", K2HDbgControl::DBGENVNAME);
+		return true;
+	}
+	if(0 == strcasecmp(pEnvVal, "SILENT")){
+		SetDbgMode(K2HDBG_SILENT);
+	}else if(0 == strcasecmp(pEnvVal, "ERR")){
+		SetDbgMode(K2HDBG_ERR);
+	}else if(0 == strcasecmp(pEnvVal, "WAN")){
+		SetDbgMode(K2HDBG_WARN);
+	}else if(0 == strcasecmp(pEnvVal, "INFO")){
+		SetDbgMode(K2HDBG_MSG);
+	}else{
+		MSG_K2HPRN("%s ENV is not unknown string(%s).", K2HDbgControl::DBGENVNAME, pEnvVal);
+		return false;
+	}
+	return true;
+}
+
+bool K2HDbgControl::LoadEnvFile(void)
+{
+	char*	pEnvVal;
+	if(NULL == (pEnvVal = getenv(K2HDbgControl::DBGENVFILE))){
+		MSG_K2HPRN("%s ENV is not set.", K2HDbgControl::DBGENVFILE);
+		return true;
+	}
+	if(!SetDbgFile(pEnvVal)){
+		MSG_K2HPRN("%s ENV is unsafe string(%s).", K2HDbgControl::DBGENVFILE, pEnvVal);
+		return false;
+	}
+	return true;
+}
+
+K2hDbgMode K2HDbgControl::SetDbgMode(K2hDbgMode mode)
+{
+	K2hDbgMode oldmode = *pdebug_mode;
+	*pdebug_mode = mode;
 	return oldmode;
 }
 
-K2hDbgMode BumpupK2hDbgMode(void)
+K2hDbgMode K2HDbgControl::BumpupDbgMode(void)
 {
-	K2hDbgMode	mode = GetK2hDbgMode();
+	K2hDbgMode	mode = GetDbgMode();
 
 	if(K2HDBG_SILENT == mode){
 		mode = K2HDBG_ERR;
@@ -159,26 +180,21 @@ K2hDbgMode BumpupK2hDbgMode(void)
 	}else{	// K2HDBG_MSG == mode
 		mode = K2HDBG_SILENT;
 	}
-	return ::SetK2hDbgMode(mode);
+	return SetDbgMode(mode);
 }
 
-K2hDbgMode GetK2hDbgMode(void)
+K2hDbgMode K2HDbgControl::GetDbgMode(void)
 {
-	return debug_mode;
+	return *pdebug_mode;
 }
 
-bool LoadK2hDbgEnv(void)
-{
-	return K2HDbgControl::LoadEnv();
-}
-
-bool SetK2hDbgFile(const char* filepath)
+bool K2HDbgControl::SetDbgFile(const char* filepath)
 {
 	if(ISEMPTYSTR(filepath)){
 		ERR_K2HPRN("Parameter is wrong.");
 		return false;
 	}
-	if(!UnsetK2hDbgFile()){
+	if(!UnsetDbgFile()){
 		return false;
 	}
 	FILE*	newfp;
@@ -186,26 +202,59 @@ bool SetK2hDbgFile(const char* filepath)
 		ERR_K2HPRN("Could not open debug file(%s). errno = %d", filepath, errno);
 		return false;
 	}
-	k2h_dbg_fp = newfp;
+	*pk2h_dbg_fp = newfp;
 	return true;
 }
 
-bool UnsetK2hDbgFile(void)
+bool K2HDbgControl::UnsetDbgFile(void)
 {
-	if(k2h_dbg_fp){
-		if(0 != fclose(k2h_dbg_fp)){
+	if(*pk2h_dbg_fp){
+		if(0 != fclose(*pk2h_dbg_fp)){
 			ERR_K2HPRN("Could not close debug file. errno = %d", errno);
-			k2h_dbg_fp = NULL;		// On this case, k2h_dbg_fp is not correct pointer after error...
+			*pk2h_dbg_fp = NULL;		// On this case, k2h_dbg_fp is not correct pointer after error...
 			return false;
 		}
-		k2h_dbg_fp = NULL;
+		*pk2h_dbg_fp = NULL;
 	}
 	return true;
 }
 
+//---------------------------------------------------------
+// Global Functions
+//---------------------------------------------------------
+K2hDbgMode SetK2hDbgMode(K2hDbgMode mode)
+{
+	return K2HDbgControl::GetDbgCntl().SetDbgMode(mode);
+}
+
+K2hDbgMode BumpupK2hDbgMode(void)
+{
+	return K2HDbgControl::GetDbgCntl().BumpupDbgMode();
+}
+
+K2hDbgMode GetK2hDbgMode(void)
+{
+	return K2HDbgControl::GetDbgCntl().GetDbgMode();
+}
+
+bool LoadK2hDbgEnv(void)
+{
+	return K2HDbgControl::GetDbgCntl().LoadEnv();
+}
+
+bool SetK2hDbgFile(const char* filepath)
+{
+	return K2HDbgControl::GetDbgCntl().SetDbgFile(filepath);
+}
+
+bool UnsetK2hDbgFile(void)
+{
+	return K2HDbgControl::GetDbgCntl().UnsetDbgFile();
+}
+
 bool SetSignalUser1(void)
 {
-	return K2HDbgControl::SetUser1Handler(true);
+	return K2HDbgControl::GetDbgCntl().SetUser1Handler(true);
 }
 
 /*
