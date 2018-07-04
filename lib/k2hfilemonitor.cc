@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Wed Apr 16 2014
@@ -53,8 +53,8 @@ using namespace std;
 //---------------------------------------------------------
 // Class valiable
 //---------------------------------------------------------
-const string	K2HFileMonitor::base_prefix(MONITORFILE_BASE);
-mode_t			K2HFileMonitor::file_umask = 0;
+const char		K2HFileMonitor::base_prefix[]	= MONITORFILE_BASE;
+mode_t			K2HFileMonitor::file_umask		= 0;
 
 //---------------------------------------------------------
 // Constructor / Destructor
@@ -233,9 +233,16 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 			// wait for initializing monitor file
 			MSG_K2HPRN("Monitor File %s exists(errno=%d), so check file size and try to open it.", bup_monfile.c_str(), errno);
 
+			// [NOTE]
+			// It loops here assuming that Monitor file has been locked, but it could be a dead loop
+			// if the process that locking the file after checking the lock finished without initializing
+			// the file.
+			// Therefore, an upper limit(1000) is set for the number of loops.
+			//
 			struct stat	st;
-			bool		is_retry_loop = false;
-			for(is_retry_loop = false; !is_retry_loop; ){
+			bool		is_retry_loop	= false;
+			int			check_loop_cnt	= 0;
+			for(is_retry_loop = false, check_loop_cnt = 0; !is_retry_loop && check_loop_cnt < 1000; ++check_loop_cnt){
 				if(0 != stat(bup_monfile.c_str(), &st)){
 					if(ENOENT != errno){
 						ERR_K2HPRN("Could not get stat for file %s by errno(%d).", bup_monfile.c_str(), errno);
@@ -253,7 +260,7 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 					MSG_K2HPRN("file %s is not initialized yet, so continue to wait...", bup_monfile.c_str());
 				}
 			}
-			if(is_retry_loop){
+			if(is_retry_loop || 1000 <= check_loop_cnt){
 				// retry to create file.
 				continue;
 			}

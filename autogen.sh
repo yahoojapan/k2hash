@@ -1,23 +1,29 @@
 #!/bin/sh
 #
-# Automatically generate configuration - autogen.sh
+# K2HASH
 #
-# Copyright 2016 Yahoo! JAPAN corporation.
+# Utility tools for building configure/packages by AntPickax
 #
-# Templates for customizing screwdriver CPP and autotools.
-# This template files are provided by yjcore team.
+# Copyright 2018 Yahoo Japan Corporation.
 #
-# This script file is for initializing autoconf/autotools
-# files. And make version number information file from
-# git tag(release), this file is used by other build tools.
+# AntPickax provides utility tools for supporting autotools
+# builds.
 #
+# These tools retrieve the necessary information from the
+# repository and appropriately set the setting values of
+# configure, Makefile, spec,etc file and so on.
+# These tools were recreated to reduce the number of fixes and
+# reduce the workload of developers when there is a change in
+# the project configuration.
+# 
 # For the full copyright and license information, please view
-# the LICENSE file that was distributed with this source code.
+# the license file that was distributed with this source code.
 #
 # AUTHOR:   Takeshi Nakatani
-# CREATE:   Thu, Jun 2 2016
+# CREATE:   Fri, Apr 13 2018
 # REVISION:
 #
+
 
 #
 # Usage: autogen.sh [-noupdate_version_file] [-no_aclocal_force] [-no_check_ver_diff]
@@ -46,7 +52,7 @@ while [ $# -ne 0 ]; do
 		echo "Usage: ${AUTOGEN_NAME} [-noupdate_version_file] [-no_aclocal_force] [-no_check_ver_diff]"
 		exit 1
 	else
-		echo "ERROR: Unkown option $1"
+		echo "ERROR: Unknown option $1"
 		echo "Usage: ${AUTOGEN_NAME} [-noupdate_version_file] [-no_aclocal_force] [-no_check_ver_diff]"
 		exit 1
 	fi
@@ -57,7 +63,8 @@ done
 # update RELEASE_VERSION file
 #
 if [ "X${NOUPDATE}" = "Xno" ]; then
-	${SRCTOP}/make_release_version_file.sh ${PARAMETERS}
+	echo "--- run make_release_version_file.sh"
+	${SRCTOP}/buildutils/make_release_version_file.sh ${PARAMETERS}
 	if [ $? -ne 0 ]; then
 		echo "ERROR: update RELEASE_VERSION file"
 		exit 1

@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Dec 18 2015
@@ -19,384 +19,18 @@
  *
  */
 
-#include <time.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <openssl/evp.h>
-#include <openssl/md5.h>
-#include <openssl/sha.h>
 #include <fullock/flckutil.h>
 
 #include <fstream>
 
 #include "k2hcommon.h"
+#include "k2hcryptcommon.h"
 #include "k2hattrbuiltin.h"
 #include "k2hattrs.h"
 #include "k2hutil.h"
 #include "k2hdbg.h"
 
 using namespace std;
-
-//---------------------------------------------------------
-// Utilities for MD5
-//---------------------------------------------------------
-// [TODO]
-//
-// In the future, following functions might be moved to a other 
-// file or other library. In particular, these function should 
-// not dependent on only OpenSSL, should be configured with 
-// GnuTLS and NSS. At present, we are left these functions in 
-// this file so only k2hash uses it.
-//
-#define	K2H_CVT_MD_PARTSIZE						static_cast<size_t>(512)
-
-static string to_base64(const unsigned char* data, size_t length)
-{
-	static const char*	composechar = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-
-	unsigned char	block[4];
-	string			result;
-
-	for(size_t readpos = 0; readpos < length; readpos += 3){
-		block[0] = (data[readpos] & 0xfc) >> 2;
-		block[1] = ((data[readpos] & 0x03) << 4) | ((((readpos + 1) < length ? data[readpos + 1] : 0x00) & 0xf0) >> 4);
-		block[2] = (readpos + 1) < length ? (((data[readpos + 1] & 0x0f) << 2) | ((((readpos + 2) < length ? data[readpos + 2] : 0x00) & 0xc0) >> 6)) : 0x40;
-		block[3] = (readpos + 2) < length ? (data[readpos + 2] & 0x3f) : 0x40;
-
-		result += composechar[block[0]];
-		result += composechar[block[1]];
-		result += composechar[block[2]];
-		result += composechar[block[3]];
-	}
-	return result;
-}
-
-// [NOTE]
-// Not include end of string NULL.
-//
-static string to_md5_string(const char* str)
-{
-	MD5_CTX			md5ctx;
-	unsigned char	md5hex[MD5_DIGEST_LENGTH];
-
-	// md5
-	MD5_Init(&md5ctx);
-	for(size_t length = strlen(str); !ISEMPTYSTR(str) && 0 < length; length -= min(length, K2H_CVT_MD_PARTSIZE), str = &str[min(length, K2H_CVT_MD_PARTSIZE)]){
-		MD5_Update(&md5ctx, str, min(length, K2H_CVT_MD_PARTSIZE));
-	}
-	MD5_Final(md5hex, &md5ctx);
-
-	// base64
-	return to_base64(md5hex, MD5_DIGEST_LENGTH);
-}
-
-//
-// binary to sha256 base64'ed string
-//
-static string to_sha256_string(const unsigned char* bin, size_t length)
-{
-	EVP_MD_CTX*		sha256ctx	= EVP_MD_CTX_create();
-	unsigned int	digest_len	= SHA256_DIGEST_LENGTH;
-	unsigned char	sha256hex[SHA256_DIGEST_LENGTH];
-
-	if(!sha256ctx){
-		ERR_K2HPRN("Could not create context for sha256.");
-		return string("");
-	}
-	EVP_MD_CTX_set_flags(sha256ctx, EVP_MD_CTX_FLAG_ONESHOT);
-
-	// sha256
-	if(1 != EVP_DigestInit_ex(sha256ctx, EVP_sha256(), NULL)){
-		ERR_K2HPRN("Could not initialize context for sha256 digest.");
-		EVP_MD_CTX_destroy(sha256ctx);
-		return string("");
-	}
-
-	for(size_t onelength = 0; 0 < length; length -= onelength, bin = &bin[onelength]){
-		onelength = min(length, K2H_CVT_MD_PARTSIZE);
-		if(1 != EVP_DigestUpdate(sha256ctx, bin, onelength)){
-			ERR_K2HPRN("Could not update context for sha256 digest.");
-			EVP_MD_CTX_destroy(sha256ctx);
-			return string("");
-		}
-	}
-	if(1 != EVP_DigestFinal_ex(sha256ctx, sha256hex, &digest_len)){
-		ERR_K2HPRN("Could not final context for sha256 digest.");
-		EVP_MD_CTX_destroy(sha256ctx);
-		return string("");
-	}
-	EVP_MD_CTX_destroy(sha256ctx);
-
-	// base64
-	return to_base64(sha256hex, static_cast<size_t>(digest_len));
-}
-
-// [NOTE]
-// This function generates system-wide unique ID.
-// If gerarated ID does not unique, but we do not care for it.
-// Because k2hash needs unique ID for only one key's history.
-// This means that it may be a unique only to one key.
-//
-// We generates it by following seed's data.
-//	unique ID =
-//		base64(
-//			sha256(
-//				bytes array(
-//					8 bytes		- nano seconds(by clock_gettime) at calling this.
-//					8 bytes		- seconds(by clock_gettime) at calling this.
-//					8 bytes		- thread id on the box.
-//					8 bytes		- random value by rand() function.
-//					n bytes		- hostname
-//				)
-//			)
-//		);
-//
-static string k2h_get_uniqid_for_history(const struct timespec& rtime)
-{
-	static unsigned int	seed = 0;
-	static char			hostname[NI_MAXHOST];
-	static size_t		hostnamelen;
-	static bool			init = false;
-	if(!init){
-		// seed for rand()
-		struct timespec	rtime = {0, 0};
-		if(-1 == clock_gettime(CLOCK_REALTIME_COARSE, &rtime)){
-			WAN_K2HPRN("could not get clock time by errno(%d), so unix time is instead of it.", errno);
-			seed = static_cast<unsigned int>(time(NULL));			// base is sec
-		}else{
-			seed = static_cast<unsigned int>(rtime.tv_nsec / 1000);	// base is us
-		}
-
-		// local hostname
-		if(0 != gethostname(hostname, sizeof(hostname))){
-			WAN_K2HPRN("Could not get localhost name by errno(%d), so \"localhost\" is set.", errno);
-			strcpy(hostname, "localhost");
-		}
-		hostnamelen = strlen(hostname);
-
-		init = true;
-	}
-
-	// set datas
-	uint64_t	ard64[4];								// [1]->nsec, [2]->sec, [3]->tid, [4]->rand
-	ard64[0] = static_cast<uint64_t>(rtime.tv_nsec);
-	ard64[1] = static_cast<uint64_t>(rtime.tv_sec);
-	ard64[2] = static_cast<uint64_t>(gettid());
-	ard64[3] = static_cast<uint64_t>(rand_r(&seed));	// [TODO] should use MAC address instead of rand().
-	seed++;												// not need barrier
-
-	// set to binary array
-	unsigned char	bindata[NI_MAXHOST + (sizeof(uint64_t) * 4)];
-	size_t			setpos;
-	for(setpos = 0; setpos < (sizeof(uint64_t) * 4); ++setpos){
-		bindata[setpos] = static_cast<unsigned char>(((setpos % 8) ? (ard64[setpos / 8] >> ((setpos % 8) * 8)) : ard64[setpos / 8]) & 0xff);
-	}
-	memcpy(&bindata[setpos], hostname, hostnamelen);
-	setpos += hostnamelen;
-
-	// SHA256
-	return to_sha256_string(bindata, setpos);
-}
-
-//---------------------------------------------------------
-// Utilities for AES256
-//---------------------------------------------------------
-// [TODO]
-//
-// In the future, following functions might be moved to a other 
-// file or other library. In particular, these function should 
-// not dependent on only OpenSSL, should be configured with 
-// GnuTLS and NSS. At present, we are left these functions in 
-// this file so only k2hash uses it.
-//
-
-// [NOTE]
-// We might should be used such as std::random rather than rand().
-// However, this function is performed only generation of salt, 
-// salt need not be strictly random. And salt is not a problem 
-// even if collision between threads. Thus, we use the rand.
-// However, this function is to be considerate of another functions
-// using rand, so this uses rand_r for not changing seed.
-//
-static void k2h_pkcs5_salt(unsigned char* salt, size_t length)
-{
-	static unsigned int	seed = 0;
-	static bool			init = false;
-	if(!init){
-		struct timespec	rtime = {0, 0};
-		if(-1 == clock_gettime(CLOCK_REALTIME_COARSE, &rtime)){
-			WAN_K2HPRN("could not get clock time by errno(%d), so unix time is instead of it.", errno);
-			seed = static_cast<unsigned int>(time(NULL));			// base is sec
-		}else{
-			seed = static_cast<unsigned int>(rtime.tv_nsec / 1000);	// base is us
-		}
-		init = true;
-	}
-
-	for(size_t cnt = 0; cnt < length; ++cnt){
-		seed		= static_cast<unsigned int>(rand_r(&seed));
-		salt[cnt]	= static_cast<unsigned char>(seed & 0xFF);
-	}
-}
-
-// [NOTE]
-//
-// Encrypted binary data is formatted following:
-//	"Salted__xxxxxxxxEEEE....EEEEPPPP..."
-//
-// SALT Prefix:		start with "Salted__" with salt(8byte)
-// Encrypted data:	EEEE....EEEE, it is same original data length.
-// Padding:			Encrypted data is 16byte block(AES256 CBC), then
-//					max 31 bytes for padding.(== 32 bytes)
-//
-#define K2H_ENCRYPT_SALT_PREFIX						"Salted__"
-#define K2H_ENCRYPT_SALT_PREFIX_LENGTH				8
-#define K2H_ENCRYPT_SALT_LENGTH						PKCS5_SALT_LEN
-#define K2H_ENCRYPT_MAX_PADDING_LENGTH				32				// max 31 bytes
-#define	K2H_ENCRYPTED_DATA_EX_LENGTH				(K2H_ENCRYPT_SALT_PREFIX_LENGTH + PKCS5_SALT_LEN + K2H_ENCRYPT_MAX_PADDING_LENGTH)
-
-static unsigned char* k2h_encrypt_aes256_cbc(const char* pass, const unsigned char* orgdata, size_t orglen, size_t& enclen)
-{
-	static const char	salt_prefix[] = K2H_ENCRYPT_SALT_PREFIX;
-
-	if(ISEMPTYSTR(pass) || !orgdata || 0 == orglen){
-		ERR_K2HPRN("parameters are wrong.");
-		return NULL;
-	}
-
-	EVP_CIPHER_CTX		cictx;
-	const EVP_CIPHER*	cipher = EVP_aes_256_cbc();
-	unsigned char		key[EVP_MAX_KEY_LENGTH];
-	unsigned char		iv[EVP_MAX_IV_LENGTH];
-	unsigned char*		encryptdata;
-	unsigned char*		saltpos;
-	unsigned char*		setdatapos;
-	int					encbodylen = 0;
-	int					enclastlen = 0;
-
-	// allocated for encrypted data area
-	if(NULL == (encryptdata = reinterpret_cast<unsigned char*>(malloc(orglen + K2H_ENCRYPTED_DATA_EX_LENGTH)))){
-		ERR_K2HPRN("Could not allcation memory.");
-		return NULL;
-	}
-
-	// copy salt prefix
-	memcpy(encryptdata, salt_prefix, K2H_ENCRYPT_SALT_PREFIX_LENGTH);
-	saltpos = &encryptdata[K2H_ENCRYPT_SALT_PREFIX_LENGTH];
-
-	// make salt
-	k2h_pkcs5_salt(saltpos, K2H_ENCRYPT_SALT_LENGTH);
-	setdatapos = &saltpos[K2H_ENCRYPT_SALT_LENGTH];
-
-	// make common encryption key(iteration count = 1)
-	if(0 == EVP_BytesToKey(cipher, EVP_md5(), saltpos, reinterpret_cast<const unsigned char*>(pass), strlen(pass), 1, key, iv)){
-		ERR_K2HPRN("Failed to make AES256 key from pass.");
-		K2H_Free(encryptdata);
-		return NULL;
-	}
-
-	// initialize
-	EVP_CIPHER_CTX_init(&cictx);
-
-	// initialize context
-	if(1 != EVP_EncryptInit_ex(&cictx, cipher, NULL, key, iv)){						// type is normally supplied by a function such as EVP_aes_256_cbc().
-		ERR_K2HPRN("Could not initialize EVP context.");
-		K2H_Free(encryptdata);
-		return NULL;
-	}
-
-	// do encrypt
-	if(1 != EVP_EncryptUpdate(&cictx, setdatapos, &encbodylen, orgdata, static_cast<int>(orglen))){
-		ERR_K2HPRN("Failed to AES256 CBC encrypt.");
-		K2H_Free(encryptdata);
-		return NULL;
-	}
-	// last encrypt
-	if(1 != EVP_EncryptFinal_ex(&cictx, &setdatapos[encbodylen], &enclastlen)){		// padding is on as default
-		ERR_K2HPRN("Failed to AES256 CBC encrypt finally.");
-		K2H_Free(encryptdata);
-		return NULL;
-	}
-
-	// destroy context
-	if(1 != EVP_CIPHER_CTX_cleanup(&cictx)){
-		ERR_K2HPRN("Failed to destroy EVP context.");
-		K2H_Free(encryptdata);
-		return NULL;
-	}
-
-	// length
-	enclen = static_cast<size_t>(K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH + encbodylen + enclastlen);
-
-	return encryptdata;
-}
-
-static unsigned char* k2h_decrypt_aes256_cbc(const char* pass, const unsigned char* encdata, size_t enclen, size_t& declen)
-{
-	if(ISEMPTYSTR(pass) || !encdata || 0 == enclen){
-		ERR_K2HPRN("parameters are wrong.");
-		return NULL;
-	}
-
-	EVP_CIPHER_CTX			cictx;
-	const EVP_CIPHER*		cipher = EVP_aes_256_cbc();
-	unsigned char			key[EVP_MAX_KEY_LENGTH];
-	unsigned char			iv[EVP_MAX_IV_LENGTH];
-	unsigned char*			decryptdata;
-	const unsigned char*	saltpos		= &encdata[K2H_ENCRYPT_SALT_PREFIX_LENGTH];
-	const unsigned char*	encbodypos	= &encdata[K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH];
-	int						encbodylen	= static_cast<int>(enclen - (K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH));
-	int						decbodylen	= 0;
-	int						declastlen	= 0;
-
-	// allocated for decrypted data area
-	if(NULL == (decryptdata = reinterpret_cast<unsigned char*>(malloc(enclen)))){	// declen < enclen
-		ERR_K2HPRN("Could not allcation memory.");
-		return NULL;
-	}
-
-	// make common encryption key(iteration count = 1)
-	if(0 == EVP_BytesToKey(cipher, EVP_md5(), saltpos, reinterpret_cast<const unsigned char*>(pass), strlen(pass), 1, key, iv)){
-		ERR_K2HPRN("Failed to make AES256 key from pass.");
-		K2H_Free(decryptdata);
-		return NULL;
-	}
-
-	// initialize
-	EVP_CIPHER_CTX_init(&cictx);
-
-	// initialize context
-	if(1 != EVP_DecryptInit_ex(&cictx, cipher, NULL, key, iv)){						// type is normally supplied by a function such as EVP_aes_256_cbc().
-		ERR_K2HPRN("Could not initialize EVP context.");
-		K2H_Free(decryptdata);
-		return NULL;
-	}
-
-	// do decrypt
-	if(1 != EVP_DecryptUpdate(&cictx, decryptdata, &decbodylen, encbodypos, encbodylen)){
-		ERR_K2HPRN("Failed to AES256 CBC decrypt.");
-		K2H_Free(decryptdata);
-		return NULL;
-	}
-	// last decrypt
-	if(1 != EVP_DecryptFinal_ex(&cictx, &decryptdata[decbodylen], &declastlen)){
-		ERR_K2HPRN("Failed to AES256 CBC decrypt finally.");
-		K2H_Free(decryptdata);
-		return NULL;
-	}
-
-	// destroy context
-	if(1 != EVP_CIPHER_CTX_cleanup(&cictx)){
-		ERR_K2HPRN("Failed to destroy EVP context.");
-		K2H_Free(decryptdata);
-		return NULL;
-	}
-
-	// length
-	declen = static_cast<size_t>(decbodylen + declastlen);
-
-	return decryptdata;
-}
 
 //---------------------------------------------------------
 // Symbols
@@ -407,19 +41,79 @@ static unsigned char* k2h_decrypt_aes256_cbc(const char* pass, const unsigned ch
 #define	K2HATTR_ENV_EXPIRE_SEC						"K2HATTR_EXPIRE_SEC"
 #define	K2HATTR_ENV_DEFAULT_ENC						"K2HATTR_DEFENC"
 #define	K2HATTR_ENV_ENCFILE							"K2HATTR_ENCFILE"
+#define	K2HATTR_ENV_ENC_TYPE						"K2HATTR_ENC_TYPE"
+#define	K2HATTR_ENV_ENC_ITER						"K2HATTR_ENC_ITER"
 
 #define	K2HATTR_ENV_VAL_NO							"NO"
 #define	K2HATTR_ENV_VAL_OFF							"OFF"
 #define	K2HATTR_ENV_VAL_YES							"YES"
 #define	K2HATTR_ENV_VAL_ON							"ON"
+#define	K2HATTR_ENV_VAL_ENCTYPE_AES256_PBKDF1		"AES256_PBKDF1"
+#define	K2HATTR_ENV_VAL_ENCTYPE_AES256_PBKDF2		"AES256_PBKDF2"
+
 #define	K2HATTR_ENCFILE_COMMENT_CHAR				'#'
 
 #define	K2HATTR_COMMON_MTIME						"mtime"
 #define	K2HATTR_COMMON_EXPIRE						"expire"
 #define	K2HATTR_COMMON_AES256_MD5					"aes256md5"
+#define	K2HATTR_COMMON_AES256_PBKDF2				"aes256_cbc_pad.pbkdf2.sha256"		// <DATA ENC CIPHER>.<PCKS#5 v2>.<KEY HASH TYPE>
 #define	K2HATTR_COMMON_UNIQ_ID						"uniqid"
 #define	K2HATTR_COMMON_PARENT_UNIQ_ID				"parentuniqid"
 #define	K2HATTR_COMMON_HISTORY_MARKER				"hismark"
+
+//---------------------------------------------------------
+// K2hCryptContext Class
+//---------------------------------------------------------
+// This class initializes the Crypt library when the k2hash
+// library is loaded and discards it at the timing of unloading.
+//
+// This class is used in K2hAttrBuiltin class as singleton.
+// This function provides for initializing crypt library when
+// starting k2hash library and forking in child process.
+//
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
+class K2hCryptContext
+{
+	protected:
+		static void PreforkHandler(void);
+
+	public:
+		K2hCryptContext(void);
+		virtual ~K2hCryptContext(void);
+};
+
+void K2hCryptContext::PreforkHandler(void)
+{
+	if(!k2h_crypt_lib_initialize()){
+		ERR_K2HPRN("Something error occurred in initializing crypt library at child process in fork().");
+	}else{
+		MSG_K2HPRN("Succeed initializing crypt library at child process in fork().");
+	}
+}
+
+K2hCryptContext::K2hCryptContext(void)
+{
+	int	result;
+	if(0 != (result = pthread_atfork(NULL, NULL, K2hCryptContext::PreforkHandler))){
+		ERR_K2HPRN("Failed to set handler for forking(errno=%d), but continue...", result);
+	}
+	if(!k2h_crypt_lib_initialize()){
+		ERR_K2HPRN("Something error occurred in initializing crypt library.");
+	}else{
+		MSG_K2HPRN("Succeed initializing crypt library.");
+	}
+}
+
+K2hCryptContext::~K2hCryptContext(void)
+{
+	if(!k2h_crypt_lib_terminate()){
+		ERR_K2HPRN("Something error occurred in terminating crypt library.");
+	}else{
+		MSG_K2HPRN("Succeed terminating crypt library.");
+	}
+}
 
 //---------------------------------------------------------
 // K2hAttrBuiltin Class varialbles
@@ -429,6 +123,8 @@ const char*		K2hAttrBuiltin::ATTR_ENV_HISTORY	= K2HATTR_ENV_HISTORY;
 const char*		K2hAttrBuiltin::ATTR_ENV_EXPIRE_SEC	= K2HATTR_ENV_EXPIRE_SEC;
 const char*		K2hAttrBuiltin::ATTR_ENV_DEFAULT_ENC= K2HATTR_ENV_DEFAULT_ENC;
 const char*		K2hAttrBuiltin::ATTR_ENV_ENCFILE	= K2HATTR_ENV_ENCFILE;
+const char*		K2hAttrBuiltin::ATTR_ENV_ENC_TYPE	= K2HATTR_ENV_ENC_TYPE;
+const char*		K2hAttrBuiltin::ATTR_ENV_ENC_ITER	= K2HATTR_ENV_ENC_ITER;
 
 const int		K2hAttrBuiltin::TYPE_ATTRBUILTIN;
 const char*		K2hAttrBuiltin::ATTR_BUILTIN_VERSION= K2HATTR_BUILTIN_VERSION;
@@ -438,6 +134,7 @@ const char*		K2hAttrBuiltin::ATTR_EXPIRE			= K2HATTR_COMMON_EXPIRE;
 const char*		K2hAttrBuiltin::ATTR_UNIQID			= K2HATTR_COMMON_UNIQ_ID;
 const char*		K2hAttrBuiltin::ATTR_PUNIQID		= K2HATTR_COMMON_PARENT_UNIQ_ID;
 const char*		K2hAttrBuiltin::ATTR_AES256_MD5		= K2HATTR_COMMON_AES256_MD5;
+const char*		K2hAttrBuiltin::ATTR_AES256_PBKDF2	= K2HATTR_COMMON_AES256_PBKDF2;
 const char*		K2hAttrBuiltin::ATTR_HISMARK		= K2HATTR_COMMON_HISTORY_MARKER;
 
 const time_t	K2hAttrBuiltin::NOT_EXPIRE;
@@ -447,8 +144,6 @@ const int		K2hAttrBuiltin::ATTR_MASK_ENCRYPT;
 const int		K2hAttrBuiltin::ATTR_MASK_HISTORY;
 const int		K2hAttrBuiltin::ATTR_MASK_EXPIRE;
 const int		K2hAttrBuiltin::ATTR_MASK_EXPIRE_KP;
-
-k2hbapackmap_t	K2hAttrBuiltin::AttrPackMap;
 
 //---------------------------------------------------------
 // Utility macros
@@ -466,14 +161,33 @@ k2hbapackmap_t	K2hAttrBuiltin::AttrPackMap;
 //---------------------------------------------------------
 // K2hAttrBuiltin Class Methods
 //---------------------------------------------------------
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
+K2hCryptContext& K2hAttrBuiltin::GetCryptLibContext(void)
+{
+	static K2hCryptContext	cryptlibcontext;		// singleton
+	return cryptlibcontext;
+}
+
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
+k2hbapackmap_t& K2hAttrBuiltin::GetAttrPackMap(void)
+{
+	static k2hbapackmap_t	AttrPackMap;			// singleton
+	(void)K2hAttrBuiltin::GetCryptLibContext();		// for initialize singleton if not initializing(this method call in K2hAttrBuiltin::Initialize)
+	return AttrPackMap;
+}
+
 PK2HBATTRPACK K2hAttrBuiltin::GetBuiltinAttrPack(const K2HShm* pshm)
 {
 	if(!pshm){
 		ERR_K2HPRN("Parameter is wrong.");
 		return NULL;
 	}
-	k2hbapackmap_t::iterator	iter = K2hAttrBuiltin::AttrPackMap.find(pshm);
-	if(K2hAttrBuiltin::AttrPackMap.end() == iter){
+	k2hbapackmap_t::iterator	iter = K2hAttrBuiltin::GetAttrPackMap().find(pshm);
+	if(K2hAttrBuiltin::GetAttrPackMap().end() == iter){
 		return NULL;
 	}
 	return iter->second;
@@ -486,15 +200,15 @@ bool K2hAttrBuiltin::CleanAttrBuiltin(const K2HShm* pshm)
 		return false;
 	}
 
-	k2hbapackmap_t::iterator	iter = K2hAttrBuiltin::AttrPackMap.find(pshm);
-	if(K2hAttrBuiltin::AttrPackMap.end() == iter){
+	k2hbapackmap_t::iterator	iter = K2hAttrBuiltin::GetAttrPackMap().find(pshm);
+	if(K2hAttrBuiltin::GetAttrPackMap().end() == iter){
 		WAN_K2HPRN("There is no builtin attribute pack structure in map.");
 		return true;	// already unload
 	}
 
 	PK2HBATTRPACK	pPack = iter->second;
 	K2H_Delete(pPack);
-	K2hAttrBuiltin::AttrPackMap.erase(iter);
+	K2hAttrBuiltin::GetAttrPackMap().erase(iter);
 
 	return true;
 }
@@ -623,6 +337,28 @@ bool K2hAttrBuiltin::RawInitializeEnv(PK2HBATTRPACK pPack)
 			return false;
 		}
 	}
+	if(k2h_getenv(K2hAttrBuiltin::ATTR_ENV_ENC_TYPE, value)){
+		if(0 == strcasecmp(value.c_str(), K2HATTR_ENV_VAL_ENCTYPE_AES256_PBKDF1)){
+			pPack->EncType		= K2H_ENC_AES256_PBKDF1;
+			pPack->IterCount	= 1;						// This case is always 1 for compatibility
+		}else if(0 == strcasecmp(value.c_str(), K2HATTR_ENV_VAL_ENCTYPE_AES256_PBKDF2)){
+			pPack->EncType = K2H_ENC_AES256_PBKDF2;
+		}else{
+			WAN_K2HPRN("environment %s has unknown value(%s), but continue...", K2hAttrBuiltin::ATTR_ENV_ENC_TYPE, value.c_str());
+		}
+	}
+	if(k2h_getenv(K2hAttrBuiltin::ATTR_ENV_ENC_ITER, value)){
+		if(K2H_ENC_AES256_PBKDF1 == pPack->EncType){
+			WAN_K2HPRN("environment %s is specified, but encrypt type is %s. this type is always iteration count = 1.", K2hAttrBuiltin::ATTR_ENV_ENC_ITER, K2HATTR_ENV_VAL_ENCTYPE_AES256_PBKDF1);
+		}else{
+			int	count = atoi(value.c_str());
+			if(count < 1){
+				WAN_K2HPRN("environment %s is wrong value(%d), iteration count must be 1 - 0x7fffffff", K2hAttrBuiltin::ATTR_ENV_ENC_ITER, count);
+			}else{
+				pPack->IterCount = count;
+			}
+		}
+	}
 	return true;
 }
 
@@ -671,7 +407,7 @@ bool K2hAttrBuiltin::Initialize(const K2HShm* pshm, const bool* is_mtime, const 
 	PK2HBATTRPACK	pPack = K2hAttrBuiltin::GetBuiltinAttrPack(pshm);
 	if(!pPack){
 		pPack = new K2HBATTRPACK;
-		K2hAttrBuiltin::AttrPackMap[pshm] = pPack;
+		K2hAttrBuiltin::GetAttrPackMap()[pshm] = pPack;
 	}
 	if(!K2hAttrBuiltin::RawInitializeEnv(pPack)){
 		ERR_K2HPRN("Failed to load preset attributes from environment.");
@@ -744,6 +480,7 @@ bool K2hAttrBuiltin::AddCryptPass(const K2HShm* pshm, const char* pPass, bool is
 //---------------------------------------------------------
 K2hAttrBuiltin::K2hAttrBuiltin(void) : K2hAttrOpsBase(), pBuiltinAttrPack(NULL), EncPass(""), ExpireSec(K2hAttrBuiltin::NOT_EXPIRE), OldUniqID(""), AttrMask(K2hAttrBuiltin::ATTR_MASK_NO)
 {
+	(void)K2hAttrBuiltin::GetCryptLibContext();		// for initialize singleton if not initializing
 	VerInfo = K2hAttrBuiltin::ATTR_BUILTIN_VERSION;
 }
 
@@ -799,11 +536,12 @@ bool K2hAttrBuiltin::IsHandleAttr(const unsigned char* key, size_t keylen) const
 		MSG_K2HPRN("target key name for attribute is empty.");
 		return false;
 	}
-	if(	((strlen(K2hAttrBuiltin::ATTR_MTIME)		+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_MTIME,		key, keylen))	||
-		((strlen(K2hAttrBuiltin::ATTR_EXPIRE)		+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_EXPIRE,		key, keylen))	||
-		((strlen(K2hAttrBuiltin::ATTR_UNIQID)		+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_UNIQID,		key, keylen))	||
-		((strlen(K2hAttrBuiltin::ATTR_PUNIQID)		+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_PUNIQID,		key, keylen))	||
-		((strlen(K2hAttrBuiltin::ATTR_AES256_MD5)	+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_AES256_MD5,	key, keylen))	)
+	if(	((strlen(K2hAttrBuiltin::ATTR_MTIME)		+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_MTIME,			key, keylen))	||
+		((strlen(K2hAttrBuiltin::ATTR_EXPIRE)		+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_EXPIRE,			key, keylen))	||
+		((strlen(K2hAttrBuiltin::ATTR_UNIQID)		+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_UNIQID,			key, keylen))	||
+		((strlen(K2hAttrBuiltin::ATTR_PUNIQID)		+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_PUNIQID,			key, keylen))	||
+		((strlen(K2hAttrBuiltin::ATTR_AES256_PBKDF2)+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_AES256_PBKDF2,	key, keylen))	||
+		((strlen(K2hAttrBuiltin::ATTR_AES256_MD5)	+ 1) == keylen && 0 == memcmp(K2hAttrBuiltin::ATTR_AES256_MD5,		key, keylen))	)
 	{
 		return true;
 	}
@@ -895,8 +633,13 @@ bool K2hAttrBuiltin::UpdateAttr(K2HAttrs& attrs)
 		// encrypt
 		unsigned char*	encValue;
 		size_t			encValLen = 0;
-		if(NULL == (encValue = k2h_encrypt_aes256_cbc(pass.c_str(), byValue, ValLen, encValLen))){
-			ERR_K2HPRN("Could not encrypt value by AES256.");
+		if(K2H_ENC_AES256_PBKDF1 == pBuiltinAttrPack->EncType){
+			encValue = k2h_encrypt_aes256_cbc(pass.c_str(), byValue, ValLen, encValLen);
+		}else{		// K2H_ENC_AES256_PBKDF2 == pBuiltinAttrPack->EncType
+			encValue = k2h_encrypt_aes256_cbc_pbkdf2(pass.c_str(), pBuiltinAttrPack->IterCount, byValue, ValLen, encValLen);
+		}
+		if(!encValue){
+			ERR_K2HPRN("Could not encrypt value by AES256 CBC PAD(PBKDF1 or PBKDF2).");
 			return false;
 		}
 
@@ -910,12 +653,12 @@ bool K2hAttrBuiltin::UpdateAttr(K2HAttrs& attrs)
 		IsCahnged = true;
 
 		// set md5
-		if(!SetAttr(attrs, K2hAttrBuiltin::ATTR_AES256_MD5, strmd5.c_str())){
-			ERR_K2HPRN("Could not set %s attribute.", K2hAttrBuiltin::ATTR_AES256_MD5);
+		if(!SetAttr(attrs, (K2H_ENC_AES256_PBKDF1 == pBuiltinAttrPack->EncType ? K2hAttrBuiltin::ATTR_AES256_MD5 : K2hAttrBuiltin::ATTR_AES256_PBKDF2), strmd5.c_str())){
+			ERR_K2HPRN("Could not set %s attribute.", (K2H_ENC_AES256_PBKDF1 == pBuiltinAttrPack->EncType ? K2hAttrBuiltin::ATTR_AES256_MD5 : K2hAttrBuiltin::ATTR_AES256_PBKDF2));
 			return false;
 		}
 	}else{
-		RemoveAttr(attrs, K2hAttrBuiltin::ATTR_AES256_MD5);
+		RemoveAttr(attrs, (K2H_ENC_AES256_PBKDF1 == pBuiltinAttrPack->EncType ? K2hAttrBuiltin::ATTR_AES256_MD5 : K2hAttrBuiltin::ATTR_AES256_PBKDF2));
 	}
 
 	// history
@@ -1144,14 +887,30 @@ bool K2hAttrBuiltin::GetUniqId(K2HAttrs& attrs, bool is_parent, string& uniqid) 
 bool K2hAttrBuiltin::GetEncryptKeyMd5(K2HAttrs& attrs, string* enckeymd5) const
 {
 	const char*	pval = NULL;
-	if(!GetAttr(attrs, K2hAttrBuiltin::ATTR_AES256_MD5, &pval) || !pval){
-		// attr does not have key
-		return false;
+	if(!GetAttr(attrs, K2hAttrBuiltin::ATTR_AES256_PBKDF2, &pval) || !pval){		// check AES256 CBC PBKDF2 type
+		if(!GetAttr(attrs, K2hAttrBuiltin::ATTR_AES256_MD5, &pval) || !pval){		// check AES256 CBC PBKDF1 type
+			// attr does not have key
+			return false;
+		}
 	}
 	if(enckeymd5){
 		*enckeymd5 = pval;
 	}
 	return true;
+}
+
+bool K2hAttrBuiltin::GetEncryptType(K2HAttrs& attrs, K2HATTR_ENC_TYPE& enctype) const
+{
+	const char*	pval	= NULL;
+	bool		result	= false;
+	if(GetAttr(attrs, K2hAttrBuiltin::ATTR_AES256_PBKDF2, &pval) && pval){			// AES256 CBC PBKDF2 type
+		enctype	= K2H_ENC_AES256_PBKDF2;
+		result	= true;
+	}else if(GetAttr(attrs, K2hAttrBuiltin::ATTR_AES256_MD5, &pval) && pval){		// AES256 CBC PBKDF1 type
+		enctype	= K2H_ENC_AES256_PBKDF1;
+		result	= true;
+	}
+	return result;
 }
 
 // 
@@ -1176,8 +935,9 @@ unsigned char* K2hAttrBuiltin::GetDecryptValue(K2HAttrs& attrs, const char* encp
 		return presult;
 	}
 
-	string	enckeymd5;
-	if(GetEncryptKeyMd5(attrs, enckeymd5)){
+	K2HATTR_ENC_TYPE	enctype = K2H_ENC_AES256_PBKDF2;
+	string				enckeymd5;
+	if(GetEncryptType(attrs, enctype) && GetEncryptKeyMd5(attrs, enckeymd5)){
 		// value is encrypted
 		string	strPass;
 		if(ISEMPTYSTR(encpass)){
@@ -1202,7 +962,12 @@ unsigned char* K2hAttrBuiltin::GetDecryptValue(K2HAttrs& attrs, const char* encp
 		}
 
 		// do decrypt
-		if(NULL == (presult = k2h_decrypt_aes256_cbc(strPass.c_str(), byValue, ValLen, declen))){
+		if(K2H_ENC_AES256_PBKDF1 == enctype){
+			presult = k2h_decrypt_aes256_cbc(strPass.c_str(), byValue, ValLen, declen);
+		}else{	// K2H_ENC_AES256_PBKDF2 == enctype
+			presult = k2h_decrypt_aes256_cbc_pbkdf2(strPass.c_str(), byValue, ValLen, declen);
+		}
+		if(!presult){
 			ERR_K2HPRN("Failed to decrypt value by pass.");
 			return presult;
 		}

@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Tue Feb 4 2014
@@ -32,18 +32,25 @@ using namespace std;
 const bool	K2HLock::RDLOCK;
 const bool	K2HLock::RWLOCK;
 
-// [NOTE] About fdmodes
-// We do not use lock for this mapping because this method is
-// called only at initializing under another exclusive control.
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
 //
-fdmodemap_t	K2HLock::fdmodes;
+fdmodemap_t& K2HLock::GetFdModes(void)
+{
+	// [NOTE] About fdmodes
+	// We do not use lock for this mapping because this method is
+	// called only at initializing under another exclusive control.
+	//
+	static fdmodemap_t	fmmap;				// singleton
+	return fmmap;
+}
 
 bool K2HLock::AddReadModeFd(int fd)
 {
 	if(FLCK_INVALID_HANDLE == fd){
 		return false;
 	}
-	K2HLock::fdmodes[fd] = true;			// value is dummy(always true)
+	K2HLock::GetFdModes()[fd] = true;		// value is dummy(always true)
 
 	return true;
 }
@@ -53,10 +60,10 @@ bool K2HLock::RemoveReadModeFd(int fd)
 	if(FLCK_INVALID_HANDLE == fd){
 		return false;
 	}
-	if(K2HLock::fdmodes.end() == K2HLock::fdmodes.find(fd)){
+	if(K2HLock::GetFdModes().end() == K2HLock::GetFdModes().find(fd)){
 		return false;
 	}
-	K2HLock::fdmodes.erase(fd);
+	K2HLock::GetFdModes().erase(fd);
 
 	return true;
 }
@@ -95,7 +102,7 @@ bool K2HLock::Lock(bool IsRead)
 		return true;
 	}
 	// if fd is read only mode, do nothing.
-	if(K2HLock::fdmodes.end() != K2HLock::fdmodes.find(lock_fd)){
+	if(K2HLock::GetFdModes().end() != K2HLock::GetFdModes().find(lock_fd)){
 		return true;
 	}
 	return FLRwlRcsv::Lock(IsRead);
@@ -115,7 +122,7 @@ bool K2HLock::Lock(int fd, off_t offset)
 		return true;
 	}
 	// if fd is read only mode, do nothing.
-	if(K2HLock::fdmodes.end() != K2HLock::fdmodes.find(lock_fd)){
+	if(K2HLock::GetFdModes().end() != K2HLock::GetFdModes().find(lock_fd)){
 		return true;
 	}
 	return FLRwlRcsv::Lock(fd, offset, 1L, (FLCK_READ_LOCK == lock_type));
@@ -131,7 +138,7 @@ bool K2HLock::Lock(int fd, off_t offset, bool IsRead)
 		return true;
 	}
 	// if fd is read only mode, do nothing.
-	if(K2HLock::fdmodes.end() != K2HLock::fdmodes.find(lock_fd)){
+	if(K2HLock::GetFdModes().end() != K2HLock::GetFdModes().find(lock_fd)){
 		return true;
 	}
 	return FLRwlRcsv::Lock(fd, offset, 1L, IsRead);
@@ -148,7 +155,7 @@ bool K2HLock::Lock(void)
 		return true;
 	}
 	// if fd is read only mode, do nothing.
-	if(K2HLock::fdmodes.end() != K2HLock::fdmodes.find(lock_fd)){
+	if(K2HLock::GetFdModes().end() != K2HLock::GetFdModes().find(lock_fd)){
 		return true;
 	}
 	return FLRwlRcsv::Lock();
@@ -165,7 +172,7 @@ bool K2HLock::Unlock(void)
 		return true;
 	}
 	// if fd is read only mode, do nothing.
-	if(K2HLock::fdmodes.end() != K2HLock::fdmodes.find(lock_fd)){
+	if(K2HLock::GetFdModes().end() != K2HLock::GetFdModes().find(lock_fd)){
 		return true;
 	}
 	return FLRwlRcsv::Unlock();
@@ -198,7 +205,7 @@ bool K2HLock::Dup(const K2HLock& other)
 	}
 
 	if(is_mutex_locked){
-		FLRwlRcsv::Stack.unlock();
+		FLRwlRcsv::StackUnlock();
 	}
 	return bresult;
 }

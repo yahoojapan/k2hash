@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,14 +11,14 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Mon Feb 10 2014
  * REVISION:
  *
  */
-#include <assert.h>
+
 #include <string>
 
 #include <fullock/flckstructure.h>
@@ -120,11 +120,19 @@ const long			K2HTransManager::MINIMUM_WAIT_SEEP;
 const long			K2HTransManager::FINISH_WAIT_BLOCK;
 const unsigned char	K2HTransManager::default_prefix[] = {'\0', 'K', '2', 'H', 'T', 'R', 'A', 'N', 'S', '_', 'P', 'R', 'E', 'F', 'I', 'X', '_'};
 const time_t		K2HTransManager::DEFAULT_INTERVAL;
-K2HTransManager		K2HTransManager::singleton;
 
 //---------------------------------------------------------
 // K2HTransManager : Class Methods
 //---------------------------------------------------------
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
+K2HTransManager* K2HTransManager::Get(void)
+{
+	static K2HTransManager	transman;							// singleton
+	return &transman;
+}
+
 void* K2HTransManager::WorkerProc(void* param)
 {
 	PTRTHPARAM	ptrparam = reinterpret_cast<PTRTHPARAM>(param);
@@ -213,24 +221,16 @@ bool K2HTransManager::Do(k2h_h handle, PBCOM pBinCom)
 //---------------------------------------------------------
 K2HTransManager::K2HTransManager() : LockVal(FLCK_NOSHARED_MUTEX_VAL_UNLOCKED), LockPool(FLCK_NOSHARED_MUTEX_VAL_UNLOCKED), threadcnt(0), interval(K2HTransManager::DEFAULT_INTERVAL)
 {
-	if(this == K2HTransManager::Get()){
-		trfilemap.clear();
-		trprefmap.clear();
-		trpoolmap.clear();
-	}else{
-		assert(false);
-	}
+	trfilemap.clear();
+	trprefmap.clear();
+	trpoolmap.clear();
 }
 
 K2HTransManager::~K2HTransManager()
 {
-	if(this == K2HTransManager::Get()){
-		for(trprefmap_t::iterator iter = trprefmap.begin(); iter != trprefmap.end(); trprefmap.erase(iter++)){
-			Stop(iter->first, false);
-			K2H_Delete(iter->second);
-		}
-	}else{
-		assert(false);
+	for(trprefmap_t::iterator iter = trprefmap.begin(); iter != trprefmap.end(); trprefmap.erase(iter++)){
+		Stop(iter->first, false);
+		K2H_Delete(iter->second);
 	}
 }
 

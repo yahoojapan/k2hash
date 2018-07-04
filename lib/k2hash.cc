@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Nor 31 2013
@@ -33,6 +33,7 @@
 #include "k2htrans.h"
 #include "k2harchive.h"
 #include "k2hqueue.h"
+#include "k2hcryptcommon.h"
 
 using namespace std;
 
@@ -2726,9 +2727,9 @@ void k2h_print_version(FILE* stream)
 {
 	static const char format[] =
 		"\n"
-		"K2HASH library Version %s (commit: %s)\n"
+		"K2HASH library Version %s (commit: %s) with %s\n"
 		"\n"
-		"Copyright 2013 Yahoo! JAPAN corporation.\n"
+		"Copyright(C) 2013 Yahoo Japan Corporation.\n"
 		"\n"
 		"K2HASH is key-valuew store base libraries. K2HASH is made for\n"
 		"the purpose of the construction of original KVS system and the\n"
@@ -2740,7 +2741,7 @@ void k2h_print_version(FILE* stream)
 	if(!stream){
 		stream = stdout;
 	}
-	fprintf(stream, format, VERSION, k2h_commit_hash);
+	fprintf(stream, format, VERSION, k2h_commit_hash, k2h_crypt_lib_name());
 
 	fullock_print_version(stream);
 }

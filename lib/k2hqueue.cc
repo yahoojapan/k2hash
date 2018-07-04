@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013-2015 Yahoo! JAPAN corporation.
+ * Copyright 2013-2015 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Jan 30 2015
@@ -26,7 +26,6 @@
 #include <sys/syscall.h>
 #include <time.h>
 #include <errno.h>
-#include <assert.h>
 
 #include <fullock/flckstructure.h>
 #include <fullock/flckbaselist.tcc>
@@ -56,13 +55,11 @@ using namespace std;
 class K2HUniqTimespec
 {
 	protected:
-		static K2HUniqTimespec	singleton;
-
-		struct timespec			uniq_count;					// uses for building uniq key name
-		int						LockVal;					// like mutex for valiables
+		struct timespec	uniq_count;					// uses for building uniq key name
+		int				LockVal;					// like mutex for valiables
 
 	public:
-		static K2HUniqTimespec* Get(void) { return &K2HUniqTimespec::singleton; }
+		static K2HUniqTimespec* Get(void);
 
 		void GetUniqTimespec(struct timespec& ts);
 
@@ -74,24 +71,26 @@ class K2HUniqTimespec
 //---------------------------------------------------------
 // K2HUniqTimespec : Methods
 //---------------------------------------------------------
-K2HUniqTimespec	K2HUniqTimespec::singleton;
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
+K2HUniqTimespec* K2HUniqTimespec::Get(void)
+{
+	static K2HUniqTimespec	uniqts;					// singleton
+	return &uniqts;
+}
 
 K2HUniqTimespec::K2HUniqTimespec() : LockVal(FLCK_NOSHARED_MUTEX_VAL_UNLOCKED)
 {
-	if(this == K2HUniqTimespec::Get()){
-		if(-1 == clock_gettime(CLOCK_REALTIME, &uniq_count)){
-			WAN_K2HPRN("Could not get timespec(errno=%d), but continue with other initial value...", errno);
-			uniq_count.tv_sec	= time(NULL);
-			uniq_count.tv_nsec	= 0L;
-		}
-	}else{
-		assert(false);
+	if(-1 == clock_gettime(CLOCK_REALTIME, &uniq_count)){
+		WAN_K2HPRN("Could not get timespec(errno=%d), but continue with other initial value...", errno);
+		uniq_count.tv_sec	= time(NULL);
+		uniq_count.tv_nsec	= 0L;
 	}
 }
 
 K2HUniqTimespec::~K2HUniqTimespec()
 {
-	assert(this == K2HUniqTimespec::Get());
 }
 
 void K2HUniqTimespec::GetUniqTimespec(struct timespec& ts)

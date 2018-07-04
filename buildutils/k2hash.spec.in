@@ -1,0 +1,118 @@
+#
+# K2HASH
+#
+# Copyright 2013 Yahoo Japan Corporation.
+#
+# K2HASH is key-valuew store base libraries.
+# K2HASH is made for the purpose of the construction of
+# original KVS system and the offer of the library.
+# The characteristic is this KVS library which Key can
+# layer. And can support multi-processing and multi-thread,
+# and is provided safely as available KVS.
+#
+# For the full copyright and license information, please view
+# the license file that was distributed with this source code.
+#
+# AUTHOR:   Takeshi Nakatani
+# CREATE:   Fri 17 Jul 2016
+# REVISION:
+#
+
+#
+# Local macros/define
+#
+%if %{undefined package_revision}
+%global package_revision 1
+%endif
+
+%if %{undefined make_build}
+%global make_build %{__make} %{?_smp_mflags}
+%endif
+
+%if %{undefined autosetup}
+%global autosetup %setup -q
+%endif
+
+%global gittag v@VERSION@
+
+%if %{undefined make_check}
+%global make_check 1
+%endif
+
+#
+# main package
+#
+Summary: @SHORTDESC@
+Name: @PACKAGE_NAME@
+Version: @VERSION@
+Release: %{package_revision}%{?dist}
+License: @PKGLICENSE@
+Group: Applications/Databases
+URL: https://@GIT_DOMAIN@/@GIT_ORG@/@PACKAGE_NAME@
+Source0: https://@GIT_DOMAIN@/@GIT_ORG@/@PACKAGE_NAME@/archive/%{gittag}/%{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+BuildRequires: git-core gcc-c++ make libtool libfullock-devel%{?_isa} >= 1.0.28
+Prefix: %{_prefix}
+
+%description
+@LONGDESC@
+
+%prep
+%autosetup -n %{name}-%{version}
+
+%build
+./autogen.sh
+%configure --disable-static
+%make_build
+
+%install
+%make_install
+find %{buildroot} -name '*.la' -exec rm -f {} ';'
+
+%if %{make_check}
+%check
+%{__make} check
+%endif
+
+%if %{defined ldconfig_scriptlets}
+%ldconfig_scriptlets
+%else
+%post -p /sbin/ldconfig
+%postun -p /sbin/ldconfig
+%endif
+
+%if 0%{?rhel} == 6
+%clean
+rm -rf %{buildroot}
+%endif
+
+%files
+%if 0%{?rhel} == 6
+%defattr(-,root,root)
+%endif
+%doc COPYING README AUTHORS ChangeLog
+%{_libdir}/*.so*
+%{_mandir}/man1/*
+%{_bindir}/*
+
+#
+# devel package
+#
+%package devel
+Summary: @SHORTDESC@ (development)
+Requires: %{name}%{?_isa} = %{version}-%{release}, libfullock-devel%{?_isa} >= 1.0.28
+
+%description devel
+Development package for building with @PACKAGE_NAME@ shared library.
+This package has header files and symbols for it.
+
+%files devel
+%if 0%{?rhel} == 6
+%defattr(-,root,root)
+%endif
+%doc COPYING README AUTHORS ChangeLog
+%{_includedir}/*
+%{_libdir}/pkgconfig/*.pc
+
+%changelog
+@RPMCHANGELOG@

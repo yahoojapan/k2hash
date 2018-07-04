@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,13 +11,14 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Dec 2 2013
  * REVISION:
  *
  */
+
 #ifndef	K2HCOMMON_H
 #define K2HCOMMON_H
 
@@ -83,6 +84,26 @@ template<typename T> inline bool ISEMPTYSTR(const T& pstr)
 
 #define	__STDC_FORMAT_MACROS
 #include <inttypes.h>
+
+//---------------------------------------------------------
+// For endian
+//---------------------------------------------------------
+#ifndef	_BSD_SOURCE
+#define _BSD_SOURCE
+#define	SET_LOCAL_BSD_SOURCE	1
+#endif
+
+#ifdef	HAVE_ENDIAN_H
+#include <endian.h>
+#else
+#ifdef	HAVE_SYS_ENDIAN_H
+#include <sys/endian.h>
+#endif
+#endif
+
+#ifdef	SET_LOCAL_BSD_SOURCE
+#undef _BSD_SOURCE
+#endif
 
 /*
  * VIM modelines

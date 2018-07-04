@@ -2,7 +2,7 @@ k2hash
 ------
 [![Build Status](https://travis-ci.org/yahoojapan/k2hash.svg?branch=master)](https://travis-ci.org/yahoojapan/k2hash)
 
-K2HASH - NoSQL Key Value Store(KVS) library by Yahoo! JAPAN
+K2HASH - NoSQL Key Value Store(KVS) library
 
 ### Overview
 K2HASH is NoSQL(key value store) library and tools for this library by

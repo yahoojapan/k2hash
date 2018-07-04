@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Dec 2 2013
@@ -405,9 +405,16 @@ bool K2HMmapMan::IsMmaped(const K2HShm* pk2hshm, const char* file, bool needlock
 }
 
 //---------------------------------------------------------
-// K2HMmapInfo: Class valiable
+// K2HMmapInfo: Class Method
 //---------------------------------------------------------
-K2HMmapMan	K2HMmapInfo::mmapman;
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
+K2HMmapMan& K2HMmapInfo::GetMan(void)
+{
+	static K2HMmapMan	mmapman;					// singleton
+	return mmapman;
+}
 
 //---------------------------------------------------------
 // K2HMmapInfo: Constructor / Destructor
@@ -416,12 +423,12 @@ K2HMmapInfo::K2HMmapInfo(K2HShm* pk2hshm) : pK2Hshm(pk2hshm), ppInfoTop(NULL)
 {
 	assert(NULL != pK2Hshm);
 
-	ppInfoTop = K2HMmapInfo::mmapman.AddMapInfo(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm->GetRawK2hashFd(), pK2Hshm->GetRawK2hashReadMode(), true);
+	ppInfoTop = K2HMmapInfo::GetMan().AddMapInfo(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm->GetRawK2hashFd(), pK2Hshm->GetRawK2hashReadMode(), true);
 }
 
 K2HMmapInfo::~K2HMmapInfo()
 {
-	K2HMmapInfo::mmapman.RemoveMapInfo(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), true);
+	K2HMmapInfo::GetMan().RemoveMapInfo(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), true);
 }
 
 //---------------------------------------------------------
@@ -435,7 +442,7 @@ inline bool K2HMmapInfo::SetInternalMmapInfo(void) const
 	if(ppInfoTop){
 		return true;
 	}
-	if(NULL == ((const_cast<K2HMmapInfo*>(this))->ppInfoTop = K2HMmapInfo::mmapman.GetMmapInfo(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), false))){
+	if(NULL == ((const_cast<K2HMmapInfo*>(this))->ppInfoTop = K2HMmapInfo::GetMan().GetMmapInfo(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), false))){
 		MSG_K2HPRN("There is no mapping info for \"%s\"(%p)", pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 		return false;
 	}
@@ -447,13 +454,13 @@ inline bool K2HMmapInfo::SetInternalMmapInfo(void) const
 //
 bool K2HMmapInfo::GetFd(const char* file, int& fd)
 {
-	return K2HMmapInfo::mmapman.GetFd(file, &fd, true);
+	return K2HMmapInfo::GetMan().GetFd(file, &fd, true);
 }
 
 bool K2HMmapInfo::ReplaceMapInfo(const char* oldfile)
 {
 	PK2HMMAPINFO*	ppTmp;
-	if(NULL == (ppTmp = K2HMmapInfo::mmapman.ReplaceMapInfo(pK2Hshm, oldfile, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm->GetRawK2hashFd(), pK2Hshm->GetRawK2hashReadMode(), true))){
+	if(NULL == (ppTmp = K2HMmapInfo::GetMan().ReplaceMapInfo(pK2Hshm, oldfile, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm->GetRawK2hashFd(), pK2Hshm->GetRawK2hashReadMode(), true))){
 		return false;
 	}
 	ppInfoTop = ppTmp;
@@ -465,26 +472,26 @@ bool K2HMmapInfo::ReplaceMapInfo(const char* oldfile)
 //
 bool K2HMmapInfo::IsMmaped(void) const
 {
-	return K2HMmapInfo::mmapman.IsMmaped(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), true);
+	return K2HMmapInfo::GetMan().IsMmaped(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), true);
 }
 
 void K2HMmapInfo::UnmapAll(void)
 {
-	K2HMmapInfo::mmapman.UnmapAll(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), true);
+	K2HMmapInfo::GetMan().UnmapAll(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), true);
 	ppInfoTop = NULL;
 }
 
 bool K2HMmapInfo::Unmap(long type, off_t file_offset, size_t length)
 {
-	return K2HMmapInfo::mmapman.Unmap(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), type, file_offset, length, true);
+	return K2HMmapInfo::GetMan().Unmap(pK2Hshm, pK2Hshm->GetRawK2hashFilePath(), type, file_offset, length, true);
 }
 
 bool K2HMmapInfo::Unmap(PK2HMMAPINFO pexistareatop)
 {
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return false;
 	}
 
@@ -509,16 +516,16 @@ bool K2HMmapInfo::Unmap(PK2HMMAPINFO pexistareatop)
 		}
 	}
 
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 	return true;
 }
 
 bool K2HMmapInfo::AddArea(long type, off_t file_offset, void* mmap_base, size_t length)
 {
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return false;
 	}
 
@@ -532,26 +539,26 @@ bool K2HMmapInfo::AddArea(long type, off_t file_offset, void* mmap_base, size_t 
 
 	MSG_K2HPRN("Added Area(type=%ld, file_offset=%jd, length=%zu, base=%p) for \"%s\"(%p)", type, static_cast<intmax_t>(file_offset), length, mmap_base, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 	return true;
 }
 
 void* K2HMmapInfo::GetMmapAddrBase(off_t file_offset, bool is_update_check) const
 {
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return NULL;
 	}
 
 	for(PK2HMMAPINFO pinfo = *ppInfoTop; pinfo; pinfo = pinfo->next){
 		if(pinfo->file_offset <= file_offset && file_offset < static_cast<off_t>(pinfo->file_offset + pinfo->length)){
-			K2HMmapInfo::mmapman.Unlock();
+			K2HMmapInfo::GetMan().Unlock();
 			return pinfo->mmap_base;
 		}
 	}
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 
 	MSG_K2HPRN("Could not find base(file_offset=%jd, file=\"%s\", K2HShm=%p)", static_cast<intmax_t>(file_offset), pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 
@@ -567,20 +574,20 @@ void* K2HMmapInfo::GetMmapAddrBase(off_t file_offset, bool is_update_check) cons
 
 off_t K2HMmapInfo::GetMmapAddrOffset(off_t file_offset, bool is_update_check) const
 {
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return -1;
 	}
 
 	for(PK2HMMAPINFO pinfo = *ppInfoTop; pinfo; pinfo = pinfo->next){
 		if(pinfo->file_offset <= file_offset && file_offset < static_cast<off_t>(pinfo->file_offset + pinfo->length)){
-			K2HMmapInfo::mmapman.Unlock();
+			K2HMmapInfo::GetMan().Unlock();
 			return reinterpret_cast<off_t>(pinfo->mmap_base) - pinfo->file_offset;
 		}
 	}
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 
 	MSG_K2HPRN("Could not find base(file_offset=%jd, file=\"%s\", K2HShm=%p)", static_cast<intmax_t>(file_offset), pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 
@@ -596,20 +603,20 @@ off_t K2HMmapInfo::GetMmapAddrOffset(off_t file_offset, bool is_update_check) co
 
 off_t K2HMmapInfo::GetFileOffsetBase(void* address, bool is_update_check) const
 {
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return 0;
 	}
 
 	for(PK2HMMAPINFO pinfo = *ppInfoTop; pinfo; pinfo = pinfo->next){
 		if(pinfo->mmap_base <= address && reinterpret_cast<size_t>(address) < (reinterpret_cast<size_t>(pinfo->mmap_base) + pinfo->length)){
-			K2HMmapInfo::mmapman.Unlock();
+			K2HMmapInfo::GetMan().Unlock();
 			return pinfo->file_offset;
 		}
 	}
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 
 	MSG_K2HPRN("Could not find offset(address=%p, file=\"%s\", K2HShm=%p)", address, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 
@@ -625,20 +632,20 @@ off_t K2HMmapInfo::GetFileOffsetBase(void* address, bool is_update_check) const
 
 off_t K2HMmapInfo::GetMmapAddressToFileOffset(void* address, bool is_update_check) const
 {
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return 0;
 	}
 
 	for(PK2HMMAPINFO pinfo = *ppInfoTop; pinfo; pinfo = pinfo->next){
 		if(pinfo->mmap_base <= address && reinterpret_cast<size_t>(address) < (reinterpret_cast<size_t>(pinfo->mmap_base) + pinfo->length)){
-			K2HMmapInfo::mmapman.Unlock();
+			K2HMmapInfo::GetMan().Unlock();
 			return pinfo->file_offset - reinterpret_cast<off_t>(pinfo->mmap_base);
 		}
 	}
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 
 	MSG_K2HPRN("Could not find offset(address=%p, file=\"%s\", K2HShm=%p)", address, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 
@@ -674,20 +681,20 @@ off_t K2HMmapInfo::CvtRel(void* address, bool isAllowNull) const
 
 void* K2HMmapInfo::begin(int type, bool is_update_check) const
 {
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return NULL;
 	}
 
 	for(PK2HMMAPINFO pinfo = *ppInfoTop; pinfo; pinfo = pinfo->next){
 		if(type == pinfo->type){
-			K2HMmapInfo::mmapman.Unlock();
+			K2HMmapInfo::GetMan().Unlock();
 			return pinfo->mmap_base;
 		}
 	}
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 
 	MSG_K2HPRN("Could not get begin(file=\"%s\", K2HShm=%p)", pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 
@@ -705,10 +712,10 @@ void* K2HMmapInfo::next(void* address, size_t datasize, bool is_update_check) co
 {
 	off_t	file_offset = CvtRel(address);
 
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return NULL;
 	}
 
@@ -717,7 +724,7 @@ void* K2HMmapInfo::next(void* address, size_t datasize, bool is_update_check) co
 			// found area
 			if((file_offset + datasize) < (pinfo->file_offset + pinfo->length)){
 				// return address in same area
-				K2HMmapInfo::mmapman.Unlock();
+				K2HMmapInfo::GetMan().Unlock();
 				return CvtAbs(file_offset + datasize);
 			}
 			// next address is over area => search next area
@@ -725,14 +732,14 @@ void* K2HMmapInfo::next(void* address, size_t datasize, bool is_update_check) co
 			for(pinfo = pinfo->next; pinfo; pinfo = pinfo->next){
 				if(Type == pinfo->type){
 					// found same area type => return head address of area
-					K2HMmapInfo::mmapman.Unlock();
+					K2HMmapInfo::GetMan().Unlock();
 					return pinfo->mmap_base;
 				}
 			}
 			break;
 		}
 	}
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 
 	MSG_K2HPRN("Could not get next from (address=%p, length=%zd, file=\"%s\", K2HShm=%p)", address, datasize, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 
@@ -754,10 +761,10 @@ bool K2HMmapInfo::AreaMsync(void* address) const
 		file_offset = CvtRel(address);
 	}
 
-	K2HMmapInfo::mmapman.Lock();
+	K2HMmapInfo::GetMan().Lock();
 
 	if(!SetInternalMmapInfo()){
-		K2HMmapInfo::mmapman.Unlock();
+		K2HMmapInfo::GetMan().Unlock();
 		return NULL;
 	}
 
@@ -772,7 +779,7 @@ bool K2HMmapInfo::AreaMsync(void* address) const
 			}
 		}
 	}
-	K2HMmapInfo::mmapman.Unlock();
+	K2HMmapInfo::GetMan().Unlock();
 
 	return result;
 }

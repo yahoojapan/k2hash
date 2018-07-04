@@ -1,6 +1,6 @@
 .TH K2HASH "1" "February 2014" "K2HASH" "NoSQL(KVS) Library"
 .SH NAME
-K2HASH \- NoSQL Key Value Store(KVS) library by Yahoo! JAPAN
+K2HASH \- NoSQL Key Value Store(KVS) library
 .SH SYNOPSIS
 .SS library
 .TP
@@ -60,8 +60,17 @@ K2HASH can put transaction and archive all of data in file. If you need to make 
 \- The other is that you can load your original DSO library which includes same prototype of hash function.
 .PP
 You can know how to implement replacing transaction function, please see k2htransfunc.h file.
+.PP
+.SH FUNCTIONS
+.PP
+You can develop programs using the interface for C/C++ language provided by the K2HASH library.
+You can see following C language function prototypes in k2hash.h.
+.br
+K2HASH C++ Language interface is implemented almost in k2shm.h.
+You can use public K2HShm class methods like C Language interface.
 .TP 2
 K2HASH C Language interface function:
+.br
 void k2h_bump_debug_level(...)
 .br
 void k2h_set_debug_level_silent(...)
@@ -502,10 +511,8 @@ bool k2h_dump_full(...)
 bool k2h_print_state(...)
 .br
 void k2h_print_version(...)
+.br
 .PP
-You can see these function prototypes in k2hash.h
-.TP
-K2HASH C++ Language interface is implemented almost in k2shm.h. You can use public K2HShm class methods like C Language interface.
 .SH ENVIRONMENT
 .TP 2
 K2HASH use some environments automatically, plese take care these environments.
@@ -530,6 +537,6 @@ k2hlinetool, k2hreplace, k2hcompress, k2htouch, k2hedit is tool for k2hash file/
 k2hlinetool(1), k2hreplace(1), k2hcompress(1), k2htouch(1), k2hedit(1)
 .SH BUGS
 .TP
-Please report owner and comitter.
+Please report owner and committers.
 .SH AUTHOR
 k2hash has been written by Takeshi Nakatani <ggtakec@gmail.com>.

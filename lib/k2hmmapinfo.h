@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Dec 2 2013
@@ -177,15 +177,16 @@ class K2HMmapMan
 class K2HMmapInfo
 {
 	private:
-		static K2HMmapMan	mmapman;
-		K2HShm*				pK2Hshm;
-		PK2HMMAPINFO*		ppInfoTop;
+		K2HShm*			pK2Hshm;
+		PK2HMMAPINFO*	ppInfoTop;
 
 	public:
 		K2HMmapInfo(K2HShm* pk2hshm = NULL);
 		virtual ~K2HMmapInfo();
 
 	private:
+		static K2HMmapMan& GetMan(void);
+
 		inline bool SetInternalMmapInfo(void) const;
 
 		void* GetMmapAddrBase(off_t file_offset, bool is_update_check = true) const;

@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Thu Feb 6 2014
@@ -141,19 +141,17 @@ DECL_EXTERN_C_END		// extern "C" - end
 class K2HTransDynLib
 {
 	private:
-		static K2HTransDynLib	Singleton;
-
-	private:
 		void*					hDynLib;
 		Tfp_k2h_trans			fp_k2h_trans;
 		Tfp_k2h_trans_version	fp_k2h_trans_version;
 		Tfp_k2h_trans_cntl		fp_k2h_trans_cntl;
 
-	public:
-		static K2HTransDynLib* get(void) { return &K2HTransDynLib::Singleton; }
-
+	private:
 		K2HTransDynLib();
 		virtual ~K2HTransDynLib();
+
+	public:
+		static K2HTransDynLib* get(void);
 
 		bool Unload(void);
 		bool Load(const char* path);

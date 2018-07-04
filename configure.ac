@@ -1,20 +1,25 @@
 #
 # K2HASH
 #
-# Copyright 2013 Yahoo! JAPAN corporation.
+# Utility tools for building configure/packages by AntPickax
 #
-# K2HASH is key-valuew store base libraries.
-# K2HASH is made for the purpose of the construction of
-# original KVS system and the offer of the library.
-# The characteristic is this KVS library which Key can
-# layer. And can support multi-processing and multi-thread,
-# and is provided safely as available KVS.
+# Copyright 2018 Yahoo Japan corporation.
 #
+# AntPickax provides utility tools for supporting autotools
+# builds.
+#
+# These tools retrieve the necessary information from the
+# repository and appropriately set the setting values of
+# configure, Makefile, spec,etc file and so on.
+# These tools were recreated to reduce the number of fixes and
+# reduce the workload of developers when there is a change in
+# the project configuration.
+# 
 # For the full copyright and license information, please view
-# the LICENSE file that was distributed with this source code.
+# the license file that was distributed with this source code.
 #
 # AUTHOR:   Takeshi Nakatani
-# CREATE:   Fri Dec 2 2013
+# CREATE:   Fri, Apr 13 2018
 # REVISION:
 #
 
@@ -29,7 +34,9 @@ LT_INIT()
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
 
+#
 # Checks for programs.
+#
 AC_PROG_CXX
 AC_PROG_AWK
 AC_PROG_CC
@@ -40,14 +47,19 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_PROG_LIBTOOL
 
+#
 # Checks for libraries.
+#
 AC_CHECK_LIB(dl, dlopen)
-#AC_CHECK_LIB([k2hash], [main])
 
+#
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h strings.h sys/time.h termios.h unistd.h netdb.h])
+#
+AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h strings.h sys/time.h termios.h unistd.h netdb.h endian.h sys/endian.h])
 
+#
 # Checks for typedefs, structures, and compiler characteristics.
+#
 AC_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_OFF_T
@@ -55,9 +67,13 @@ AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_TYPE_UINT64_T
+AC_TYPE_INT32_T
 AC_TYPE_UID_T
+AC_TYPE_MODE_T
 
+#
 # Checks for library functions.
+#
 AC_FUNC_MALLOC
 AC_FUNC_MMAP
 AC_FUNC_REALLOC
@@ -66,43 +82,175 @@ AC_CHECK_FUNCS([fdatasync ftruncate gettimeofday memset munmap realpath strcasec
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_CONFIG_FILES([Makefile
-                 docs/Makefile
-                 docs/examples/Makefile
-                 lib/Makefile
-                 lib/libk2hash.pc
-                 tests/Makefile])
+#
+# Symbols for buildutils
+#
+AC_SUBST([GIT_DOMAIN], "github.com")
+AC_SUBST([GIT_ORG], "yahoojapan")
+AC_SUBST([GIT_REPO], "k2hash")
+AC_SUBST([CURRENTREV], "`$(pwd)/buildutils/make_commit_hash.sh -o yahoojapan -r k2hash -short`")
+AC_SUBST([DEV_EMAIL], "`echo ${DEBEMAIL:-antpickax@mail.yahoo.co.jp}`")
+AC_SUBST([DEV_NAME], "`echo ${DEBFULLNAME:-K2HASH_DEVELOPER}`")
 
+AC_SUBST([RPMCHANGELOG], "`$(pwd)/buildutils/make_rpm_changelog.sh $(pwd)/ChangeLog`")
+AC_SUBST([SHORTDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 -short`")
+AC_SUBST([LONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 -long`")
+AC_SUBST([ESCLONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 -esclong`")
+AC_SUBST([DEBLONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 -deblong`")
+AC_SUBST([PKG_VERSION], "`$(pwd)/buildutils/make_variables.sh -pkg_version`")
+AC_SUBST([LIB_VERSION_INFO], "`$(pwd)/buildutils/make_variables.sh -lib_version_info`")
+AC_SUBST([LIB_VERSION_LINK], "`$(pwd)/buildutils/make_variables.sh -lib_version_for_link`")
+AC_SUBST([LIB_MAJOR_NUMBER], "`$(pwd)/buildutils/make_variables.sh -major_number`")
+AC_SUBST([PKGLICENSE], "`grep License COPYING | sed 's/ License//g'`")
+AC_SUBST([DEBCOPYING], "`tail -n +5 COPYING | sed 's/^$/./g' | sed 's/^/ /g'`")
+AM_SUBST_NOTMAKE([CURRENTREV])
+AM_SUBST_NOTMAKE([RPMCHANGELOG])
+AM_SUBST_NOTMAKE([SHORTDESC])
+AM_SUBST_NOTMAKE([LONGDESC])
+AM_SUBST_NOTMAKE([ESCLONGDESC])
+AM_SUBST_NOTMAKE([DEBLONGDESC])
+AM_SUBST_NOTMAKE([DEBCOPYING])
+
+#
+# pkg-config for old version
+#
+AC_PATH_PROG(PKG_CONFIG, pkg-config, [AC_MSG_RESULT(no)])
+AS_IF([test "$PKG_CONFIG" = "no"], [AC_MSG_ERROR(You have to install pkg-config to compile $PACKAGE_NAME v$PACKAGE_VERSION)])
+
+#
+# Option for crypt libraries
+#
+crypt_lib=openssl
+
+AC_MSG_CHECKING([for crypt library option with gcrypt(GnuTLS)])
+AC_ARG_WITH(gcrypt,
+	[AS_HELP_STRING([--with-gcrypt], [build with gcrypt(GnuTLS)])],
+	[case "${withval}" in
+		yes)	crypt_lib=gcrypt;;
+		*)		;;
+	esac]
+)
+AS_IF([test ${crypt_lib} = gcrypt], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for crypt library option with nettle(GnuTLS)])
+AC_ARG_WITH(nettle,
+	[AS_HELP_STRING([--with-nettle], [build with nettle(GnuTLS)])],
+	[case "${withval}" in
+		yes)	crypt_lib=nettle;;
+		*)		;;
+	esac]
+)
+AS_IF([test ${crypt_lib} = nettle], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for crypt library option with NSS])
+AC_ARG_WITH(nss,
+	[AS_HELP_STRING([--with-nss], [build with NSS])],
+	[case "${withval}" in
+		yes)	crypt_lib=nss;;
+		*)		;;
+	esac]
+)
+AS_IF([test ${crypt_lib} = nss], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for crypt library option with OpenSSL(default)])
+AC_ARG_WITH(openssl,
+	[AS_HELP_STRING([--with-openssl], [build with OpenSSL(default)])],
+	[case "${withval}" in
+		yes)	crypt_lib=openssl;;
+		*)		;;
+	esac]
+)
+AS_IF([test ${crypt_lib} = openssl], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
+
+#
+# Checking crypt libraries
+#
+# [NOTE]
+# Although gcrypt does not provide a pkg-config file, it provides
+# libgcrypt-config and we check it with libgcrypt-config.
+#
+AC_MSG_CHECKING([for using crypt library type])
+case "${crypt_lib}" in
+	openssl)
+		AC_MSG_RESULT(OpenSSL)
+		PKG_CHECK_MODULES([CRYPT], [libcrypto >= 1.0.0 ])
+		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptopenssl.cc")
+		;;
+	nss)
+		AC_MSG_RESULT(NSS)
+		PKG_CHECK_MODULES([CRYPT], [nss >= 3.28.0 ])
+		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnss.cc")
+		;;
+	nettle)
+		AC_MSG_RESULT(nettle)
+		PKG_CHECK_MODULES([CRYPT], [nettle >= 3.2 ])
+		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnettle.cc")
+		;;
+	gcrypt)
+		AC_MSG_RESULT(gcrypt)
+		AC_CHECK_PROG(gcrypt_config, [libgcrypt-config], [yes], [no])
+		AS_IF([test ${gcrypt_config} = no], [AC_MSG_ERROR([libgcrypt-config is not found])])
+		CRYPT_VERSION=`libgcrypt-config --version`
+		CRYPT_CFLAGS=`libgcrypt-config --cflags`
+		CRYPT_LIBS=`libgcrypt-config --libs`
+		AC_MSG_CHECKING([for libgcrypt-config version])
+		AC_MSG_RESULT($CRYPT_VERSION)
+		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptgcrypt.cc")
+		;;
+	*)
+		AC_MSG_ERROR([unknown crypt library type.])
+		;;
+esac
+
+AM_CONDITIONAL([CRYPT_LIB_OPENSSL],	[test "$crypt_lib" = openssl])
+AM_CONDITIONAL([CRYPT_LIB_NSS],		[test "$crypt_lib" = nss])
+AM_CONDITIONAL([CRYPT_LIB_NETTLE],	[test "$crypt_lib" = nettle])
+AM_CONDITIONAL([CRYPT_LIB_GCRYPT],	[test "$crypt_lib" = gcrypt])
+
+#
+# Checking Libraries
+#
+check_depend_libs=1
+AC_MSG_CHECKING([for checking dependent libraries])
+AC_ARG_ENABLE(check-depend-libs,
+	[AS_HELP_STRING([--disable-check-depend-libs], [disable checking dependent libraries])],
+	[case "${enableval}" in
+		yes)	check_depend_libs=1;;
+		*)		check_depend_libs=0;;
+	esac]
+)
+AS_IF([test ${check_depend_libs} = 1], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
+AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.28], [], [AC_MSG_ERROR(not found libfullock package)])])
+
+#
 # CFLAGS/CXXFLAGS
-CFLAGS="-Wall $CFLAGS"
-CXXFLAGS="-Wall $CXXFLAGS"
-AC_ARG_ENABLE(expanding-debug,
-	[  --enable-expanding-debug       Turn on depanging area debugging],
-	[case "${enableval}" in
-	        yes)	CFLAGS="-DDEBUG_FOR_EXPANDING $CFLAGS"
-	        	CXXFLAGS="-DDEBUG_FOR_EXPANDING $CXXFLAGS"
-	        ;;
-	esac]
-)
+#
+CFLAGS="-Wall $CFLAGS $CRYPT_CFLAGS $fullock_CFLAGS"
+CXXFLAGS="-Wall $CXXFLAGS $CRYPT_CFLAGS $fullock_CFLAGS"
 
+#
+# for STD::FNV-1A
+#
+std_fnv_function=0
+AC_MSG_CHECKING([for using std fnv-1a hash function])
 AC_ARG_ENABLE(std-fnv-function,
-	[  --enable-std-fnv-function      Use STD::FNV-1A hash function],
+	[AS_HELP_STRING([--enable-std-fnv-function], [using STD::FNV-1A hash function])],
 	[case "${enableval}" in
-	        yes)	CFLAGS="-DUSE_STD_FNV_HASH_FUNCTION $CFLAGS"
-	        	CXXFLAGS="-DUSE_STD_FNV_HASH_FUNCTION $CXXFLAGS"
-	        ;;
+		yes)	std_fnv_function=1;;
+		*)		std_fnv_function=0;;
 	esac]
 )
+AS_IF([test ${std_fnv_function} = 1], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
+AS_IF([test ${std_fnv_function} = 1],
+	[
+		CFLAGS="-DUSE_STD_FNV_HASH_FUNCTION $CFLAGS"
+	 	CXXFLAGS="-DUSE_STD_FNV_HASH_FUNCTION $CXXFLAGS"
+	]
+)
 
-# chek for LIBFULLOCK
-if test "x${CHECK_LIBFULLOCK}" != "xno"; then
-	PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.24], [have_fullock=yes], [have_fullock=no])
-	if test "x${have_fullock}" = "xno"; then
-		AC_MSG_ERROR([not found libfullock-dev package.])
-	fi
-fi
-
+#
 # for MAP_ANONYMOUS
+#
 AC_MSG_CHECKING(for MAP_ANONYMOUS symbol)
 AC_CACHE_VAL(ac_cv_map_anonymous,
 	AC_TRY_COMPILE([
@@ -117,9 +265,19 @@ if test $ac_cv_map_anonymous = no; then
 	AC_DEFINE(MAP_ANONYMOUS, MAP_ANON, [Define to MAP_ANON if you do not have MAP_ANONYMOUS symbol.])
 fi
 
-# LIB_VERSION_INFO for libtool library version info
-LIB_VERSION_INFO=`$(pwd)/make_valiables.sh -lib_version_info`
-AC_SUBST([LIB_VERSION_INFO])
+#
+# Config files
+#
+AC_CONFIG_FILES([Makefile
+				docs/Makefile
+				docs/examples/Makefile
+				lib/Makefile
+				lib/libk2hash.pc
+				tests/Makefile
+				buildutils/Makefile
+				buildutils/control
+				buildutils/copyright
+				buildutils/k2hash.spec])
 
 AC_OUTPUT
 

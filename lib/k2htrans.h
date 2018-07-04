@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Mon Feb 10 2014
@@ -150,7 +150,6 @@ class K2HTransManager
 	protected:
 		static const unsigned char	default_prefix[];				// default transaction key prefix
 		static const time_t			DEFAULT_INTERVAL	= 10;		// 10s
-		static K2HTransManager		singleton;
 
 		volatile int				LockVal;						// like mutex for valiables(transaction file etc)
 		volatile int				LockPool;						// like mutex for thread and thread pool
@@ -161,10 +160,7 @@ class K2HTransManager
 		time_t						interval;						// interval for checking transaction file
 
 	public:
-		static K2HTransManager* Get(void) { return &K2HTransManager::singleton; }
-
-		K2HTransManager();
-		virtual ~K2HTransManager();
+		static K2HTransManager* Get(void);
 
 		bool CompareTransactionKeyPrefix(const K2HShm* pk2hshm, const unsigned char* pkey, size_t keylen);
 
@@ -192,6 +188,9 @@ class K2HTransManager
 	protected:
 		static void* WorkerProc(void* param);
 		static bool Do(k2h_h handle, PBCOM pBinCom);
+
+		K2HTransManager();
+		virtual ~K2HTransManager();
 
 		bool SetTransactionKeyPrefix(const K2HShm* pk2hshm, const unsigned char* pprefix, size_t prefixlen, const time_t* expire = NULL);
 		bool ResetTransactionKeyPrefix(const K2HShm* pk2hshm) { return SetTransactionKeyPrefix(pk2hshm, NULL, 0, NULL); }

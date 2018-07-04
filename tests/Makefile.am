@@ -1,7 +1,7 @@
 #
 # K2HASH
 #
-# Copyright 2013 Yahoo! JAPAN corporation.
+# Copyright 2013 Yahoo Japan Corporation.
 #
 # K2HASH is key-valuew store base libraries.
 # K2HASH is made for the purpose of the construction of
@@ -11,56 +11,54 @@
 # and is provided safely as available KVS.
 #
 # For the full copyright and license information, please view
-# the LICENSE file that was distributed with this source code.
+# the license file that was distributed with this source code.
 #
 # AUTHOR:   Takeshi Nakatani
 # CREATE:   Fri Dec 2 2013
 # REVISION:
 #
 
-## TEST = @echo "NOTICE: this is test"
 bin_PROGRAMS = k2hlinetool k2hreplace k2hcompress k2htouch k2himport k2hbench
 
 noinst_PROGRAMS = k2hinittest k2hrwtest k2hmemtest k2hexttest k2hstreamtest
 
 k2hinittest_SOURCES = k2hinittest.cc
-k2hinittest_LDADD = -L../lib/.libs -lk2hash
+k2hinittest_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2hrwtest_SOURCES = k2hrwtest.cc
-k2hrwtest_LDADD = -L../lib/.libs -lk2hash
+k2hrwtest_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2hmemtest_SOURCES = k2hmemtest.cc
-k2hmemtest_LDADD = -L../lib/.libs -lk2hash
+k2hmemtest_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2hlinetool_SOURCES = k2hlinetool.cc
-k2hlinetool_LDADD = -L../lib/.libs -lk2hash
+k2hlinetool_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2hexttest_SOURCES = k2hexttest.cc
-k2hexttest_LDADD = -L../lib/.libs -lk2hash
+k2hexttest_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2hstreamtest_SOURCES = k2hstreamtest.cc
-k2hstreamtest_LDADD = -L../lib/.libs -lk2hash
+k2hstreamtest_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2hreplace_SOURCES = k2hreplace.cc
-k2hreplace_LDADD = -L../lib/.libs -lk2hash
+k2hreplace_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2hcompress_SOURCES = k2hcompress.cc
-k2hcompress_LDADD = -L../lib/.libs -lk2hash
+k2hcompress_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2htouch_SOURCES = k2htouch.cc
-k2htouch_LDADD = -L../lib/.libs -lk2hash
+k2htouch_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2himport_SOURCES = k2himport.cc
-k2himport_LDADD = -L../lib/.libs -lk2hash
+k2himport_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash
 
 k2hbench_SOURCES = k2hbench.cc
-k2hbench_LDADD = -L../lib/.libs -lk2hash -lpthread
+k2hbench_LDADD = $(fullock_LIBS) -L../lib/.libs -lk2hash -lpthread
 
 #
 # [NOTE]
 # If you need *.so shared libraries, use lib_LTLIBRARIES macro.
 #
-#lib_LTLIBRARIES = libk2htesthash.la libk2htesttrans.la libk2htestattr.la
 noinst_LTLIBRARIES = libk2htesthash.la libk2htesttrans.la libk2htestattr.la
 
 libk2htesthash_la_SOURCES = k2htesthashfunc.cc

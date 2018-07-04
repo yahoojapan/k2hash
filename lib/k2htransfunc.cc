@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013 Yahoo! JAPAN corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -11,7 +11,7 @@
  * and is provided safely as available KVS.
  *
  * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
+ * the license file that was distributed with this source code.
  *
  * AUTHOR:   Takeshi Nakatani
  * CREATE:   Fri Dec 2 2013
@@ -21,7 +21,6 @@
 
 #include <sys/types.h>
 #include <dlfcn.h>
-#include <assert.h>
 #include <string>
 
 #include "k2htransfunc.h"
@@ -98,20 +97,21 @@ bool k2h_trans_cntl(k2h_h handle, PTRANSOPT pOpt)
 //---------------------------------------------------------
 // K2HTransDynLib Class
 //---------------------------------------------------------
-K2HTransDynLib	K2HTransDynLib::Singleton;
+// [NOTE]
+// To avoid static object initialization order problem(SIOF)
+//
+K2HTransDynLib* K2HTransDynLib::get(void)
+{
+	static K2HTransDynLib	dynlib;					// singleton
+	return &dynlib;
+}
 
 K2HTransDynLib::K2HTransDynLib() : hDynLib(NULL), fp_k2h_trans(NULL), fp_k2h_trans_version(NULL), fp_k2h_trans_cntl(NULL)
 {
-	if(this != K2HTransDynLib::get()){
-		assert(false);
-	}
 }
 
 K2HTransDynLib::~K2HTransDynLib()
 {
-	if(this != K2HTransDynLib::get()){
-		assert(false);
-	}
 	Unload();
 }
 
@@ -145,9 +145,9 @@ bool K2HTransDynLib::Load(const char* path)
 	}
 
 	// check symbol
-	if(	NULL == (fp_k2h_trans = reinterpret_cast<Tfp_k2h_trans>(dlsym(hDynLib, "k2h_trans"))) || 
-		NULL == (fp_k2h_trans_version = reinterpret_cast<Tfp_k2h_trans_version>(dlsym(hDynLib, "k2h_trans_version"))) ||
-		NULL == (fp_k2h_trans_cntl = reinterpret_cast<Tfp_k2h_trans_cntl>(dlsym(hDynLib, "k2h_trans_cntl"))) )
+	if(	NULL == (fp_k2h_trans			= reinterpret_cast<Tfp_k2h_trans>(dlsym(hDynLib, "k2h_trans")))					||
+		NULL == (fp_k2h_trans_version	= reinterpret_cast<Tfp_k2h_trans_version>(dlsym(hDynLib, "k2h_trans_version")))	||
+		NULL == (fp_k2h_trans_cntl		= reinterpret_cast<Tfp_k2h_trans_cntl>(dlsym(hDynLib, "k2h_trans_cntl")))		)
 	{
 		const char*	pError = dlerror();
 		ERR_K2HPRN("Failed to load library(%s), error = %s", path, pError ? pError : "unknown");
