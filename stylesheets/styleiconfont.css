@@ -1,0 +1,24 @@
+@font-face {
+	font-family: "AntPickax";
+	src: url('../fonts/AntPickax.eot');
+	src: url('../fonts/AntPickax.eot?#iefix') format('eot'),
+		url('../fonts/AntPickax.woff') format('woff'),
+		url('../fonts/AntPickax.ttf') format('truetype'),
+		url('../fonts/AntPickax.svg#AntPickax') format('svg');
+}
+
+[class^="antpickax-icon-font-"], [class*=" antpickax-icon-font-"] {
+	font-family:				'AntPickax';
+	-webkit-font-smoothing:		antialiased;
+	-moz-osx-font-smoothing:	grayscale;
+	font-style:					normal;
+	font-variant:				normal;
+	font-weight:				normal;
+	text-decoration:			none;
+	text-transform:				none;
+}
+
+
+.antpickax-icon-font-logo:before {
+	content: "\E001";
+}

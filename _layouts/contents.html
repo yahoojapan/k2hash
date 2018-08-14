@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="{{ page.language }}">
+  <head>
+    <meta charset="UTF-8">
+    <title>{{ site.github.repository_name }} - {{ page.title }}</title>
+    {% seo %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/styleiconfont.css" media="screen">
+  </head>
+  <body>
+    <section class="content-page-header">
+      <h2 class="project-name"><span class="antpickax-icon-font-logo"></span>{{ site.github.repository_name }} <span class="content-main-title">{{ page.title }}</span></h1>
+      <a href="{{ site.url }}{{ site.baseurl }}/{{ page.lang_opp_file }}" class="btn">{{ page.lang_opp_word }}</a>
+    </section>
+ 
+    <section class="main-content">
+      {% if page.prev_url %}
+      <a href="{{ site.url }}{{ site.baseurl }}/{{ page.prev_url}}" class="btn-menu"><span class="arrow-base arrow-left"></span>{{ page.prev_string }}</a>
+      {% endif %}
+      {% if page.top_url %}
+      <a href="{{ site.url }}{{ site.baseurl }}/{{ page.top_url}}" class="btn-menu"><span class="arrow-base arrow-top"></span>{{ page.top_string }}</a>
+      {% endif %}
+      {% if page.next_url %}
+      <a href="{{ site.url }}{{ site.baseurl }}/{{ page.next_url}}" class="btn-menu">{{ page.next_string }}<span class="arrow-base arrow-right"></span></a>
+      {% endif %}
+      <h3>
+
+      {{ content }}
+
+      <h3>
+      {% if page.prev_url %}
+      <a href="{{ site.url }}{{ site.baseurl }}/{{ page.prev_url}}" class="btn-menu"><span class="arrow-base arrow-left"></span>{{ page.prev_string }}</a>
+      {% endif %}
+      {% if page.top_url %}
+      <a href="{{ site.url }}{{ site.baseurl }}/{{ page.top_url}}" class="btn-menu"><span class="arrow-base arrow-top"></span>{{ page.top_string }}</a>
+      {% endif %}
+      {% if page.next_url %}
+      <a href="{{ site.url }}{{ site.baseurl }}/{{ page.next_url}}" class="btn-menu">{{ page.next_string }}<span class="arrow-base arrow-right"></span></a>
+      {% endif %}
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><img border="0" src="images/antpickax_32x32.png" width="32" height="32" alt="AntPickax"><a href="{{ site.url }}{{ site.baseurl }}/">{{ site.github.repository_name }}</a> is maintained by <a href="https://www.yahoo.co.jp">Yahoo! JAPAN</a>.</span>
+        <span class="site-footer-owner">Copyright(C) <script type="text/javascript">document.write(new Date().getFullYear());</script> Yahoo Japan Corporation.</span>
+      </footer>
+    </section>
+  </body>
+</html>
