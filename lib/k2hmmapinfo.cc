@@ -49,14 +49,18 @@ K2HMmapMan::K2HMmapMan() : lockval(FLCK_NOSHARED_MUTEX_VAL_UNLOCKED)
 
 K2HMmapMan::~K2HMmapMan()
 {
-	for(k2hfmapgrps_t::const_iterator iter = fmapgrps.begin(); iter != fmapgrps.end(); ++iter){
-		PK2HMMAPGRP	pmmapgrp = iter->second;
+	Lock();
+	for(k2hfmapgrps_t::iterator iter = fmapgrps.begin(); iter != fmapgrps.end(); fmapgrps.erase(iter++)){
+		PK2HMMAPGRP	pmmapgrp= iter->second;
+		iter->second		= NULL;
 		K2H_Delete(pmmapgrp);
 	}
-	for(k2homapgrps_t::const_iterator iter = omapgrps.begin(); iter != omapgrps.end(); ++iter){
-		PK2HMMAPGRP	pmmapgrp = iter->second;
+	for(k2homapgrps_t::iterator iter = omapgrps.begin(); iter != omapgrps.end(); omapgrps.erase(iter++)){
+		PK2HMMAPGRP	pmmapgrp= iter->second;
+		iter->second		= NULL;
 		K2H_Delete(pmmapgrp);
 	}
+	Unlock();
 }
 
 //---------------------------------------------------------
@@ -198,7 +202,9 @@ bool K2HMmapMan::RemoveMapInfo(const K2HShm* pk2hshm, const char* file, bool nee
 			// always remove map info
 			MSG_K2HPRN("Destroy mapping info for for K2HShm(%p).", pk2hshm);
 
-			K2H_Delete(iter->second);
+			PK2HMMAPGRP	pmmapgrp= iter->second;
+			iter->second		= NULL;
+			K2H_Delete(pmmapgrp);
 			omapgrps.erase(iter);
 		}
 
@@ -217,7 +223,9 @@ bool K2HMmapMan::RemoveMapInfo(const K2HShm* pk2hshm, const char* file, bool nee
 					K2H_CLOSE(iter->second->fd);
 					K2HLock::RemoveReadModeFd(iter->second->fd);
 				}
-				K2H_Delete(iter->second);
+				PK2HMMAPGRP	pmmapgrp= iter->second;
+				iter->second		= NULL;
+				K2H_Delete(pmmapgrp);
 				fmapgrps.erase(iter);
 			}
 		}
@@ -271,7 +279,9 @@ void K2HMmapMan::UnmapAll(const K2HShm* pk2hshm, const char* file, bool needlock
 			if(1 != iter->second->refcnt){
 				ERR_K2HPRN("map info reference count for K2HShm(%p) is not 1, should always be 1.", pk2hshm);
 			}
-			K2H_Delete(iter->second);		// unmap all in destructor
+			PK2HMMAPGRP	pmmapgrp= iter->second;
+			iter->second		= NULL;
+			K2H_Delete(pmmapgrp);			// unmap all in destructor
 			omapgrps.erase(iter);
 		}
 
@@ -296,7 +306,9 @@ void K2HMmapMan::UnmapAll(const K2HShm* pk2hshm, const char* file, bool needlock
 					K2H_CLOSE(iter->second->fd);
 					K2HLock::RemoveReadModeFd(iter->second->fd);
 				}
-				K2H_Delete(iter->second);	// unmap all in destructor
+				PK2HMMAPGRP	pmmapgrp= iter->second;
+				iter->second		= NULL;
+				K2H_Delete(pmmapgrp);		// unmap all in destructor
 				fmapgrps.erase(iter);
 			}
 		}
