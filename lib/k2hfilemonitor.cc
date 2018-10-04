@@ -73,6 +73,18 @@ K2HFileMonitor::~K2HFileMonitor()
 //---------------------------------------------------------
 bool K2HFileMonitor::Close(void)
 {
+	CloseOnlyFile();		// always return true.
+	bup_shmfile		= "";
+	bup_monfile		= "";
+	bup_inode_cnt	= 0;
+	bup_area_cnt	= 0;
+	bup_inode_val	= 0;
+
+	return true;
+}
+
+bool K2HFileMonitor::CloseOnlyFile(void)
+{
 	if(psfmon){
 		munmap(psfmon, sizeof(SFMONWRAP));
 		psfmon = NULL;
@@ -89,12 +101,6 @@ bool K2HFileMonitor::Close(void)
 		Unlock(OPEN_LOCK_POS, false);
 	}
 	K2H_CLOSE(fmfd);
-
-	bup_shmfile		= "";
-	bup_monfile		= "";
-	bup_inode_cnt	= 0;
-	bup_area_cnt	= 0;
-	bup_inode_val	= 0;
 
 	return true;
 }
@@ -178,22 +184,24 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 	for(bool is_loop = true; is_loop; ){
 		// test by creating
 		if(-1 != (fmfd = open(bup_monfile.c_str(), O_RDWR | O_CREAT | O_EXCL | O_FSYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))){
-			MSG_K2HPRN("Monitor File %s does not exist and create it.", bup_monfile.c_str());
+			// [NOTE]
+			// We lock for writing monitor file ASAP before setting file size.
+			// The lock pos in file is over file size, but it works without a problem.
+			//
+			// write lock(blocking)
+			if(!WriteLock(OPEN_LOCK_POS)){
+				WAN_K2HPRN("Coud not get lock for writing monitor file(%s) after creating it, probabry conflict initializing by other processes, do retry...", bup_monfile.c_str());
+				unlink(bup_monfile.c_str());
+				CloseOnlyFile();
+				continue;
+			}
+			MSG_K2HPRN("Monitor File %s does not exist and create it, and lock writing it", bup_monfile.c_str());
 
 			// truncate
 			if(-1 == ftruncate(fmfd, sizeof(SFMONWRAP))){
 				ERR_K2HPRN("Failed to truncate to %zd monitor file %s by errno(%d), so Remove monitor file.", sizeof(SFMONWRAP), bup_monfile.c_str(), errno);
 				unlink(bup_monfile.c_str());
-				Close();
-				umask(old_umask);
-				return false;
-			}
-
-			// write lock
-			if(!WriteLock(OPEN_LOCK_POS, false)){
-				ERR_K2HPRN("Failed to write lock monitor file %s, so Remove monitor file.", bup_monfile.c_str());
-				unlink(bup_monfile.c_str());
-				Close();
+				CloseOnlyFile();
 				umask(old_umask);
 				return false;
 			}
@@ -202,8 +210,7 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 			if(-1 == k2h_pwrite(fmfd, pfmonwrap->barray, sizeof(SFMONWRAP), 0L)){
 				ERR_K2HPRN("Failed to write SFMONWRAP data to monitor file %s, so Remove monitor file.", bup_monfile.c_str());
 				unlink(bup_monfile.c_str());
-				Unlock(OPEN_LOCK_POS, false);
-				Close();
+				CloseOnlyFile();
 				umask(old_umask);
 				return false;
 			}
@@ -212,16 +219,25 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 			if(-1 == fsync(fmfd)){
 				ERR_K2HPRN("Failed to sync SFMONWRAP data to monitor file %s by errno(%d), so Remove monitor file.", bup_monfile.c_str(), errno);
 				unlink(bup_monfile.c_str());
-				Unlock(OPEN_LOCK_POS, false);
-				Close();
+				CloseOnlyFile();
 				umask(old_umask);
 				return false;
+			}
+
+			// last check file exists(without checking file size)
+			struct stat	st;
+			if(0 != stat(bup_monfile.c_str(), &st)){
+				// retry to create file.
+				WAN_K2HPRN("File %s does not exist(errno=%d) after creating/writing, so try to create the file.", bup_monfile.c_str(), errno);
+				unlink(bup_monfile.c_str());		// force
+				CloseOnlyFile();
+				continue;
 			}
 
 			// read lock(write --> read)
 			if(!ReadLock(OPEN_LOCK_POS)){
 				ERR_K2HPRN("Failed to read lock monitor file %s.", bup_monfile.c_str());
-				Close();
+				CloseOnlyFile();
 				umask(old_umask);
 				return false;
 			}
@@ -232,38 +248,6 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 		}else{
 			// wait for initializing monitor file
 			MSG_K2HPRN("Monitor File %s exists(errno=%d), so check file size and try to open it.", bup_monfile.c_str(), errno);
-
-			// [NOTE]
-			// It loops here assuming that Monitor file has been locked, but it could be a dead loop
-			// if the process that locking the file after checking the lock finished without initializing
-			// the file.
-			// Therefore, an upper limit(1000) is set for the number of loops.
-			//
-			struct stat	st;
-			bool		is_retry_loop	= false;
-			int			check_loop_cnt	= 0;
-			for(is_retry_loop = false, check_loop_cnt = 0; !is_retry_loop && check_loop_cnt < 1000; ++check_loop_cnt){
-				if(0 != stat(bup_monfile.c_str(), &st)){
-					if(ENOENT != errno){
-						ERR_K2HPRN("Could not get stat for file %s by errno(%d).", bup_monfile.c_str(), errno);
-						umask(old_umask);
-						return false;
-					}
-					// retry to create file.
-					WAN_K2HPRN("File %s does not exist(errno=%d), so try to create the file.", bup_monfile.c_str(), errno);
-					is_retry_loop = true;
-				}else{
-					if(sizeof(SFMONWRAP) == st.st_size){
-						// finish initializing
-						break;
-					}
-					MSG_K2HPRN("file %s is not initialized yet, so continue to wait...", bup_monfile.c_str());
-				}
-			}
-			if(is_retry_loop || 1000 <= check_loop_cnt){
-				// retry to create file.
-				continue;
-			}
 
 			// open file
 			if(-1 == (fmfd = open(bup_monfile.c_str(), O_RDWR))){
@@ -280,24 +264,48 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 			// read lock
 			if(!ReadLock(OPEN_LOCK_POS)){
 				ERR_K2HPRN("Failed to read lock monitor file %s.", bup_monfile.c_str());
-				K2H_CLOSE(fmfd);
+				CloseOnlyFile();
 				umask(old_umask);
 				return false;
 			}
 
-			// re-check the file exists
+			// check the file exists
+			struct stat	st;
 			if(0 == stat(bup_monfile.c_str(), &st)){
-				// finished opening correct file
-				is_loop = false;
+				if(sizeof(SFMONWRAP) != st.st_size){
+					// try to get write lock
+					if(WriteLock(OPEN_LOCK_POS, false)){
+						// [NOTE]
+						// This case which is opened file(exists) -> got read lock -> got file stat -> BUT file size is wrong & GOT write lock.
+						// It means probabry the proress which initialize the file exited during initializing it.
+						// So the file is wrong, we need to remove it for no dead locking.
+						//
+						WAN_K2HPRN("Got lock for writing monitor file(%s) after (opening -> get read lock -> file size is wrong), it means no write/read process to it, and is needed to initialize.", bup_monfile.c_str());
+						unlink(bup_monfile.c_str());
+						CloseOnlyFile();
+					}else{
+						WAN_K2HPRN("file %s size is not sizeof(SFMONWRAP) after getting read lock, do retry for waiting initializing.", bup_monfile.c_str());
+						CloseOnlyFile();
+
+						struct timespec	sleeptime = {0L, 100 * 1000};	// 100us
+						nanosleep(&sleeptime, NULL);
+					}
+					// do retry
+
+				}else{
+					// finished opening correct file
+					MSG_K2HPRN("file %s size is sizeof(SFMONWRAP), it is safe file.", bup_monfile.c_str());
+					is_loop = false;
+				}
 			}else{
-				Unlock(OPEN_LOCK_POS, false);
-				K2H_CLOSE(fmfd);
 				if(ENOENT != errno){
 					ERR_K2HPRN("Could not get stat for file %s by errno(%d).", bup_monfile.c_str(), errno);
+					CloseOnlyFile();
 					umask(old_umask);
 					return false;
 				}
-				// retry to create file.
+				// monitor file does not exist, retry to create file.
+				CloseOnlyFile();
 				WAN_K2HPRN("File %s does not exist(errno=%d), so try to create the file.", bup_monfile.c_str(), errno);
 			}
 		}
