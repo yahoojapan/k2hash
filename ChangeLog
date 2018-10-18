@@ -1,3 +1,10 @@
+k2hash (1.0.63) trusty; urgency=low
+
+  * Fixed requires in specfile
+  * Fixed fatal error in destructor code corresponding to SIOF etc
+
+ -- Takeshi Nakatani <ggtakec@gmail.com> Wed, 17 Oct 2018 12:42:43 +0900
+
 k2hash (1.0.62) trusty; urgency=low
 
   * Fixed fatal error in destructing mmap info and etc

@@ -206,7 +206,8 @@ bool K2hAttrBuiltin::CleanAttrBuiltin(const K2HShm* pshm)
 		return true;	// already unload
 	}
 
-	PK2HBATTRPACK	pPack = iter->second;
+	PK2HBATTRPACK	pPack	= iter->second;
+	iter->second			= NULL;
 	K2H_Delete(pPack);
 	K2hAttrBuiltin::GetAttrPackMap().erase(iter);
 
