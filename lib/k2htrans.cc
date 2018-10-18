@@ -229,8 +229,10 @@ K2HTransManager::K2HTransManager() : LockVal(FLCK_NOSHARED_MUTEX_VAL_UNLOCKED), 
 K2HTransManager::~K2HTransManager()
 {
 	for(trprefmap_t::iterator iter = trprefmap.begin(); iter != trprefmap.end(); trprefmap.erase(iter++)){
+		PTRK2HPREF	ptrpre	= iter->second;
+		iter->second		= NULL;
 		Stop(iter->first, false);
-		K2H_Delete(iter->second);
+		K2H_Delete(ptrpre);
 	}
 }
 
@@ -247,7 +249,9 @@ bool K2HTransManager::SetTransactionKeyPrefix(const K2HShm* pk2hshm, const unsig
 
 	trprefmap_t::iterator	iter;
 	if(trprefmap.end() != (iter = trprefmap.find(pk2hshm))){
-		K2H_Delete(iter->second);
+		PTRK2HPREF	ptrpre	= iter->second;
+		iter->second		= NULL;
+		K2H_Delete(ptrpre);
 		trprefmap.erase(iter);
 	}
 
@@ -270,7 +274,9 @@ bool K2HTransManager::RemoveTransactionKeyPrefix(const K2HShm* pk2hshm)
 
 	trprefmap_t::iterator	iter;
 	if(trprefmap.end() != (iter = trprefmap.find(pk2hshm))){
-		K2H_Delete(iter->second);
+		PTRK2HPREF	ptrpre	= iter->second;
+		iter->second		= NULL;
+		K2H_Delete(ptrpre);
 		trprefmap.erase(iter);
 	}
 	fullock::flck_unlock_noshared_mutex(&LockVal);
@@ -281,7 +287,9 @@ bool K2HTransManager::RemoveTransactionKeyPrefix(const K2HShm* pk2hshm)
 bool K2HTransManager::RemoveAllTransactionKeyPrefix(void)
 {
 	for(trprefmap_t::iterator iter = trprefmap.begin(); iter != trprefmap.end(); trprefmap.erase(iter++)){
-		K2H_Delete(iter->second);
+		PTRK2HPREF	ptrpre	= iter->second;
+		iter->second		= NULL;
+		K2H_Delete(ptrpre);
 	}
 	return true;
 }
@@ -325,8 +333,8 @@ const unsigned char* K2HTransManager::GetTransactionKeyPrefix(const K2HShm* pk2h
 		while(!fullock::flck_trylock_noshared_mutex(&LockVal));	// no call sched_yield()
 	}
 	const unsigned char*	pReturn;
-	pReturn		= iter->second->pprefix;
-	prefixlen	= iter->second->prefixlen;
+	pReturn		= iter->second ? iter->second->pprefix	: NULL;
+	prefixlen	= iter->second ? iter->second->prefixlen: 0;
 
 	fullock::flck_unlock_noshared_mutex(&LockVal);
 
@@ -360,12 +368,15 @@ bool K2HTransManager::Stop(const K2HShm* pk2hshm, bool is_remove_prefix)
 
 		trfilemap_t::iterator iter;
 		if(trfilemap.end() != (iter = trfilemap.find(pk2hshm))){
-			if(!iter->second){
+			PTRFILEINFO	ptrfile	= iter->second;
+			iter->second		= NULL;
+
+			if(!ptrfile){
 				WAN_K2HPRN("Transaction File info is NULL.");
 			}else{
-				K2H_CLOSE(iter->second->arfd);
+				K2H_CLOSE(ptrfile->arfd);
 			}
-			K2H_Delete(iter->second);
+			K2H_Delete(ptrfile);
 			trfilemap.erase(iter);
 		}
 		fullock::flck_unlock_noshared_mutex(&LockVal);
@@ -385,12 +396,15 @@ bool K2HTransManager::Stop(const K2HShm* pk2hshm, bool is_remove_prefix)
 
 		// All stop
 		for(trfilemap_t::iterator iter = trfilemap.begin(); iter != trfilemap.end(); trfilemap.erase(iter++)){
-			if(!iter->second){
+			PTRFILEINFO	ptrfile	= iter->second;
+			iter->second		= NULL;
+
+			if(!ptrfile){
 				WAN_K2HPRN("Transaction File info is NULL.");
 			}else{
-				K2H_CLOSE(iter->second->arfd);
+				K2H_CLOSE(ptrfile->arfd);
 			}
-			K2H_Delete(iter->second);
+			K2H_Delete(ptrfile);
 		}
 		fullock::flck_unlock_noshared_mutex(&LockVal);
 
@@ -612,7 +626,7 @@ bool K2HTransManager::Put(const K2HShm* pk2hshm, PBCOM pBinCom)
 		size_t						prefixlen	= 0;
 		time_t*						expire		= NULL;
 		trprefmap_t::const_iterator	iter2;
-		if(trprefmap.end() != (iter2 = trprefmap.find(pk2hshm))){
+		if(trprefmap.end() != (iter2 = trprefmap.find(pk2hshm)) && iter2->second){
 			pprefix		= iter2->second->pprefix;
 			prefixlen	= iter2->second->prefixlen;
 			expire		= iter2->second->is_set_expire ? &(iter2->second->expire) : NULL;
@@ -716,7 +730,7 @@ bool K2HTransManager::ExitThreads(const K2HShm* pk2hshm)
 	while(!fullock::flck_trylock_noshared_mutex(&LockPool));	// no call sched_yield()
 
 	trpoolmap_t::iterator	iter;
-	if(trpoolmap.end() == (iter = trpoolmap.find(pk2hshm))){
+	if(trpoolmap.end() == (iter = trpoolmap.find(pk2hshm)) && !iter->second){
 		MSG_K2HPRN("There is no thread running for target.");
 		fullock::flck_unlock_noshared_mutex(&LockPool);
 		return true;
@@ -771,7 +785,9 @@ bool K2HTransManager::ExitThreads(const K2HShm* pk2hshm)
 		pthread_mutex_destroy(&(iter->second->trmutex));
 
 		// remove all for this target
-		K2H_Delete(iter->second);
+		PTRTHPOOL	trthpool	= iter->second;
+		iter->second			= NULL;
+		K2H_Delete(trthpool);
 		trpoolmap.erase(iter);
 	}else{
 		ERR_K2HPRN("Could not exit all thread for target.");
@@ -843,7 +859,7 @@ bool K2HTransManager::WaitFinish(const K2HShm* pk2hshm, long ms)
 	const unsigned char*	pprefix		= NULL;
 	size_t					prefixlen	= 0;
 	trprefmap_t::const_iterator	iter;
-	if(trprefmap.end() != (iter = trprefmap.find(pk2hshm))){
+	if(trprefmap.end() != (iter = trprefmap.find(pk2hshm)) && iter->second){
 		pprefix		= iter->second->pprefix;
 		prefixlen	= iter->second->prefixlen;
 	}

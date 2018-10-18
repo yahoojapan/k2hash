@@ -90,7 +90,7 @@ bool K2hAttrOpsMan::AddPluginLib(const K2HShm* pshm, const char* path)
 		return false;
 	}
 
-	k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::GetLibMap().find(pshm);
+	k2hattrlibmap_t::iterator	miter = K2hAttrOpsMan::GetLibMap().find(pshm);
 	if(K2hAttrOpsMan::GetLibMap().end() == miter){
 		// need to new list
 		k2hattrliblist_t*	plist = new k2hattrliblist_t;
@@ -99,7 +99,11 @@ bool K2hAttrOpsMan::AddPluginLib(const K2HShm* pshm, const char* path)
 		K2hAttrOpsMan::GetLibMap()[pshm] = plist;
 	}else{
 		k2hattrliblist_t*	plist = miter->second;
-
+		if(!plist){
+			// WHY?
+			plist			= new k2hattrliblist_t;
+			miter->second	= plist;
+		}
 		// check same library
 		for(k2hattrliblist_t::const_iterator liter = plist->begin(); liter != plist->end(); ++liter){
 			K2hAttrPluginLib*	ploaded = *liter;
@@ -133,7 +137,8 @@ bool K2hAttrOpsMan::RemovePluginLib(const K2HShm* pshm)
 {
 	if(!pshm){
 		for(k2hattrlibmap_t::iterator miter = K2hAttrOpsMan::GetLibMap().begin(); miter != K2hAttrOpsMan::GetLibMap().end(); K2hAttrOpsMan::GetLibMap().erase(miter++)){
-			k2hattrliblist_t*	plist = miter->second;
+			k2hattrliblist_t*	plist	= miter->second;
+			miter->second				= NULL;
 
 			// remove all libraries in list
 			if(!K2hAttrOpsMan::RemovePluginLib(plist)){
@@ -150,7 +155,8 @@ bool K2hAttrOpsMan::RemovePluginLib(const K2HShm* pshm)
 			WAN_K2HPRN("There is no library list for shm.");
 			return true;		// OK
 		}
-		k2hattrliblist_t*	plist = miter->second;
+		k2hattrliblist_t*	plist	= miter->second;
+		miter->second				= NULL;
 
 		// remove all libraries in list
 		if(!K2hAttrOpsMan::RemovePluginLib(plist)){
@@ -199,9 +205,11 @@ bool K2hAttrOpsMan::GetVersionInfos(const K2HShm* pshm, strarr_t& verinfos)
 	k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::GetLibMap().find(pshm);
 	if(K2hAttrOpsMan::GetLibMap().end() != miter){
 		const k2hattrliblist_t*	plist = miter->second;
-		for(k2hattrliblist_t::const_iterator liter = plist->begin(); liter != plist->end(); ++liter){
-			const K2hAttrPluginLib*	ploaded = *liter;
-			verinfos.push_back(string(ploaded->GetVersionInfo()));
+		if(plist){
+			for(k2hattrliblist_t::const_iterator liter = plist->begin(); liter != plist->end(); ++liter){
+				const K2hAttrPluginLib*	ploaded = *liter;
+				verinfos.push_back(string(ploaded->GetVersionInfo()));
+			}
 		}
 	}
 	return true;
@@ -249,21 +257,23 @@ bool K2hAttrOpsMan::Initialize(const K2HShm* pshm, const unsigned char* pkey, si
 		if(K2hAttrOpsMan::GetLibMap().end() != miter){
 			const k2hattrliblist_t*	plist = miter->second;
 
-			for(k2hattrliblist_t::const_iterator liter = plist->begin(); liter != plist->end(); ++liter){
-				const K2hAttrPluginLib*	ploaded = *liter;
-				K2hAttrPlugin*			pPlugin = new K2hAttrPlugin(ploaded);
+			if(plist){
+				for(k2hattrliblist_t::const_iterator liter = plist->begin(); liter != plist->end(); ++liter){
+					const K2hAttrPluginLib*	ploaded = *liter;
+					K2hAttrPlugin*			pPlugin = new K2hAttrPlugin(ploaded);
 
-				if(!pPlugin->Set(pkey, key_len, pvalue, value_len)){
-					ERR_K2HPRN("Failed to set key and value pointer to attr plugin(%s).", ploaded->GetVersionInfo());
-					K2H_Delete(pPlugin);
-					Clean();
-					return false;
-				}
-				if(!K2hAttrOpsBase::AddAttrOpArray(attroplist, pPlugin)){
-					ERR_K2HPRN("Failed to adding attr plugin(%s).", ploaded->GetVersionInfo());
-					K2H_Delete(pPlugin);
-					Clean();
-					return false;
+					if(!pPlugin->Set(pkey, key_len, pvalue, value_len)){
+						ERR_K2HPRN("Failed to set key and value pointer to attr plugin(%s).", ploaded->GetVersionInfo());
+						K2H_Delete(pPlugin);
+						Clean();
+						return false;
+					}
+					if(!K2hAttrOpsBase::AddAttrOpArray(attroplist, pPlugin)){
+						ERR_K2HPRN("Failed to adding attr plugin(%s).", ploaded->GetVersionInfo());
+						K2H_Delete(pPlugin);
+						Clean();
+						return false;
+					}
 				}
 			}
 		}
@@ -324,7 +334,7 @@ bool K2hAttrOpsMan::GetVersionInfos(strarr_t& verinfos) const
 {
 	for(k2hattroplist_t::const_iterator iter = attroplist.begin(); iter != attroplist.end(); ++iter){
 		const K2hAttrOpsBase*	pAttrOp 	= *iter;
-		const char*				pVerInfo	= pAttrOp->GetVersionInfo();
+		const char*				pVerInfo	= pAttrOp ? pAttrOp->GetVersionInfo() : NULL;
 		if(!ISEMPTYSTR(pVerInfo)){
 			verinfos.push_back(string(pVerInfo));
 		}
@@ -336,7 +346,11 @@ void K2hAttrOpsMan::GetInfos(stringstream& ss) const
 {
 	for(k2hattroplist_t::const_iterator iter = attroplist.begin(); iter != attroplist.end(); ++iter){
 		const K2hAttrOpsBase*	pAttrOp = *iter;
-		pAttrOp->GetInfo(ss);
+		if(pAttrOp){
+			pAttrOp->GetInfo(ss);
+		}else{
+			ss << "Attribute library Version:              Unknown(somthing wrong in program)" << endl;
+		}
 	}
 }
 
@@ -348,8 +362,8 @@ bool K2hAttrOpsMan::UpdateAttr(K2HAttrs& attrs)
 		K2hAttrOpsBase*	pAttrOp = *iter;
 
 		// set basical data
-		if(!pAttrOp->Set(byKey, KeyLen, byUpdateValue, UpdateValLen)){
-			ERR_K2HPRN("Could not set basical data to attribute operation object(%s).", pAttrOp->GetVersionInfo());
+		if(!pAttrOp || !pAttrOp->Set(byKey, KeyLen, byUpdateValue, UpdateValLen)){
+			ERR_K2HPRN("Could not set basical data to attribute operation object(%s).", pAttrOp ? pAttrOp->GetVersionInfo() : "unknown");
 			return false;
 		}
 
@@ -371,7 +385,7 @@ bool K2hAttrOpsMan::MarkHistoryEx(K2HAttrs& attrs, bool is_mark)
 		// search builtin attribute object
 		K2hAttrOpsBase*	pAttrOp = *iter;
 
-		if(K2hAttrBuiltin::TYPE_ATTRBUILTIN == pAttrOp->GetType()){
+		if(pAttrOp && K2hAttrBuiltin::TYPE_ATTRBUILTIN == pAttrOp->GetType()){
 			// found
 			K2hAttrBuiltin*	pAttrBuilt = dynamic_cast<K2hAttrBuiltin*>(pAttrOp);
 			if(pAttrBuilt){
@@ -393,7 +407,7 @@ bool K2hAttrOpsMan::DirectSetUniqId(K2HAttrs& attrs, const char* olduniqid)
 		// search builtin attribute object
 		K2hAttrOpsBase*	pAttrOp = *iter;
 
-		if(K2hAttrBuiltin::TYPE_ATTRBUILTIN == pAttrOp->GetType()){
+		if(pAttrOp && K2hAttrBuiltin::TYPE_ATTRBUILTIN == pAttrOp->GetType()){
 			// found
 			K2hAttrBuiltin*	pAttrBuilt = dynamic_cast<K2hAttrBuiltin*>(pAttrOp);
 			if(pAttrBuilt){
@@ -411,7 +425,7 @@ const K2hAttrBuiltin* K2hAttrOpsMan::GetAttrBuiltin(void) const
 		// search builtin attribute object
 		const K2hAttrOpsBase*	pAttrOp = *iter;
 
-		if(K2hAttrBuiltin::TYPE_ATTRBUILTIN == pAttrOp->GetType()){
+		if(pAttrOp && K2hAttrBuiltin::TYPE_ATTRBUILTIN == pAttrOp->GetType()){
 			// found
 			const K2hAttrBuiltin*	pAttrBuilt = dynamic_cast<const K2hAttrBuiltin*>(pAttrOp);
 			if(!pAttrBuilt){

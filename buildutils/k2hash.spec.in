@@ -50,6 +50,7 @@ License: @PKGLICENSE@
 Group: Applications/Databases
 URL: https://@GIT_DOMAIN@/@GIT_ORG@/@PACKAGE_NAME@
 Source0: https://@GIT_DOMAIN@/@GIT_ORG@/@PACKAGE_NAME@/archive/%{gittag}/%{name}-%{version}.tar.gz
+Requires: libfullock%{?_isa} >= 1.0.28
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: git-core gcc-c++ make libtool libfullock-devel%{?_isa} >= 1.0.28
 Prefix: %{_prefix}
