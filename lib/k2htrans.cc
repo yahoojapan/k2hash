@@ -730,7 +730,7 @@ bool K2HTransManager::ExitThreads(const K2HShm* pk2hshm)
 	while(!fullock::flck_trylock_noshared_mutex(&LockPool));	// no call sched_yield()
 
 	trpoolmap_t::iterator	iter;
-	if(trpoolmap.end() == (iter = trpoolmap.find(pk2hshm)) && !iter->second){
+	if(trpoolmap.end() == (iter = trpoolmap.find(pk2hshm)) || !iter->second){
 		MSG_K2HPRN("There is no thread running for target.");
 		fullock::flck_unlock_noshared_mutex(&LockPool);
 		return true;
