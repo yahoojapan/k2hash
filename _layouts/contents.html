@@ -31,7 +31,6 @@
 
       {{ content }}
 
-      <h3>
       {% if page.prev_url %}
       <a href="{{ site.url }}{{ site.baseurl }}/{{ page.prev_url}}" class="btn-menu"><span class="arrow-base arrow-left"></span>{{ page.prev_string }}</a>
       {% endif %}
@@ -41,6 +40,7 @@
       {% if page.next_url %}
       <a href="{{ site.url }}{{ site.baseurl }}/{{ page.next_url}}" class="btn-menu">{{ page.next_string }}<span class="arrow-base arrow-right"></span></a>
       {% endif %}
+      <h3>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><img border="0" src="images/antpickax_32x32.png" width="32" height="32" alt="AntPickax"><a href="{{ site.url }}{{ site.baseurl }}/">{{ site.github.repository_name }}</a> is maintained by <a href="https://www.yahoo.co.jp">Yahoo! JAPAN</a>.</span>
