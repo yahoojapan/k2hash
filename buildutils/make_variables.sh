@@ -28,11 +28,13 @@
 func_usage()
 {
 	echo ""
-	echo "Usage:  $1 [-pkg_version | -lib_version_info | -lib_version_for_link | -major_number]"
+	echo "Usage:  $1 [-pkg_version | -lib_version_info | -lib_version_for_link | -major_number | -debhelper_dep | -rpmpkg_group]"
 	echo "	-pkg_version            returns package version."
 	echo "	-lib_version_info       returns library libtools revision"
 	echo "	-lib_version_for_link   return library version for symbolic link"
 	echo "	-major_number           return major version number"
+	echo "	-debhelper_dep          return debhelper dependency string"
+	echo "	-rpmpkg_group           return group string for rpm package"
 	echo "	-h(help)                print help."
 	echo ""
 }
@@ -64,6 +66,12 @@ while [ $# -ne 0 ]; do
 
 	elif [ "X$1" = "X-major_number" ]; then
 		PRGMODE="MAJOR"
+
+	elif [ "X$1" = "X-debhelper_dep" ]; then
+		PRGMODE="DEBHELPER"
+
+	elif [ "X$1" = "X-rpmpkg_group" ]; then
+		PRGMODE="RPMGROUP"
 
 	else
 		echo "ERROR: unknown option $1" 1>&2
@@ -125,6 +133,48 @@ elif [ ${PRGMODE} = "LIB" -o ${PRGMODE} = "LINK" ]; then
 
 elif [ ${PRGMODE} = "MAJOR" ]; then
 	RESULT=`cat ${RELEASE_VERSION_FILE} | sed 's/["|\.]/ /g' | awk '{print $1}'`
+
+elif [ ${PRGMODE} = "DEBHELPER" ]; then
+	# [NOTE]
+	# This option returns debhelper dependency string in control file for debian package.
+	# That string is depended debhelper package version and os etc.
+	# (if not ubuntu/debian os, returns default string)
+	#
+	apt-cache --version >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		IS_OS_UBUNTU=0
+		if [ -f /etc/lsb-release ]; then
+			grep [Uu]buntu /etc/lsb-release >/dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				IS_OS_UBUNTU=1
+			fi
+		fi
+
+		DEBHELPER_MAJOR_VER=`apt-cache show debhelper 2>/dev/null | grep Version 2>/dev/null | awk '{print $2}' 2>/dev/null | sed 's/\..*/ /g' 2>/dev/null`
+		if [ ${DEBHELPER_MAJOR_VER} -lt 10 ]; then
+			RESULT="debhelper (>= 9), autotools-dev"
+		else
+			if [ ${IS_OS_UBUNTU} -eq 1 ]; then
+				RESULT="debhelper (>= 10)"
+			else
+				RESULT="debhelper (>= 10), autotools-dev"
+			fi
+		fi
+	else
+		# Not debian/ubuntu, set default
+		RESULT="debhelper (>= 10), autotools-dev"
+	fi
+
+elif [ ${PRGMODE} = "RPMGROUP" ]; then
+	# [NOTE]
+	# Fedora rpm does not need "Group" key in spec file.
+	# If not fedora, returns "NEEDRPMGROUP", and you must replace this string in configure.ac
+	#
+	if [ -f /etc/fedora-release ]; then
+		RESULT=""
+	else
+		RESULT="NEEDRPMGROUP"
+	fi
 fi
 
 #

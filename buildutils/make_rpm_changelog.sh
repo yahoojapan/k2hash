@@ -70,9 +70,17 @@ done
 #
 # convert ChangeLog to spec file format for rpm
 #
+if [ "X${BUILD_NUMBER}" = "X" ]; then
+	# default build number is 1
+	BUILD_NUMBER_STR="-1"
+else
+	BUILD_NUMBER_STR="-${BUILD_NUMBER}"
+fi
+
 INONEVER=0
 DETAILS=""
 ALLLINES=""
+SET_FIRST_VERSION=0
 while read oneline; do
 	oneline=`echo "${oneline}"`
 	if [ "X${oneline}" = "X" ]; then
@@ -85,6 +93,10 @@ while read oneline; do
 		if [ "X${PKG_VERSION}" != "X" ]; then
 			INONEVER=1
 			DETAILS=""
+			if [ ${SET_FIRST_VERSION} -eq 0 ]; then
+				PKG_VERSION="${PKG_VERSION}${BUILD_NUMBER_STR}"
+				SET_FIRST_VERSION=1
+			fi
 		fi
 	else
 		TEST_CONTENTS=`echo "${oneline}" | grep '^[-][-].*[ ][ ].*$'`
@@ -113,7 +125,9 @@ done < ${CHANGELOG_FILE}
 #
 # print changelog
 #
-echo -e "${ALLLINES}"
+# NOTE: echo command on ubuntu is print '-e', we need to cut it.
+#
+echo -e "${ALLLINES}" | sed 's/^-e //g'
 
 exit 0
 

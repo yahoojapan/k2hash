@@ -1,13 +1,22 @@
 #
-# FULLOCK - Fast User Level LOCK library by Yahoo! JAPAN
+# K2HASH
 #
-# Copyright 2015 Yahoo! JAPAN corporation.
+# Utility tools for building configure/packages by AntPickax
 #
-# FULLOCK is fast locking library on user level by Yahoo! JAPAN.
-# FULLOCK is following specifications.
+# Copyright 2018 Yahoo Japan corporation.
 #
+# AntPickax provides utility tools for supporting autotools
+# builds.
+#
+# These tools retrieve the necessary information from the
+# repository and appropriately set the setting values of
+# configure, Makefile, spec,etc file and so on.
+# These tools were recreated to reduce the number of fixes and
+# reduce the workload of developers when there is a change in
+# the project configuration.
+# 
 # For the full copyright and license information, please view
-# the LICENSE file that was distributed with this source code.
+# the license file that was distributed with this source code.
 #
 # AUTHOR:   Takeshi Nakatani
 # CREATE:   Wed 7 Dec 2016
@@ -20,27 +29,32 @@ sudo: required
 
 dist: trusty
 
+env:
+  global:
+    - PCUSER=antpickax
+    - PCREPO=current
+  matrix:
+    - OS=centos TAG=centos7 DISTTAG=el/7 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel"
+    - OS=centos TAG=centos6 DISTTAG=el/6 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel"
+    - OS=fedora TAG=28 DISTTAG=fedora/28 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel"
+    - OS=ubuntu TAG=18.04 DISTTAG=ubuntu/bionic INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev"
+    - OS=debian TAG=stretch DISTTAG=debian/stretch INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev"
+
 cache: apt
 
-git:
-  submodules: false
+services:
+  - docker
 
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config
- - git clone https://github.com/yahoojapan/fullock.git
- - cd fullock
- - ./autogen.sh
- - ./configure --prefix=/usr
- - make
- - sudo make install
- - cd ..
+ - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
+ - sudo service docker restart
+ - sleep 5
+ - sudo docker image pull ${OS}:${TAG}
 
 script:
- - ./autogen.sh
- - ./configure --prefix=/usr
- - make
- - "cd tests && make check-TESTS"
+ - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export PCTOKEN=dummy_token_for_pr; else export PCTOKEN=${PACKAGECLOUD_TOKEN}; fi'
+ - sudo docker container run --rm=true -e TRAVIS_TAG=${TRAVIS_TAG} -e FORCE_BUILD_PKG=${FORCE_BUILD_PKG} -e USE_PC_REPO=${USE_PC_REPO} -e BUILD_NUMBER=${BUILD_NUMBER} -e DEBFULLNAME=${DEBFULLNAME} -e DEBEMAIL=${DEBEMAIL} -v `pwd`:/k2hash:rw ${OS}:${TAG} /bin/sh -c "/k2hash/buildutils/travis_builder.sh -${OS} -pctoken ${PCTOKEN} -pcuser ${PCUSER} -pcrepo ${PCREPO} -pcdist ${DISTTAG} ${INSTPKG}"
 
 #
 # VIM modelines

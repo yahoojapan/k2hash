@@ -177,7 +177,7 @@ cd ${EXPANDDIR} || exit 1
 #
 # initialize debian directory
 #
-dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig -m ${DH_MAKE_AUTORUN_OPTION} || exit 1
+dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig --multi ${DH_MAKE_AUTORUN_OPTION} || exit 1
 
 #
 # remove unnecessary template files
@@ -187,20 +187,24 @@ rm -rf ${EXPANDDIR}/debian/*.ex ${EXPANDDIR}/debian/*.EX ${EXPANDDIR}/debian/${P
 #
 # adding some lines into rules file
 #
-echo ""																				>> ${EXPANDDIR}/debian/rules || exit 1
-echo "# for ${PACKAGE_NAME} and ${PACKAGE_DEV_NAME} packages"						>> ${EXPANDDIR}/debian/rules || exit 1
-echo "override_dh_auto_install:"													>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	dh_auto_install --destdir=debian/${PACKAGE_NAME}"							>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	dh_auto_install --destdir=debian/${PACKAGE_DEV_NAME}"						>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	if [ -d debian/${PACKAGE_NAME}/usr/include ]; then                          rm -rf debian/${PACKAGE_NAME}/usr/include;                                                fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	if [ -d debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/pkgconfig ]; then   rm -rf debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/pkgconfig;                         fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	if [ -d debian/${PACKAGE_DEV_NAME}/usr/bin ]; then                          rm -rf debian/${PACKAGE_DEV_NAME}/usr/bin;                                                fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	if [ -d debian/${PACKAGE_DEV_NAME}/usr/share/man ]; then                    rm -rf debian/${PACKAGE_DEV_NAME}/usr/share/man;                                          fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	ls debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.a ]; >/dev/null 2>&1;    if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.a;       fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	ls debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.la ]; >/dev/null 2>&1;   if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.la;      fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.a >/dev/null 2>&1;   if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.a;   fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.la >/dev/null 2>&1;  if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.la;  fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so* >/dev/null 2>&1; if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so*; fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+mv ${EXPANDDIR}/debian/rules ${EXPANDDIR}/debian/rules.base
+head -1 ${EXPANDDIR}/debian/rules.base													> ${EXPANDDIR}/debian/rules  || exit 1
+sed '/^#/d' ${EXPANDDIR}/debian/rules.base | sed '/^$/{N; /^\n$/D;}'					>> ${EXPANDDIR}/debian/rules || exit 1
+echo ""																					>> ${EXPANDDIR}/debian/rules || exit 1
+echo "# for ${PACKAGE_NAME} and ${PACKAGE_DEV_NAME} packages"							>> ${EXPANDDIR}/debian/rules || exit 1
+echo "override_dh_auto_install:"														>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	dh_auto_install --destdir=debian/${PACKAGE_NAME}"								>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	dh_auto_install --destdir=debian/${PACKAGE_DEV_NAME}"							>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	if [ -d debian/${PACKAGE_NAME}/usr/include ]; then                              rm -rf debian/${PACKAGE_NAME}/usr/include;                                              fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	if [ -d debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/pkgconfig ]; then       rm -rf debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/pkgconfig;                       fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	if [ -d debian/${PACKAGE_DEV_NAME}/usr/bin ]; then                              rm -rf debian/${PACKAGE_DEV_NAME}/usr/bin;                                              fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	if [ -d debian/${PACKAGE_DEV_NAME}/usr/share/man ]; then                        rm -rf debian/${PACKAGE_DEV_NAME}/usr/share/man;                                        fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	ls debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.a >/dev/null 2>&1;         if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.a;       fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	ls debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.la >/dev/null 2>&1;        if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.la;      fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	ls debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.so >/dev/null 2>&1;        if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.so;      fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.a >/dev/null 2>&1;     if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.a;   fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.la >/dev/null 2>&1;    if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.la;  fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so* >/dev/null 2>&1;   if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so*; fi"	>> ${EXPANDDIR}/debian/rules || exit 1
 
 #
 # create links file for library
@@ -208,8 +212,8 @@ echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so* >/dev/null 2
 FOUND_LIB_LINES=`find ./ -name Makefile.am -exec grep ${LIB_BASENAME} {} \; 2>/dev/null`
 if [ "X${FOUND_LIB_LINES}" != "X" ]; then
 	LIBRARY_LIBTOOL_VERSION=`${MYSCRIPTDIR}/make_variables.sh -lib_version_for_link 2>/dev/null` || exit 1
-	echo "usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${LIBRARY_LIBTOOL_VERSION} usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so"						>  ${EXPANDDIR}/debian/${PACKAGE_NAME}.links || exit 1
-	echo "usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${LIBRARY_LIBTOOL_VERSION} usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${PACKAGE_MAJOR_VER}"	>> ${EXPANDDIR}/debian/${PACKAGE_NAME}.links || exit 1
+	echo "usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${LIBRARY_LIBTOOL_VERSION} usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so"						>> ${EXPANDDIR}/debian/${PACKAGE_DEV_NAME}.links	|| exit 1
+	echo "usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${LIBRARY_LIBTOOL_VERSION} usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${PACKAGE_MAJOR_VER}"	>> ${EXPANDDIR}/debian/${PACKAGE_NAME}.links		|| exit 1
 fi
 
 #
@@ -225,12 +229,27 @@ cp ${MYSCRIPTDIR}/control ${EXPANDDIR}/debian/control || exit 1
 #
 # copy changelog with converting build number
 #
+IS_OS_UBUNTU=0
+if [ -f /etc/lsb-release ]; then
+	grep [Uu]buntu /etc/lsb-release >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		IS_OS_UBUNTU=1
+	fi
+fi
 CHLOG_ORG_MENT=`cat ChangeLog | grep "^ --" | head -1`
 CHLOG_NEW_MENT=`cat ${EXPANDDIR}/debian/changelog | grep "^ --" | head -1`
 if [ "X${BUILD_NUMBER}" = "X" ]; then
-	cat ChangeLog | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" > ${EXPANDDIR}/debian/changelog || exit 1
+	if [ ${IS_OS_UBUNTU} -eq 1 ]; then
+		cat ChangeLog | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" > ${EXPANDDIR}/debian/changelog || exit 1
+	else
+		cat ChangeLog | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" | sed 's/ trusty;/ unstable;/g' > ${EXPANDDIR}/debian/changelog || exit 1
+	fi
 else
-	cat ChangeLog | sed "s/${PACKAGE_VERSION}/${PACKAGE_VERSION}-${BUILD_NUMBER}/g" | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" > ${EXPANDDIR}/debian/changelog || exit 1
+	if [ ${IS_OS_UBUNTU} -eq 1 ]; then
+		cat ChangeLog | sed "s/${PACKAGE_VERSION}/${PACKAGE_VERSION}-${BUILD_NUMBER}/g" | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" > ${EXPANDDIR}/debian/changelog || exit 1
+	else
+		cat ChangeLog | sed "s/${PACKAGE_VERSION}/${PACKAGE_VERSION}-${BUILD_NUMBER}/g" | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" | sed 's/ trusty;/ unstable;/g' > ${EXPANDDIR}/debian/changelog || exit 1
+	fi
 fi
 
 #
