@@ -47,7 +47,6 @@ FILEPATH="/tmp/k2hash_test_$PROCID.k2h"
 if [ "X$1" = "X" ]; then
 	LOGFILE="/dev/null"
 #	LOGFILE="/tmp/k2hash_test_$PROCID.log"
-	LOGFILE2="/tmp/k2hash_test.log"
 else
 	LOGFILE="$1"
 fi
@@ -64,7 +63,6 @@ echo "" >> $LOGFILE
 
 if [ $? -ne 0 ]; then
 	echo "Memory mode test --->> ERROR" >> $LOGFILE
-	echo "Memory mode test --->> ERROR" >> $LOGFILE2
 	exit 1
 fi
 echo "Memory mode test --->> OK" >> $LOGFILE
@@ -81,7 +79,6 @@ echo "" >> $LOGFILE
 
 if [ $? -ne 0 ]; then
 	echo "Temp file mode test --->> ERROR" >> $LOGFILE
-	echo "Temp file mode test --->> ERROR" >> $LOGFILE2
 	exit 1
 fi
 echo "Temp file mode test --->> OK" >> $LOGFILE
@@ -98,7 +95,6 @@ echo "" >> $LOGFILE
 
 if [ $? -ne 0 ]; then
 	echo "File mode test --->> ERROR" >> $LOGFILE
-	echo "File mode test --->> ERROR" >> $LOGFILE2
 	exit 1
 fi
 echo "File mode test --->> OK" >> $LOGFILE
@@ -115,7 +111,6 @@ echo "" >> $LOGFILE
 
 if [ $? -ne 0 ]; then
 	echo "Dump mode test --->> ERROR" >> $LOGFILE
-	echo "Dump mode test --->> ERROR" >> $LOGFILE2
 	exit 1
 fi
 echo "Dump mode test --->> OK" >> $LOGFILE
@@ -127,11 +122,11 @@ echo "Dump mode test --->> OK" >> $LOGFILE
 echo "" >> $LOGFILE
 echo "-- k2hlinetool test --" >> $LOGFILE
 echo "" >> $LOGFILE
-./test_linetool.sh >> $LOGFILE
+#./test_linetool.sh >> $LOGFILE
+./test_linetool.sh
 
 if [ $? -ne 0 ]; then
 	echo "API k2hlinetool test --->> ERROR" >> $LOGFILE
-	echo "API k2hlinetool test --->> ERROR" >> $LOGFILE2
 	exit 1
 fi
 echo "API k2hlinetool test --->> OK" >> $LOGFILE
