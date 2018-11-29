@@ -60,7 +60,8 @@ fi
 #################
 # memory type test
 #################
-${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
+#${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
+${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>&1
 if [ $? -ne 0 ]; then
 	exit 1
 fi
