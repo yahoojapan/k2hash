@@ -147,7 +147,7 @@ fi
 #
 git archive HEAD --prefix=${PACKAGE_NAME}-${PACKAGE_VERSION}/ --output=${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
 if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : could not make source tar ball(${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz) from github repogitory." 1>&2
+	echo "[ERROR] ${PRGNAME} : could not make source tar ball(${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz) from github repository." 1>&2
 	exit 1
 fi
 

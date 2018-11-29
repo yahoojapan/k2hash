@@ -28,11 +28,12 @@
 func_usage()
 {
 	echo ""
-	echo "Usage:  $1 [-<ostype>] [-pctoken <package cloud token>] [-pcuser <user>] [-pcrepo <repogitory name>] [-pcdist <any path(os/version)>] <package name>..."
+	echo "Usage:  $1 [-<ostype>] [-pctoken <package cloud token>] [-pcuser <user>] [-pcrepo <repository name>] [-pcdlrepo <repository name>] [-pcdist <any path(os/version)>] <package name>..."
 	echo "        -<ostype>          specify OS type for script mode(ubuntu/debian/fedora/el)"
 	echo "        -pctoken           specify packagecloud.io token for uploading(optional)"
 	echo "        -pcuser            specify publish user name(optional)"
-	echo "        -pcrepo            specify publish repogitory name(optional)"
+	echo "        -pcrepo            specify publish repository name(optional)"
+	echo "        -pcdlrepo          specify download repository name(optional)"
 	echo "        -pcdist            specify publish distribute(optional) - example: \"ubuntu/trusty\""
 	echo "        <package name>...  specify package names needed before building"
 	echo "        -h                 print help"
@@ -40,7 +41,7 @@ func_usage()
 	echo "        BUILD_NUMBER       specify build number for packaging(default 1)"
 	echo "        TRAVIS_TAG         if the current build is for a git tag, this variable is set to the tag’s name"
 	echo "        FORCE_BUILD_PKG    if this env is 'true', force packaging anytime"
-	echo "        USE_PC_REPO        if this env is 'true', use packagecloud.io repogitory"
+	echo "        USE_PC_REPO        if this env is 'true', use packagecloud.io repository"
 	echo "        NO_DEBUILD         if this env is 'true'(on pull request), do not run debuild."
 	echo ""
 }
@@ -80,6 +81,7 @@ PKGDIR=""
 PKGEXT=""
 PCUSER=""
 PCREPO=""
+PCDLREPO=""
 PCDIST=""
 PCPUBLISH_PATH=""
 INSTALL_PACKAGES=""
@@ -161,7 +163,7 @@ while [ $# -ne 0 ]; do
 
 	elif [ "X$1" = "X-pcrepo" -o "X$1" = "X-PCREPO" ]; then
 		if [ "X${PCREPO}" != "X" ]; then
-			echo "[ERROR] ${PRGNAME} : already set packagecloud.io repogitory name." 1>&2
+			echo "[ERROR] ${PRGNAME} : already set packagecloud.io repository name." 1>&2
 			exit 1
 		fi
 		shift
@@ -170,6 +172,18 @@ while [ $# -ne 0 ]; do
 			exit 1
 		fi
 		PCREPO=$1
+
+	elif [ "X$1" = "X-pcdlrepo" -o "X$1" = "X-PCDLREPO" ]; then
+		if [ "X${PCDLREPO}" != "X" ]; then
+			echo "[ERROR] ${PRGNAME} : already set packagecloud.io download repository name." 1>&2
+			exit 1
+		fi
+		shift
+		if [ $# -eq 0 ]; then
+			echo "[ERROR] ${PRGNAME} : -pcdlrepo option is specified without parameter." 1>&2
+			exit 1
+		fi
+		PCDLREPO=$1
 
 	elif [ "X$1" = "X-pcdist" -o "X$1" = "X-PCDIST" ]; then
 		if [ "X${PCDIST}" != "X" ]; then
@@ -252,7 +266,7 @@ else
 fi
 
 #
-# Set package repogitory on packagecloud.io
+# Set package repository on packagecloud.io
 #
 if [ "X${USE_PC_REPO}" = "Xtrue" -o "X${USE_PC_REPO}" = "XTRUE" ]; then
 	#
@@ -265,17 +279,25 @@ if [ "X${USE_PC_REPO}" = "Xtrue" -o "X${USE_PC_REPO}" = "XTRUE" ]; then
 	fi
 
 	#
-	# Download and set pckagecloud.io repogitory
+	# Download repository name
+	#
+	PCDLREPO_NAME=${PCREPO}
+	if [ "X${PCDLREPO}" != "X" ]; then
+		PCDLREPO_NAME=${PCDLREPO}
+	fi
+
+	#
+	# Download and set pckagecloud.io repository
 	#
 	if [ ${IS_CENTOS} -eq 1 -o ${IS_FEDORA} -eq 1 ]; then
 		PC_REPO_ADD_SH="script.rpm.sh"
 	else
 		PC_REPO_ADD_SH="script.deb.sh"
 	fi
-	prn_cmd "curl -s https://packagecloud.io/install/repositories/${PCUSER}/${PCREPO}/${PC_REPO_ADD_SH} | bash"
-	curl -s https://packagecloud.io/install/repositories/${PCUSER}/${PCREPO}/${PC_REPO_ADD_SH} | bash
+	prn_cmd "curl -s https://packagecloud.io/install/repositories/${PCUSER}/${PCDLREPO_NAME}/${PC_REPO_ADD_SH} | bash"
+	curl -s https://packagecloud.io/install/repositories/${PCUSER}/${PCDLREPO_NAME}/${PC_REPO_ADD_SH} | bash
 	if [ $? -ne 0 ]; then
-		echo "[ERROR] ${PRGNAME} : could not add packagecloud.io repogitory." 1>&2
+		echo "[ERROR] ${PRGNAME} : could not add packagecloud.io repository." 1>&2
 		exit 1
 	fi
 fi
@@ -312,7 +334,7 @@ SRCTOP="/tmp${SRCTOP}"
 
 run_cmd cd ${SRCTOP}
 run_cmd ./autogen.sh
-run_cmd ./configure --prefix=/usr
+run_cmd ./configure --prefix=/usr ${CONFIGREOPT}
 run_cmd make
 run_cmd make check
 

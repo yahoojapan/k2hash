@@ -33,12 +33,14 @@ env:
   global:
     - PCUSER=antpickax
     - PCREPO=current
+    - PCDLREPO=stable
+    - CONFIGREOPT="--with-nss"
   matrix:
-    - OS=centos TAG=centos7 DISTTAG=el/7 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel libssl-devel"
-    - OS=centos TAG=centos6 DISTTAG=el/6 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel libssl-devel"
-    - OS=fedora TAG=28 DISTTAG=fedora/28 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel libssl-devel"
-    - OS=ubuntu TAG=18.04 DISTTAG=ubuntu/bionic INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libssl-dev"
-    - OS=debian TAG=stretch DISTTAG=debian/stretch INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libssl-dev"
+    - OS=centos TAG=centos7 DISTTAG=el/7 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=centos TAG=centos6 DISTTAG=el/6 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=fedora TAG=28 DISTTAG=fedora/28 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=ubuntu TAG=18.04 DISTTAG=ubuntu/bionic INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libnss3-dev"
+    - OS=debian TAG=stretch DISTTAG=debian/stretch INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libnss3-dev"
 
 cache: apt
 
@@ -54,7 +56,7 @@ before_install:
 
 script:
  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export PCTOKEN=dummy_token_for_pr; else export PCTOKEN=${PACKAGECLOUD_TOKEN}; fi'
- - sudo docker container run --rm=true -e TRAVIS_TAG=${TRAVIS_TAG} -e FORCE_BUILD_PKG=${FORCE_BUILD_PKG} -e USE_PC_REPO=${USE_PC_REPO} -e BUILD_NUMBER=${BUILD_NUMBER} -e DEBFULLNAME=${DEBFULLNAME} -e DEBEMAIL=${DEBEMAIL} -v `pwd`:/k2hash:rw ${OS}:${TAG} /bin/sh -c "/k2hash/buildutils/travis_builder.sh -${OS} -pctoken ${PCTOKEN} -pcuser ${PCUSER} -pcrepo ${PCREPO} -pcdist ${DISTTAG} ${INSTPKG}"
+ - sudo docker container run --rm=true -e TRAVIS_TAG=${TRAVIS_TAG} -e FORCE_BUILD_PKG=${FORCE_BUILD_PKG} -e USE_PC_REPO=${USE_PC_REPO} -e BUILD_NUMBER=${BUILD_NUMBER} -e DEBFULLNAME=${DEBFULLNAME} -e DEBEMAIL=${DEBEMAIL} CONFIGREOPT=${CONFIGREOPT} -v `pwd`:/k2hash:rw ${OS}:${TAG} /bin/sh -c "/k2hash/buildutils/travis_builder.sh -${OS} -pctoken ${PCTOKEN} -pcuser ${PCUSER} -pcrepo ${PCREPO} -pcdlrepo ${PCDLREPO} -pcdist ${DISTTAG} ${INSTPKG}"
 
 #
 # VIM modelines
