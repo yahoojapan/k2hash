@@ -122,8 +122,7 @@ echo "Dump mode test --->> OK" >> $LOGFILE
 echo "" >> $LOGFILE
 echo "-- k2hlinetool test --" >> $LOGFILE
 echo "" >> $LOGFILE
-#./test_linetool.sh >> $LOGFILE
-./test_linetool.sh
+./test_linetool.sh >> $LOGFILE
 
 if [ $? -ne 0 ]; then
 	echo "API k2hlinetool test --->> ERROR" >> $LOGFILE

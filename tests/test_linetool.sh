@@ -28,8 +28,7 @@ if [ "X${TESTPROGDIR}" = "X" ]; then
 fi
 
 PROCID=$$
-#LINETOOL="${TESTPROGDIR}/k2hlinetool"
-LINETOOL="${TESTPROGDIR}/k2hlinetool -g INFO"
+LINETOOL="${TESTPROGDIR}/k2hlinetool"
 K2HFILE="/tmp/k2hash_test_linetool.k2h"
 CMDFILE="${MYSCRIPTDIR}/test_linetool.cmd"
 DSAVECMDFILE="${MYSCRIPTDIR}/test_linetool_dsave.cmd"
@@ -40,8 +39,6 @@ MASTERLOGSUBFILE="/tmp/test_linetool_noverinfo.log"
 
 rm -f ${K2HFILE}
 rm -f ${LOGFILE}
-
-export K2HATTR_ENC_TYPE=AES256_PBKDF1
 
 #################
 # Initialize test
@@ -62,8 +59,7 @@ fi
 #################
 # memory type test
 #################
-#${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
-${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>&1
+${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
 if [ $? -ne 0 ]; then
 	exit 1
 fi
