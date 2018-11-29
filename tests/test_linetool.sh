@@ -41,6 +41,8 @@ MASTERLOGSUBFILE="/tmp/test_linetool_noverinfo.log"
 rm -f ${K2HFILE}
 rm -f ${LOGFILE}
 
+export K2HATTR_ENC_TYPE=AES256_PBKDF1
+
 #################
 # Initialize test
 #################
