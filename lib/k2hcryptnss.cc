@@ -21,11 +21,11 @@
 
 #include <string.h>
 #include <nss.h>
-#include <nss3/pk11pub.h>
-#include <nss3/hasht.h>
-#include <nss3/blapit.h>
-#include <nspr4/prinit.h>
-#include <nspr4/prerror.h>
+#include <pk11pub.h>
+#include <hasht.h>
+#include <blapit.h>
+#include <prinit.h>
+#include <prerror.h>
 
 #include "k2hcommon.h"
 #include "k2hcryptcommon.h"
@@ -738,7 +738,7 @@ unsigned char* k2h_encrypt_aes256_cbc_pbkdf2(const char* pass, int iter, const u
 	// Symmetric key
 	PK11SymKey*		pKey;
 	if(NULL == (pKey = PK11_PBEKeyGen(Slot, algid, &keyItem, PR_FALSE, NULL))){
-		ERR_K2HPRN("could not get Symmetric Key.");
+		ERR_K2HPRN("could not get Symmetric Key, setting \"K2HATTR_ENC_TYPE=AES_256_PBKDF1\" environment can be avoided.");
 		PK11_FreeSlot(Slot);
 		SECOID_DestroyAlgorithmID(algid, PR_TRUE);
 		K2H_Free(encryptdata);

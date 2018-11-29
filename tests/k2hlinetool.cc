@@ -1969,9 +1969,9 @@ static bool DirectPrintCommand(K2HShm& k2hash, params_t& params)
 		}
 		wpos = pos % 8;
 		sprintf(szTmpBuff, "%02X", byValue[pos]);
-		strncpy(&szBinBuff[(3 < wpos ? (wpos * 3) + 1 : wpos * 3)], szTmpBuff, 2);
+		memcpy(&szBinBuff[(3 < wpos ? (wpos * 3) + 1 : wpos * 3)], szTmpBuff, 2);
 		sprintf(szTmpBuff, "%c", (isprint(byValue[pos]) ? byValue[pos] : 0x00 == byValue[pos] ? ' ' : 0xFF));
-		strncpy(&szChBuff[(3 < wpos ? wpos + 1 : wpos)], szTmpBuff, 1);
+		memcpy(&szChBuff[(3 < wpos ? wpos + 1 : wpos)], szTmpBuff, 1);
 
 		if(7 == (pos % 8)){
 			PRN(" %s - %s", szBinBuff, szChBuff);

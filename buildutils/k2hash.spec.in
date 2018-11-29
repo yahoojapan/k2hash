@@ -47,12 +47,12 @@ Name: @PACKAGE_NAME@
 Version: @VERSION@
 Release: %{package_revision}%{?dist}
 License: @PKGLICENSE@
-Group: Applications/Databases
+@RPMPKG_GROUP@
 URL: https://@GIT_DOMAIN@/@GIT_ORG@/@PACKAGE_NAME@
 Source0: https://@GIT_DOMAIN@/@GIT_ORG@/@PACKAGE_NAME@/archive/%{gittag}/%{name}-%{version}.tar.gz
-Requires: libfullock%{?_isa} >= 1.0.28
+Requires: libfullock%{?_isa} >= 1.0.31
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires: git-core gcc-c++ make libtool libfullock-devel%{?_isa} >= 1.0.28
+BuildRequires: git-core gcc-c++ make libtool libfullock-devel%{?_isa} >= 1.0.31
 Prefix: %{_prefix}
 
 %description
@@ -63,7 +63,7 @@ Prefix: %{_prefix}
 
 %build
 ./autogen.sh
-%configure --disable-static
+%configure --disable-static @CONFIGREWITHOPT@
 %make_build
 
 %install
@@ -89,10 +89,13 @@ rm -rf %{buildroot}
 
 %files
 %if 0%{?rhel} == 6
+%doc COPYING
 %defattr(-,root,root)
+%else
+%license COPYING
 %endif
-%doc COPYING README AUTHORS ChangeLog
-%{_libdir}/*.so*
+%doc README AUTHORS ChangeLog
+%{_libdir}/*.so.1*
 %{_mandir}/man1/*
 %{_bindir}/*
 
@@ -101,7 +104,7 @@ rm -rf %{buildroot}
 #
 %package devel
 Summary: @SHORTDESC@ (development)
-Requires: %{name}%{?_isa} = %{version}-%{release}, libfullock-devel%{?_isa} >= 1.0.28
+Requires: %{name}%{?_isa} = %{version}-%{release}, libfullock-devel%{?_isa} >= 1.0.31
 
 %description devel
 Development package for building with @PACKAGE_NAME@ shared library.
@@ -111,8 +114,9 @@ This package has header files and symbols for it.
 %if 0%{?rhel} == 6
 %defattr(-,root,root)
 %endif
-%doc COPYING README AUTHORS ChangeLog
+%doc README AUTHORS ChangeLog
 %{_includedir}/*
+%{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
 
 %changelog

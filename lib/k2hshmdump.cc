@@ -595,9 +595,9 @@ bool K2HShm::DumpPageData(FILE* stream, int nest, PPAGEHEAD pRelPageHead, const 
 					}
 					wpos = pos % 8;
 					sprintf(szTmpBuff, "%02X", pData[pos]);
-					strncpy(&szBinBuff[(3 < wpos ? (wpos * 3) + 1 : wpos * 3)], szTmpBuff, 2);
+					memcpy(&szBinBuff[(3 < wpos ? (wpos * 3) + 1 : wpos * 3)], szTmpBuff, 2);
 					sprintf(szTmpBuff, "%c", (isprint(pData[pos]) ? pData[pos] : 0x00 == pData[pos] ? ' ' : 0xFF));
-					strncpy(&szChBuff[(3 < wpos ? wpos + 1 : wpos)], szTmpBuff, 1);
+					memcpy(&szChBuff[(3 < wpos ? wpos + 1 : wpos)], szTmpBuff, 1);
 
 					if(7 == (pos % 8)){
 						DUMP_PRINT_NV(stream, nest, NULL, NULL, "%s - %s\n", szBinBuff, szChBuff);

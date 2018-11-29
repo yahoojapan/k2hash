@@ -103,6 +103,8 @@ AC_SUBST([LIB_VERSION_LINK], "`$(pwd)/buildutils/make_variables.sh -lib_version_
 AC_SUBST([LIB_MAJOR_NUMBER], "`$(pwd)/buildutils/make_variables.sh -major_number`")
 AC_SUBST([PKGLICENSE], "`grep License COPYING | sed 's/ License//g'`")
 AC_SUBST([DEBCOPYING], "`tail -n +5 COPYING | sed 's/^$/./g' | sed 's/^/ /g'`")
+AC_SUBST([DEBHELPER_DEP], "`$(pwd)/buildutils/make_variables.sh -debhelper_dep`")
+AC_SUBST([RPMPKG_GROUP], ["`$(pwd)/buildutils/make_variables.sh -rpmpkg_group | sed 's#NEEDRPMGROUP#Group: Applications/Databases#g'`"])
 AM_SUBST_NOTMAKE([CURRENTREV])
 AM_SUBST_NOTMAKE([RPMCHANGELOG])
 AM_SUBST_NOTMAKE([SHORTDESC])
@@ -110,6 +112,8 @@ AM_SUBST_NOTMAKE([LONGDESC])
 AM_SUBST_NOTMAKE([ESCLONGDESC])
 AM_SUBST_NOTMAKE([DEBLONGDESC])
 AM_SUBST_NOTMAKE([DEBCOPYING])
+AM_SUBST_NOTMAKE([DEBHELPER_DEP])
+AM_SUBST_NOTMAKE([RPMPKG_GROUP])
 
 #
 # pkg-config for old version
@@ -175,16 +179,22 @@ case "${crypt_lib}" in
 		AC_MSG_RESULT(OpenSSL)
 		PKG_CHECK_MODULES([CRYPT], [libcrypto >= 1.0.0 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptopenssl.cc")
+		AC_SUBST([CONFIGREWITHOPT], "--with-openssl")
+		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
 		;;
 	nss)
 		AC_MSG_RESULT(NSS)
 		PKG_CHECK_MODULES([CRYPT], [nss >= 3.28.0 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnss.cc")
+		AC_SUBST([CONFIGREWITHOPT], "--with-nss")
+		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
 		;;
 	nettle)
 		AC_MSG_RESULT(nettle)
 		PKG_CHECK_MODULES([CRYPT], [nettle >= 3.2 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnettle.cc")
+		AC_SUBST([CONFIGREWITHOPT], "--with-nettle")
+		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
 		;;
 	gcrypt)
 		AC_MSG_RESULT(gcrypt)
@@ -196,6 +206,8 @@ case "${crypt_lib}" in
 		AC_MSG_CHECKING([for libgcrypt-config version])
 		AC_MSG_RESULT($CRYPT_VERSION)
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptgcrypt.cc")
+		AC_SUBST([CONFIGREWITHOPT], "--with-gcrypt")
+		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
 		;;
 	*)
 		AC_MSG_ERROR([unknown crypt library type.])
