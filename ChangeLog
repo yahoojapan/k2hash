@@ -1,3 +1,9 @@
+k2hash (1.0.65) trusty; urgency=low
+
+  * Changed to strict packaging and changed documents
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Thu, 29 Nov 2018 17:11:51 +0900
+
 k2hash (1.0.64) trusty; urgency=low
 
   * Fixed a bug segmentation fault exiting tr thread
