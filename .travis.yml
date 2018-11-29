@@ -56,7 +56,7 @@ before_install:
 
 script:
  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export PCTOKEN=dummy_token_for_pr; else export PCTOKEN=${PACKAGECLOUD_TOKEN}; fi'
- - sudo docker container run --rm=true -e TRAVIS_TAG=${TRAVIS_TAG} -e FORCE_BUILD_PKG=${FORCE_BUILD_PKG} -e USE_PC_REPO=${USE_PC_REPO} -e BUILD_NUMBER=${BUILD_NUMBER} -e DEBFULLNAME=${DEBFULLNAME} -e DEBEMAIL=${DEBEMAIL} CONFIGREOPT="${CONFIGREOPT}" -v `pwd`:/k2hash:rw ${OS}:${TAG} /bin/sh -c "/k2hash/buildutils/travis_builder.sh -${OS} -pctoken ${PCTOKEN} -pcuser ${PCUSER} -pcrepo ${PCREPO} -pcdlrepo ${PCDLREPO} -pcdist ${DISTTAG} ${INSTPKG}"
+ - sudo docker container run --rm=true -e TRAVIS_TAG=${TRAVIS_TAG} -e FORCE_BUILD_PKG=${FORCE_BUILD_PKG} -e USE_PC_REPO=${USE_PC_REPO} -e BUILD_NUMBER=${BUILD_NUMBER} -e DEBFULLNAME=${DEBFULLNAME} -e DEBEMAIL=${DEBEMAIL} -e CONFIGREOPT=${CONFIGREOPT} -v `pwd`:/k2hash:rw ${OS}:${TAG} /bin/sh -c "/k2hash/buildutils/travis_builder.sh -${OS} -pctoken ${PCTOKEN} -pcuser ${PCUSER} -pcrepo ${PCREPO} -pcdlrepo ${PCDLREPO} -pcdist ${DISTTAG} ${INSTPKG}"
 
 #
 # VIM modelines
