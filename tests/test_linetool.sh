@@ -45,6 +45,7 @@ rm -f ${LOGFILE}
 #################
 ${LINETOOL} -f ${K2HFILE} -init >> ${LOGFILE} 2>/dev/null
 if [ $? -ne 0 ]; then
+	echo "############# ERROR HERE 1 ################"
 	exit 1
 fi
 
@@ -53,6 +54,7 @@ fi
 #################
 ${LINETOOL} -libversion >> ${LOGFILE} 2>/dev/null
 if [ $? -ne 0 ]; then
+	echo "############# ERROR HERE 2 ################"
 	exit 1
 fi
 
@@ -61,12 +63,14 @@ fi
 #################
 ${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
 if [ $? -ne 0 ]; then
+	echo "############# ERROR HERE 3 ################"
 	exit 1
 fi
 
 #### Test for CAPI
 ${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -capi -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
 if [ $? -ne 0 ]; then
+	echo "############# ERROR HERE 4 ################"
 	exit 1
 fi
 
@@ -76,6 +80,7 @@ fi
 rm -f ${K2HFILE}
 ${LINETOOL} -t ${K2HFILE} -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
 if [ $? -ne 0 ]; then
+	echo "############# ERROR HERE 5 ################"
 	exit 1
 fi
 
@@ -85,6 +90,7 @@ fi
 rm -f ${K2HFILE}
 ${LINETOOL} -f ${K2HFILE} -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
 if [ $? -ne 0 ]; then
+	echo "############# ERROR HERE 6 ################"
 	exit 1
 fi
 
@@ -93,6 +99,7 @@ fi
 #################
 ${LINETOOL} -m -mask 2 -cmask 2 -elementcnt 2 -fullmap -run ${DSAVECMDFILE} >> ${LOGFILE} 2>/dev/null
 if [ $? -ne 0 ]; then
+	echo "############# ERROR HERE 7 ################"
 	exit 1
 fi
 
