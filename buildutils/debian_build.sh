@@ -177,7 +177,7 @@ cd ${EXPANDDIR} || exit 1
 #
 # initialize debian directory
 #
-dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig --multi ${DH_MAKE_AUTORUN_OPTION} || exit 1
+dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig --library ${DH_MAKE_AUTORUN_OPTION} || exit 1
 
 #
 # remove unnecessary template files

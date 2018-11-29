@@ -45,8 +45,9 @@ PROCID=$$
 FILEPATH="/tmp/k2hash_test_$PROCID.k2h"
 
 if [ "X$1" = "X" ]; then
-	LOGFILE="/dev/null"
+#	LOGFILE="/dev/null"
 #	LOGFILE="/tmp/k2hash_test_$PROCID.log"
+	LOGFILE="/tmp/k2hash_test.log"
 else
 	LOGFILE="$1"
 fi
