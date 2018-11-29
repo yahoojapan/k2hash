@@ -63,7 +63,7 @@ Prefix: %{_prefix}
 
 %build
 ./autogen.sh
-%configure --disable-static
+%configure --disable-static @CONFIGREWITHOPT@
 %make_build
 
 %install

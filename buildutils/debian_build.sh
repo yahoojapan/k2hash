@@ -137,8 +137,8 @@ fi
 #
 # Make dist package by make dist
 #
-${SRCTOP}/autogen.sh	|| exit 1
-${SRCTOP}/configure		|| exit 1
+${SRCTOP}/autogen.sh				|| exit 1
+${SRCTOP}/configure ${CONFIGREOPT}	|| exit 1
 PACKAGE_VERSION=`${MYSCRIPTDIR}/make_variables.sh -pkg_version`
 PACKAGE_MAJOR_VER=`${MYSCRIPTDIR}/make_variables.sh -major_number`
 

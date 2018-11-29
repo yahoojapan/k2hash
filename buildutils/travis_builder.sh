@@ -42,6 +42,7 @@ func_usage()
 	echo "        TRAVIS_TAG         if the current build is for a git tag, this variable is set to the tag’s name"
 	echo "        FORCE_BUILD_PKG    if this env is 'true', force packaging anytime"
 	echo "        USE_PC_REPO        if this env is 'true', use packagecloud.io repository"
+	echo "        CONFIGREOPT        specify extra configure option."
 	echo "        NO_DEBUILD         if this env is 'true'(on pull request), do not run debuild."
 	echo ""
 }
@@ -345,7 +346,8 @@ if [ ${PKGTYPE_RPM} -eq 1 ]; then
 	#
 	# Create debian packages
 	#
-	run_cmd ./buildutils/rpm_build.sh -buildnum ${BUILD_NUMBER} -y
+	prn_cmd ./buildutils/rpm_build.sh -buildnum ${BUILD_NUMBER} -y
+	./buildutils/rpm_build.sh -buildnum ${BUILD_NUMBER} -y
 else
 	#
 	# Create debian packages
@@ -354,7 +356,12 @@ else
 	if [ ${IS_PACKAGING} -ne 1 ]; then
 		DEBUILD_OPT="-nodebuild"
 	fi
-	run_cmd ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} ${DEBUILD_OPT} -y
+	prn_cmd CONFIGREOPT=${CONFIGREOPT} ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} ${DEBUILD_OPT} -y
+	CONFIGREOPT=${CONFIGREOPT} ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} ${DEBUILD_OPT} -y
+fi
+if [ $? -ne 0 ]; then
+	echo "[ERROR] ${PRGNAME} : Failed to build packages" 1>&2
+	exit 1
 fi
 
 #

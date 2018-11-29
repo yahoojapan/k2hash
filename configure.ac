@@ -179,16 +179,22 @@ case "${crypt_lib}" in
 		AC_MSG_RESULT(OpenSSL)
 		PKG_CHECK_MODULES([CRYPT], [libcrypto >= 1.0.0 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptopenssl.cc")
+		AC_SUBST([CONFIGREWITHOPT], "--with-openssl")
+		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
 		;;
 	nss)
 		AC_MSG_RESULT(NSS)
 		PKG_CHECK_MODULES([CRYPT], [nss >= 3.28.0 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnss.cc")
+		AC_SUBST([CONFIGREWITHOPT], "--with-nss")
+		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
 		;;
 	nettle)
 		AC_MSG_RESULT(nettle)
 		PKG_CHECK_MODULES([CRYPT], [nettle >= 3.2 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnettle.cc")
+		AC_SUBST([CONFIGREWITHOPT], "--with-nettle")
+		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
 		;;
 	gcrypt)
 		AC_MSG_RESULT(gcrypt)
@@ -200,6 +206,8 @@ case "${crypt_lib}" in
 		AC_MSG_CHECKING([for libgcrypt-config version])
 		AC_MSG_RESULT($CRYPT_VERSION)
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptgcrypt.cc")
+		AC_SUBST([CONFIGREWITHOPT], "--with-gcrypt")
+		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
 		;;
 	*)
 		AC_MSG_ERROR([unknown crypt library type.])

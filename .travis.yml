@@ -34,13 +34,12 @@ env:
     - PCUSER=antpickax
     - PCREPO=current
     - PCDLREPO=stable
-    - CONFIGREOPT="--with-nss"
   matrix:
-    - OS=centos TAG=centos7 DISTTAG=el/7 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
-    - OS=centos TAG=centos6 DISTTAG=el/6 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
-    - OS=fedora TAG=28 DISTTAG=fedora/28 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
-    - OS=ubuntu TAG=18.04 DISTTAG=ubuntu/bionic INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libnss3-dev"
-    - OS=debian TAG=stretch DISTTAG=debian/stretch INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libnss3-dev"
+    - OS=centos TAG=centos7 DISTTAG=el/7 CONFIGREOPT="--with-nss" INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=centos TAG=centos6 DISTTAG=el/6 CONFIGREOPT="--with-nss" INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=fedora TAG=28 DISTTAG=fedora/28 CONFIGREOPT="--with-nss" INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=ubuntu TAG=18.04 DISTTAG=ubuntu/bionic CONFIGREOPT="--with-gcrypt" INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libgcrypt11-dev"
+    - OS=debian TAG=stretch DISTTAG=debian/stretch CONFIGREOPT="--with-gcrypt" INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libgcrypt11-dev"
 
 cache: apt
 

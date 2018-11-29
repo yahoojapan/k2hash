@@ -21,11 +21,11 @@
 
 #include <string.h>
 #include <nss.h>
-#include <nss3/pk11pub.h>
-#include <nss3/hasht.h>
-#include <nss3/blapit.h>
-#include <nspr4/prinit.h>
-#include <nspr4/prerror.h>
+#include <pk11pub.h>
+#include <hasht.h>
+#include <blapit.h>
+#include <prinit.h>
+#include <prerror.h>
 
 #include "k2hcommon.h"
 #include "k2hcryptcommon.h"
