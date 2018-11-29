@@ -738,11 +738,30 @@ unsigned char* k2h_encrypt_aes256_cbc_pbkdf2(const char* pass, int iter, const u
 	// Symmetric key
 	PK11SymKey*		pKey;
 	if(NULL == (pKey = PK11_PBEKeyGen(Slot, algid, &keyItem, PR_FALSE, NULL))){
-		ERR_K2HPRN("could not get Symmetric Key.");
+//TEST
+//		ERR_K2HPRN("could not get Symmetric Key.");
+//		PK11_FreeSlot(Slot);
+//		SECOID_DestroyAlgorithmID(algid, PR_TRUE);
+//		K2H_Free(encryptdata);
+//		return NULL;
+
+		MSG_K2HPRN("could not get Symmetric Key, but retry with PK11_GetInternalKeySlot.");
+
 		PK11_FreeSlot(Slot);
-		SECOID_DestroyAlgorithmID(algid, PR_TRUE);
-		K2H_Free(encryptdata);
-		return NULL;
+		if(NULL == (Slot = PK11_GetInternalKeySlot())){
+			ERR_K2HPRN("could not get PKCS#11 slot by PK11_GetInternalKeySlot.");
+			SECOID_DestroyAlgorithmID(algid, PR_TRUE);
+			K2H_Free(encryptdata);
+			return NULL;
+		}
+		if(NULL == (pKey = PK11_PBEKeyGen(Slot, algid, &keyItem, PR_FALSE, NULL))){
+			ERR_K2HPRN("could not get Symmetric Key with slot by PK11_GetInternalKeySlot.");
+			PK11_FreeSlot(Slot);
+			SECOID_DestroyAlgorithmID(algid, PR_TRUE);
+			K2H_Free(encryptdata);
+			return NULL;
+		}
+//TEST
 	}
 	// [NOTE]
 	// If you need to print raw key binary, you can print it here.
