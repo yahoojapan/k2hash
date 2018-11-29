@@ -28,7 +28,8 @@ if [ "X${TESTPROGDIR}" = "X" ]; then
 fi
 
 PROCID=$$
-LINETOOL="${TESTPROGDIR}/k2hlinetool"
+#LINETOOL="${TESTPROGDIR}/k2hlinetool"
+LINETOOL="${TESTPROGDIR}/k2hlinetool -g INFO"
 K2HFILE="/tmp/k2hash_test_linetool.k2h"
 CMDFILE="${MYSCRIPTDIR}/test_linetool.cmd"
 DSAVECMDFILE="${MYSCRIPTDIR}/test_linetool_dsave.cmd"
@@ -39,8 +40,6 @@ MASTERLOGSUBFILE="/tmp/test_linetool_noverinfo.log"
 
 rm -f ${K2HFILE}
 rm -f ${LOGFILE}
-
-export K2HDBGMODE=WAN
 
 #################
 # Initialize test
