@@ -28,11 +28,12 @@
 func_usage()
 {
 	echo ""
-	echo "Usage:  $1 [-buildnum <build number>] [-nodebuild] [-rootdir] [-product <product name>] [-y] [additional debuild options]"
+	echo "Usage:  $1 [-buildnum <build number>] [-nodebuild] [-rootdir] [-product <product name>] [-class <class name>] [-y] [additional debuild options]"
 	echo "        -buildnum                     specify build number for packaging(default 1)"
 	echo "        -nodebuild                    stops before do debuild command."
 	echo "        -rootdir                      layout \"debian\" directory for packaging under source top directory"
 	echo "        -product                      specify product name(use PACKAGE_NAME in Makefile s default)"
+	echo "        -class                        specify package class name(optional)"
 	echo "        -y                            runs no interacitive mode."
 	echo "        additional debuild options    this script run debuild with \"-uc -us\", can specify additional options."
 	echo "        -h                            print help"
@@ -53,6 +54,7 @@ IS_ROOTDIR=0
 DH_MAKE_AUTORUN_OPTION=""
 BUILD_NUMBER=1
 DEBUILD_OPT=""
+PKGCLASSNAME="library"
 while [ $# -ne 0 ]; do
 	if [ "X$1" = "X" ]; then
 		break
@@ -83,6 +85,14 @@ while [ $# -ne 0 ]; do
 			exit 1
 		fi
 		PACKAGE_NAME=$1
+
+	elif [ "X$1" = "X-class" ]; then
+		shift
+		if [ $# -eq 0 ]; then
+			echo "ERROR: -class option needs parameter." 1>&2
+			exit 1
+		fi
+		PKGCLASSNAME=$1
 
 	elif [ "X$1" = "X-y" ]; then
 		IS_INTERACTIVE=0
@@ -177,7 +187,7 @@ cd ${EXPANDDIR} || exit 1
 #
 # initialize debian directory
 #
-dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig --library ${DH_MAKE_AUTORUN_OPTION} || exit 1
+dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig --${PKGCLASSNAME} ${DH_MAKE_AUTORUN_OPTION} || exit 1
 
 #
 # remove unnecessary template files
