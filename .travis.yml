@@ -35,11 +35,36 @@ env:
     - PCREPO=current
     - PCDLREPO=stable
   matrix:
-    - OS=centos TAG=centos7 DISTTAG=el/7 CONFIGREOPT="--with-nss" K2HATTR_ENC_TYPE=AES256_PBKDF2 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
-    - OS=centos TAG=centos6 DISTTAG=el/6 CONFIGREOPT="--with-nss" K2HATTR_ENC_TYPE=AES256_PBKDF1 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
-    - OS=fedora TAG=28 DISTTAG=fedora/28 CONFIGREOPT="--with-nss" K2HATTR_ENC_TYPE=AES256_PBKDF2 INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
-    - OS=ubuntu TAG=18.04 DISTTAG=ubuntu/bionic CONFIGREOPT="--with-gcrypt" K2HATTR_ENC_TYPE=AES256_PBKDF2 INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libgcrypt11-dev"
-    - OS=debian TAG=stretch DISTTAG=debian/stretch CONFIGREOPT="--with-gcrypt" K2HATTR_ENC_TYPE=AES256_PBKDF2 INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libgcrypt11-dev"
+    - OS=centos \
+      TAG=centos7 \
+      DISTTAG=el/7 \
+      CONFIGREOPT="--with-nss" \
+      K2HATTR_ENC_TYPE=AES256_PBKDF2 \
+      INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=centos \
+      TAG=centos6 \
+      DISTTAG=el/6 \
+      CONFIGREOPT="--with-nss" \
+      K2HATTR_ENC_TYPE=AES256_PBKDF1 \
+      INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=fedora \
+      TAG=28 \
+      DISTTAG=fedora/28 \
+      CONFIGREOPT="--with-nss" \
+      K2HATTR_ENC_TYPE=AES256_PBKDF2 \
+      INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems libfullock-devel nss-devel"
+    - OS=ubuntu \
+      TAG=18.04 \
+      DISTTAG=ubuntu/bionic \
+      CONFIGREOPT="--with-gcrypt" \
+      K2HATTR_ENC_TYPE=AES256_PBKDF2 \
+      INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libgcrypt11-dev"
+    - OS=debian \
+      TAG=stretch \
+      DISTTAG=debian/stretch \
+      CONFIGREOPT="--with-gcrypt" \
+      K2HATTR_ENC_TYPE=AES256_PBKDF2 \
+      INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration libfullock-dev libgcrypt11-dev"
 
 cache: apt
 
@@ -47,15 +72,26 @@ services:
   - docker
 
 before_install:
- - sudo apt-get update -qq
- - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
- - sudo service docker restart
- - sleep 5
- - sudo docker image pull ${OS}:${TAG}
+  - sudo apt-get update -qq
+  - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
+  - sudo service docker restart
+  - sleep 5
+  - sudo docker image pull ${OS}:${TAG}
 
 script:
- - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export PCTOKEN=dummy_token_for_pr; else export PCTOKEN=${PACKAGECLOUD_TOKEN}; fi'
- - sudo docker container run --rm=true -e TRAVIS_TAG=${TRAVIS_TAG} -e FORCE_BUILD_PKG=${FORCE_BUILD_PKG} -e USE_PC_REPO=${USE_PC_REPO} -e BUILD_NUMBER=${BUILD_NUMBER} -e DEBFULLNAME=${DEBFULLNAME} -e DEBEMAIL=${DEBEMAIL} -e CONFIGREOPT=${CONFIGREOPT} -e K2HATTR_ENC_TYPE=${K2HATTR_ENC_TYPE} -v `pwd`:/k2hash:rw ${OS}:${TAG} /bin/sh -c "/k2hash/buildutils/travis_builder.sh -${OS} -pctoken ${PCTOKEN} -pcuser ${PCUSER} -pcrepo ${PCREPO} -pcdlrepo ${PCDLREPO} -pcdist ${DISTTAG} ${INSTPKG}"
+  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export PCTOKEN=dummy_token_for_pr; else export PCTOKEN=${PACKAGECLOUD_TOKEN}; fi'
+  - sudo docker container run \
+    --rm=true \
+    -e TRAVIS_TAG=${TRAVIS_TAG} \
+    -e FORCE_BUILD_PKG=${FORCE_BUILD_PKG} \
+    -e USE_PC_REPO=${USE_PC_REPO} \
+    -e BUILD_NUMBER=${BUILD_NUMBER} \
+    -e DEBFULLNAME=${DEBFULLNAME} \
+    -e DEBEMAIL=${DEBEMAIL} \
+    -e CONFIGREOPT=${CONFIGREOPT} \
+    -e K2HATTR_ENC_TYPE=${K2HATTR_ENC_TYPE} \
+    -v `pwd`:/k2hash:rw ${OS}:${TAG} \
+    /bin/sh -c "/k2hash/buildutils/travis_builder.sh -${OS} -pctoken ${PCTOKEN} -pcuser ${PCUSER} -pcrepo ${PCREPO} -pcdlrepo ${PCDLREPO} -pcdist ${DISTTAG} ${INSTPKG}"
 
 #
 # VIM modelines
