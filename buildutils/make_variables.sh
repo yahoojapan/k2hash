@@ -151,6 +151,12 @@ elif [ ${PRGMODE} = "DEBHELPER" ]; then
 		fi
 
 		DEBHELPER_MAJOR_VER=`apt-cache show debhelper 2>/dev/null | grep Version 2>/dev/null | awk '{print $2}' 2>/dev/null | sed 's/\..*/ /g' 2>/dev/null`
+		expr "${DEBHELPER_MAJOR_VER}" + 1 >/dev/null 2>&1
+		if [ $? -ne 0 ]; then
+			DEBHELPER_MAJOR_VER=0
+		else
+			DEBHELPER_MAJOR_VER=`expr "${DEBHELPER_MAJOR_VER}" + 0`
+		fi
 		if [ ${DEBHELPER_MAJOR_VER} -lt 10 ]; then
 			RESULT="debhelper (>= 9), autotools-dev"
 		else

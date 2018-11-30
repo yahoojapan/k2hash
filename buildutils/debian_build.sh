@@ -39,6 +39,17 @@ func_usage()
 	echo "        -h                            print help"
 	echo ""
 }
+
+func_get_default_class()
+{
+	dh_make -h 2>/dev/null | grep '\--multi' >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		echo "multi"
+	else
+		echo "library"
+	fi
+}
+
 PRGNAME=`basename $0`
 MYSCRIPTDIR=`dirname $0`
 MYSCRIPTDIR=`cd ${MYSCRIPTDIR}; pwd`
@@ -54,7 +65,7 @@ IS_ROOTDIR=0
 DH_MAKE_AUTORUN_OPTION=""
 BUILD_NUMBER=1
 DEBUILD_OPT=""
-PKGCLASSNAME="library"
+PKGCLASSNAME=`func_get_default_class`
 while [ $# -ne 0 ]; do
 	if [ "X$1" = "X" ]; then
 		break
@@ -192,7 +203,7 @@ dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig
 #
 # remove unnecessary template files
 #
-rm -rf ${EXPANDDIR}/debian/*.ex ${EXPANDDIR}/debian/*.EX ${EXPANDDIR}/debian/${PACKAGE_NAME}-doc.* ${EXPANDDIR}/debian/README.* ${EXPANDDIR}/debian/docs
+rm -rf ${EXPANDDIR}/debian/*.ex ${EXPANDDIR}/debian/*.EX ${EXPANDDIR}/debian/${PACKAGE_NAME}-doc.* ${EXPANDDIR}/debian/README.* ${EXPANDDIR}/debian/docs ${EXPANDDIR}/debian/*.install
 
 #
 # adding some lines into rules file
@@ -214,7 +225,13 @@ echo "	ls debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.la >/dev/null 2>&1; 
 echo "	ls debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.so >/dev/null 2>&1;        if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_NAME}/usr/lib/x86_64-linux-gnu/*.so;      fi"	>> ${EXPANDDIR}/debian/rules || exit 1
 echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.a >/dev/null 2>&1;     if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.a;   fi"	>> ${EXPANDDIR}/debian/rules || exit 1
 echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.la >/dev/null 2>&1;    if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.la;  fi"	>> ${EXPANDDIR}/debian/rules || exit 1
-echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so* >/dev/null 2>&1;   if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so*; fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so.* >/dev/null 2>&1;  if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so.*;fi"	>> ${EXPANDDIR}/debian/rules || exit 1
+
+if [ "X${CONFIGREOPT}" != "X" ]; then
+	echo ""																				>> ${EXPANDDIR}/debian/rules || exit 1
+	echo "override_dh_auto_configure:"													>> ${EXPANDDIR}/debian/rules || exit 1
+	echo "	dh_auto_configure -- ${CONFIGREOPT}"										>> ${EXPANDDIR}/debian/rules || exit 1
+fi
 
 #
 # create links file for library
