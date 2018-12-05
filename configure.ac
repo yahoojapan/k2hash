@@ -25,7 +25,7 @@
 
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-
+#
 AC_PREREQ([2.63])
 AC_INIT(k2hash, m4_esyscmd([tr -d '\n' < $(pwd)/RELEASE_VERSION]))
 AM_INIT_AUTOMAKE()
@@ -45,7 +45,6 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
-AC_PROG_LIBTOOL
 
 #
 # Checks for libraries.
@@ -232,7 +231,7 @@ AC_ARG_ENABLE(check-depend-libs,
 	esac]
 )
 AS_IF([test ${check_depend_libs} = 1], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
-AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.28], [], [AC_MSG_ERROR(not found libfullock package)])])
+AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.32], [], [AC_MSG_ERROR(not found libfullock package)])])
 
 #
 # CFLAGS/CXXFLAGS

@@ -337,14 +337,7 @@ run_cmd cd ${SRCTOP}
 run_cmd ./autogen.sh
 run_cmd ./configure --prefix=/usr ${CONFIGREOPT}
 run_cmd make
-#run_cmd make check
-prn_cmd make check
-make check
-if [ $? -ne 0 ]; then
-	echo "############## TEST FAILED ###################"
-	cat /tmp/k2hash_test.log
-	exit 1
-fi
+run_cmd make check
 
 #
 # Start packaging

@@ -1,3 +1,9 @@
+k2hash (1.0.67) trusty; urgency=low
+
+  * Updated configure.ac and packaging scripts/files
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 05 Dec 2018 08:05:19 +0900
+
 k2hash (1.0.66) trusty; urgency=low
 
   * Fixed bug in debian package creation
