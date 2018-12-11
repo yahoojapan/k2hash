@@ -29,7 +29,9 @@ EXTRA_DIST =make_variables.sh \
 			make_commit_hash_source.sh \
 			make_rpm_changelog.sh \
 			make_description.sh \
-			debian_build.sh
+			debian_build.sh \
+			rpm_build.sh \
+			travis_builder.sh
 
 #
 # VIM modelines

@@ -178,22 +178,22 @@ case "${crypt_lib}" in
 		AC_MSG_RESULT(OpenSSL)
 		PKG_CHECK_MODULES([CRYPT], [libcrypto >= 1.0.0 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptopenssl.cc")
-		AC_SUBST([CONFIGREWITHOPT], "--with-openssl")
-		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
+		AC_SUBST([CONFIGUREWITHOPT], "--with-openssl")
+		AM_SUBST_NOTMAKE([CONFIGUREWITHOPT])
 		;;
 	nss)
 		AC_MSG_RESULT(NSS)
 		PKG_CHECK_MODULES([CRYPT], [nss >= 3.28.0 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnss.cc")
-		AC_SUBST([CONFIGREWITHOPT], "--with-nss")
-		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
+		AC_SUBST([CONFIGUREWITHOPT], "--with-nss")
+		AM_SUBST_NOTMAKE([CONFIGUREWITHOPT])
 		;;
 	nettle)
 		AC_MSG_RESULT(nettle)
 		PKG_CHECK_MODULES([CRYPT], [nettle >= 3.2 ])
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnettle.cc")
-		AC_SUBST([CONFIGREWITHOPT], "--with-nettle")
-		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
+		AC_SUBST([CONFIGUREWITHOPT], "--with-nettle")
+		AM_SUBST_NOTMAKE([CONFIGUREWITHOPT])
 		;;
 	gcrypt)
 		AC_MSG_RESULT(gcrypt)
@@ -205,8 +205,8 @@ case "${crypt_lib}" in
 		AC_MSG_CHECKING([for libgcrypt-config version])
 		AC_MSG_RESULT($CRYPT_VERSION)
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptgcrypt.cc")
-		AC_SUBST([CONFIGREWITHOPT], "--with-gcrypt")
-		AM_SUBST_NOTMAKE([CONFIGREWITHOPT])
+		AC_SUBST([CONFIGUREWITHOPT], "--with-gcrypt")
+		AM_SUBST_NOTMAKE([CONFIGUREWITHOPT])
 		;;
 	*)
 		AC_MSG_ERROR([unknown crypt library type.])
@@ -231,7 +231,7 @@ AC_ARG_ENABLE(check-depend-libs,
 	esac]
 )
 AS_IF([test ${check_depend_libs} = 1], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
-AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.32], [], [AC_MSG_ERROR(not found libfullock package)])])
+AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.33], [], [AC_MSG_ERROR(not found libfullock package)])])
 
 #
 # CFLAGS/CXXFLAGS

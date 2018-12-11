@@ -42,7 +42,7 @@ func_usage()
 	echo "        TRAVIS_TAG         if the current build is for a git tag, this variable is set to the tag’s name"
 	echo "        FORCE_BUILD_PKG    if this env is 'true', force packaging anytime"
 	echo "        USE_PC_REPO        if this env is 'true', use packagecloud.io repository"
-	echo "        CONFIGREOPT        specify extra configure option."
+	echo "        CONFIGUREOPT       specify extra configure option."
 	echo "        NO_DEBUILD         if this env is 'true'(on pull request), do not run debuild."
 	echo ""
 }
@@ -331,11 +331,12 @@ fi
 # Start bulding ( build under /tmp )
 #
 run_cmd cp -rp ${SRCTOP} /tmp
-SRCTOP="/tmp${SRCTOP}"
+TMPSRCTOP=`basename ${SRCTOP}`
+SRCTOP="/tmp/${TMPSRCTOP}"
 
 run_cmd cd ${SRCTOP}
 run_cmd ./autogen.sh
-run_cmd ./configure --prefix=/usr ${CONFIGREOPT}
+run_cmd ./configure --prefix=/usr ${CONFIGUREOPT}
 run_cmd make
 run_cmd make check
 
@@ -356,8 +357,8 @@ else
 	if [ ${IS_PACKAGING} -ne 1 ]; then
 		DEBUILD_OPT="-nodebuild"
 	fi
-	prn_cmd CONFIGREOPT=${CONFIGREOPT} ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} ${DEBUILD_OPT} -y
-	CONFIGREOPT=${CONFIGREOPT} ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} ${DEBUILD_OPT} -y
+	prn_cmd CONFIGUREOPT=${CONFIGUREOPT} ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} ${DEBUILD_OPT} -y
+	CONFIGUREOPT=${CONFIGUREOPT} ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} ${DEBUILD_OPT} -y
 fi
 if [ $? -ne 0 ]; then
 	echo "[ERROR] ${PRGNAME} : Failed to build packages" 1>&2

@@ -1,3 +1,9 @@
+k2hash (1.0.68) trusty; urgency=low
+
+  * Updated common build tool files
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 11 Dec 2018 11:41:41 +0900
+
 k2hash (1.0.67) trusty; urgency=low
 
   * Updated configure.ac and packaging scripts/files

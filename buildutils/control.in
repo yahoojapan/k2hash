@@ -2,7 +2,7 @@ Source: @PACKAGE_NAME@
 Section: database
 Priority: optional
 Maintainer: @DEV_NAME@ <@DEV_EMAIL@>
-Build-Depends: @DEBHELPER_DEP@, libfullock-dev (>= 1.0.32)
+Build-Depends: @DEBHELPER_DEP@, libfullock-dev (>= 1.0.33)
 Depends: ${misc:Depends}
 Standards-Version: 3.9.8
 Homepage: https://@GIT_DOMAIN@/@GIT_ORG@/@GIT_REPO@
@@ -12,7 +12,7 @@ Vcs-Browser: https://@GIT_DOMAIN@/@GIT_ORG@/@GIT_REPO@
 Package: @PACKAGE_NAME@-dev
 Section: devel
 Architecture: amd64
-Depends: ${misc:Depends}, @PACKAGE_NAME@ (= ${binary:Version}), libfullock-dev (>= 1.0.32)
+Depends: ${misc:Depends}, @PACKAGE_NAME@ (= ${binary:Version}), libfullock-dev (>= 1.0.33)
 Description: @SHORTDESC@ (development)
  Development package for building with @PACKAGE_NAME@ shared library.
   This package has header files and symbols for it.
@@ -20,6 +20,6 @@ Description: @SHORTDESC@ (development)
 Package: @PACKAGE_NAME@
 Section: database
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}, libfullock (>= 1.0.32)
+Depends: ${shlibs:Depends}, ${misc:Depends}, libfullock (>= 1.0.33)
 Description: @SHORTDESC@
 @DEBLONGDESC@
