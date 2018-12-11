@@ -159,7 +159,7 @@ fi
 # Make dist package by make dist
 #
 ${SRCTOP}/autogen.sh				|| exit 1
-${SRCTOP}/configure ${CONFIGREOPT}	|| exit 1
+${SRCTOP}/configure ${CONFIGUREOPT}	|| exit 1
 PACKAGE_VERSION=`${MYSCRIPTDIR}/make_variables.sh -pkg_version`
 PACKAGE_MAJOR_VER=`${MYSCRIPTDIR}/make_variables.sh -major_number`
 
@@ -227,10 +227,10 @@ echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.a >/dev/null 2>&
 echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.la >/dev/null 2>&1;    if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.la;  fi"	>> ${EXPANDDIR}/debian/rules || exit 1
 echo "	ls debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so.* >/dev/null 2>&1;  if [ $? -eq 0 ]; then rm -rf debian/${PACKAGE_DEV_NAME}/usr/lib/x86_64-linux-gnu/*.so.*;fi"	>> ${EXPANDDIR}/debian/rules || exit 1
 
-if [ "X${CONFIGREOPT}" != "X" ]; then
+if [ "X${CONFIGUREOPT}" != "X" ]; then
 	echo ""																				>> ${EXPANDDIR}/debian/rules || exit 1
 	echo "override_dh_auto_configure:"													>> ${EXPANDDIR}/debian/rules || exit 1
-	echo "	dh_auto_configure -- ${CONFIGREOPT}"										>> ${EXPANDDIR}/debian/rules || exit 1
+	echo "	dh_auto_configure -- ${CONFIGUREOPT}"										>> ${EXPANDDIR}/debian/rules || exit 1
 fi
 
 #

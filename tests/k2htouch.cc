@@ -113,7 +113,7 @@ bool isFIFO ;
 #define K2MODE_DTOR_CONF	"K2HTOUCH_DTORCONF"
 #define K2MODE_DTOR_ON		"ON"
 #define K2MODE_DTOR_OFF		"OFF"
-#define	LIBDTOR				"libk2htpdtor.so" ;
+#define	LIBDTOR				"libk2htpdtor.so.1"
 bool DTORCOMMAND = false ;
 
 // attr mode
