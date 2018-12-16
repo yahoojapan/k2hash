@@ -35,36 +35,12 @@ env:
     - PCREPO=current
     - PCDLREPO=stable
   matrix:
-    - OS=centos 
-      TAG=centos7 
-      DISTTAG=el/7 
-      CONFIGUREOPT="--with-nss" 
-      K2HATTR_ENC_TYPE=AES256_PBKDF2 
-      INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-    - OS=centos 
-      TAG=centos6 
-      DISTTAG=el/6 
-      CONFIGUREOPT="--with-nss" 
-      K2HATTR_ENC_TYPE=AES256_PBKDF1 
-      INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
     - OS=fedora 
-      TAG=28 
-      DISTTAG=fedora/28 
+      TAG=29 
+      DISTTAG=fedora/29 
       CONFIGUREOPT="--with-nss" 
       K2HATTR_ENC_TYPE=AES256_PBKDF2 
       INSTPKG="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-    - OS=ubuntu 
-      TAG=18.04 
-      DISTTAG=ubuntu/bionic 
-      CONFIGUREOPT="--with-gcrypt" 
-      K2HATTR_ENC_TYPE=AES256_PBKDF2 
-      INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt11-dev"
-    - OS=debian 
-      TAG=stretch 
-      DISTTAG=debian/stretch 
-      CONFIGUREOPT="--with-gcrypt" 
-      K2HATTR_ENC_TYPE=AES256_PBKDF2 
-      INSTPKG="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt11-dev"
 
 cache: apt
 
