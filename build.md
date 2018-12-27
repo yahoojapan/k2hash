@@ -45,7 +45,7 @@ This section instructs how to install fullock and the header files from [package
 Table1. Development packages to build the [K2HASH](https://k2hash.antpick.ax/build.html):
 
 | SSL/TLS library | pkg |
-|:--|:--|:--|
+|:--|:--|
 | [OpenSSL](https://www.openssl.org/) | libssl-dev(deb) / openssl-devel(rpm) |
 | [GnuTLS](https://gnutls.org/) (gcrypt)| libgcrypt11-dev(deb) |
 | [GnuTLS](https://gnutls.org/) (nettle)| nettle-dev(deb) |
