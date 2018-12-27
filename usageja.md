@@ -49,7 +49,7 @@ $ sudo yum install k2hash
 ```
 開発者向けパッケージをインストールする場合は、以下のパッケージをインストールしてください。
 ```
-$ sudo apt-get install k2hash-devel
+$ sudo yum install k2hash-devel
 ```
 
 #### 上記以外のOS
@@ -57,7 +57,7 @@ $ sudo apt-get install k2hash-devel
 この場合には、後述の[ソースコード](https://github.com/yahoojapan/k2hash)からビルドし、インストールするようにしてください。
 
 ### ソースコードからビルド・インストール
-FULLOCKライブラリを[ソースコード](https://github.com/yahoojapan/k2hash)からビルドし、インストールする方法は、[ビルド](https://k2hash.antpick.ax/buildja.html)を参照してください。
+**K2HASH** を[ソースコード](https://github.com/yahoojapan/k2hash)からビルドし、インストールする方法は、[ビルド](https://k2hash.antpick.ax/buildja.html)を参照してください。
 
 ## 2. k2hlinetoolの実行
 ```
