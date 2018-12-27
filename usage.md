@@ -48,7 +48,7 @@ $ sudo yum install k2hash
 ```
 To install the developer package, please install the following package.
 ```
-$ sudo apt-get install k2hash-devel
+$ sudo yum install k2hash-devel
 ```
 
 #### Other OS
