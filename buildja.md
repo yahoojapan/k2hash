@@ -21,27 +21,27 @@ next_string: Developer
 * ソースコードから**K2HASH**を構築する方法
 * **K2HASH**のインストール方法
 
-## 1. 前提条件をインストールする
+## 1. ビルド環境の構築
 
 **K2HASH**は主に、fullockに依存します。依存ライブラリとヘッダファイルは**K2HASH**をビルドするために必要です。依存ライブラリとヘッダファイルをインストールする方法は2つあります。好きなものを選ぶことができます。
 
-* GitHubを使う  
+* [GitHub](https://github.com/yahoojapan)から依存ファイルをインストール  
   依存ライブラリのソースコードとヘッダファイルをインストールします。あなたは依存ライブラリとヘッダファイルをビルドしてインストールします。
-* packagecloud.ioを使用する  
+* [packagecloud.io](https://packagecloud.io/)を使用する  
   依存ライブラリのパッケージとヘッダファイルをインストールします。あなたは依存ライブラリとヘッダファイルをインストールするだけです。ライブラリはすでに構築されています。
 
-### 1.1. GitHubから各依存ライブラリとヘッダファイルをインストールします。
+### 1.1. GitHubから各依存ライブラリとヘッダファイルをインストール
 
 詳細については以下の文書を読んでください。  
-* [fullock](https://fullock.antpick.ax/build.html)
+* [fullock](https://fullock.antpick.ax/buildja.html)
 
-### 1.2. packagecloud.ioから各依存ライブラリとヘッダファイルをインストールします。
+### 1.2. packagecloud.ioから各依存ライブラリとヘッダファイルをインストール
 
-このセクションでは、packagecloud.ioから各依存ライブラリとヘッダーファイルをインストールする方法を説明します。
+このセクションでは、[packagecloud.io - AntPickax stable repository](https://packagecloud.io/antpickax/stable)から各依存ライブラリとヘッダーファイルをインストールする方法を説明します。
 
 **注**：前のセクションでGitHubから依存ライブラリとヘッダーファイルをインストールした場合は、このセクションを読み飛ばしてください。
 
-[K2HASH](https://k2hash.antpick.ax/build.html)をビルドするときには、ひとつのSSL/TLSライブラリーを選択します。[K2HASH](https://k2hash.antpick.ax/build.html)がサポートしているSSL/TLSライブラリとヘッダファイルのパッケージ名は次のようになっています。
+[K2HASH](https://k2hash.antpick.ax/indexja.html)をビルドするときには、ひとつのSSL/TLSライブラリーを選択します。[K2HASH](https://k2hash.antpick.ax/indexja.html)がサポートしているSSL/TLSライブラリとヘッダファイルのパッケージ名は次のようになっています。
 
 | SSL/TLS library | pkg |
 |:--|:--|
@@ -72,18 +72,18 @@ $ sudo yum install autoconf automake gcc gcc-c++ gdb make libtool pkgconfig \
 $ sudo yum install git -y
 ```
 
-## 2. GitHubからソースコードを複製する
+## 2. GitHubからソースコードを複製
 
-GitHubから**k2hash**のソースコードをダウンロードしてください。
+GitHubから**k2hash**の[ソースコード](https://github.com/yahoojapan/k2hash)をダウンロードしてください。
 ```bash
 $ git clone https://github.com/yahoojapan/k2hash.git
 ```
 
-## 3. ビルドしてインストールする
+## 3. ビルド・インストール
 
 以下の手順に従って**K2HASH**をビルドしてインストールしてください。 [GNU Automake](https://www.gnu.org/software/automake/)を使って**K2HASH**を構築します。
 
-**K2HASH**は、1つのSSL/TLSライブラリが必要であることを考慮する必要があります。[K2HASH](https://k2hash.antpick.ax/build.html)ビルドオプションは、**CHMPX**のビルドオプションに影響します。 表1は、可能な構成オプションを示しています。
+**K2HASH**は、1つのSSL/TLSライブラリが必要であることを考慮する必要があります。[K2HASH](https://k2hash.antpick.ax/indexja.html)のビルドオプションは、これを使う[CHMPX](https://chmpx.antpick.ax/indexja.html)のビルドオプションに影響を与えます。 表1は、可能な構成オプションを示しています。
 
 表1. 可能な構成オプション:
 
