@@ -50,7 +50,7 @@ next_string: Developer
 | [GnuTLS](https://gnutls.org/) (nettle) | nettle-dev(deb) |
 | [Mozilla NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) | nss-devel(rpm) |
 
-DebianStretchまたはUbuntu（Bionic Beaver）をお使いの場合は、以下の手順に従ってください。SSL/TLSライブラリとヘッダファイルのパッケージ名（libgcrypt11-dev）は、あなたアプリケーションが要求するSSL/TLSライブラリとヘッダファイルのパッケージ名と置き換えても良いです。
+DebianStretchまたはUbuntu（Bionic Beaver）をお使いの場合は、以下の手順に従ってください。SSL/TLSライブラリとヘッダファイルのパッケージ名（libgcrypt11-dev）は、あなたアプリケーションが要求するSSL/TLSライブラリとヘッダファイルのパッケージ名と置き換えても良いです。
 ```bash
 $ sudo apt-get update -y
 $ sudo apt-get install curl -y
