@@ -12,56 +12,113 @@ top_string: TOP
 next_url: developer.html
 next_string: Developer
 ---
+# Build
 
-# Building
-The build method for K2HASH is explained below.
+This chapter consists of three parts:
 
-## 1. Install prerequisites before compiling
-- Debian / Ubuntu
+* how to set up **K2HASH** for local development
+* how to build **K2HASH** from the source code
+* how to install **K2HASH**
+
+## 1. Install prerequisites
+
+**K2HASH** primarily depends on **fullock**. **fullock**  and its header files are required to build **K2HASH**. We provide two ways to install them. You can select your favorite one.
+
+* Use [GitHub](https://github.com/)  
+  Install **fullock** source code and the header files. You will **build** them and install them.
+* Use [packagecloud.io](https://packagecloud.io/)  
+  Install packages of **fullock** and its header files. You just install them. Libraries are already built.
+
+### 1.1. Install fullock and its header files from GitHub
+
+Read the following documents for details:  
+* [fullock](https://fullock.antpick.ax/build.html)
+
+### 1.2. Install fullock and its header files from packagecloud.io
+
+This section instructs how to install fullock and the header files from [packagecloud.io](https://packagecloud.io/). 
+
+**Note**: Skip reading this section if you have installed each dependent library and the header files from [GitHub](https://github.com/) in the previous section.
+
+[K2HASH](https://k2hash.antpick.ax/build.html) requires a SSL/TLS library and header files. Table1 shows Development packages to build the [K2HASH](https://k2hash.antpick.ax/build.html).
+
+Table1. Development packages to build the [K2HASH](https://k2hash.antpick.ax/build.html):
+
+| SSL/TLS library | pkg |
+|:--|:--|
+| [OpenSSL](https://www.openssl.org/) | libssl-dev(deb) / openssl-devel(rpm) |
+| [GnuTLS](https://gnutls.org/) (gcrypt) | libgcrypt11-dev(deb) |
+| [GnuTLS](https://gnutls.org/) (nettle) | nettle-dev(deb) |
+| [Mozilla NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) | nss-devel(rpm) |
+
+For DebianStretch or Ubuntu(Bionic Beaver) users, follow the steps below. You can replace `libgcrypt11-dev` with the other SSL/TLS package your application requires:
+```bash
+$ sudo apt-get update -y
+$ sudo apt-get install curl -y
+$ curl -s https://packagecloud.io/install/repositories/antpickax/stable/script.deb.sh \
+    | sudo bash
+$ sudo apt-get install autoconf autotools-dev gcc g++ make gdb libtool pkg-config \
+    libyaml-dev libfullock-dev libgcrypt11-dev -y
+$ sudo apt-get install git -y
 ```
-$ sudo aptitude update
-$ sudo aptitude install git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config libssl-dev
+
+For Fedora28 or CentOS7.x(6.x) users, follow the steps below. You can replace `nss-devel` with the other SSL/TLS package your application requires:
+```bash
+$ sudo yum makecache
+$ sudo yum install curl -y
+$ curl -s https://packagecloud.io/install/repositories/antpickax/stable/script.rpm.sh \
+    | sudo bash
+$ sudo yum install autoconf automake gcc gcc-c++ gdb make libtool pkgconfig \
+    libyaml-devel libfullock-devel nss-devel -y
+$ sudo yum install git -y
 ```
-- Fedora / CentOS
+
+## 2. Clone the source code from GitHub
+
+Download the **K2HASH**'s source code from [GitHub](https://github.com/).
+```bash
+$ git clone https://github.com/yahoojapan/k2hash.git
 ```
-$ sudo yum install git-core gcc-c++ make libtool openssl-devel
-```
-## 2. Building and installing FULLOCK before compiling K2HASH
-```
-$ git clone https://github.com/yahoojapan/fullock.git
-$ cd fullock
-$ ./autogen.sh
-If you use Debian / Ubuntu, then
-$ ./configure --prefix=/usr
-If you use Fedora / CentOS, then
-$ ./configure --prefix=/usr --libdir=/usr/lib64
+
+## 3. Build and install
+
+Just follow the steps below to build **K2HASH** and install it. We use [GNU Automake](https://www.gnu.org/software/automake/) to build **K2HASH**.
+
+You need consider **K2HASH** also requires one SSL/TLS library. This means the [K2HASH](https://k2hash.antpick.ax/build.html) build option affects the **CHMPX** build option. Table1 shows possible configure options.
+
+Table1. possible configure option:
+
+| SSL/TLS library | K2HASH configure options | CHMPX configure options |
+|:--|:--|:--|
+| [OpenSSL](https://www.openssl.org/) | ./configure --prefix=/usr --with-openssl | ./configure --prefix=/usr --with-openssl |
+| [GnuTLS](https://gnutls.org/) (gcrypt) | ./configure \-\-prefix=/usr \-\-with-gcrypt | ./configure \-\-prefix=/usr \-\-with-gnutls |
+| [GnuTLS](https://gnutls.org/) (nettle) | ./configure \-\-prefix=/usr \-\-with-nettle | ./configure \-\-prefix=/usr \-\-with-gnutls |
+| [Mozilla NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) | ./configure \-\-prefix=/usr \-\-with-nss | ./configure \-\-prefix=/usr \-\-with-nss |
+
+For DebianStretch or Ubuntu(Bionic Beaver) users, follow the steps below:
+```bash
+$ cd k2hash
+$ sh autogen.sh
+$ ./configure --prefix=/usr --with-gcrypt
 $ make
 $ sudo make install
-$ cd ..
 ```
 
-## 3. Clone source codes from Github
-```
-$ git clone git@github.com:yahoojapan/k2hash.gif ; cd k2hash
-```
-
-## 4. Building and installing K2HASH
-```
-$ ./autogen.sh
-If you use Debian / Ubuntu, then
-$ ./configure --prefix=/usr
-If you use Fedora / CentOS, then
-$ ./configure --prefix=/usr --libdir=/usr/lib64
+For Fedora28 or CentOS7.x(6.x) users, follow the steps below:
+```bash
+$ cd k2hash
+$ sh autogen.sh
+$ ./configure --prefix=/usr --with-nss
 $ make
 $ sudo make install
 ```
-### Switch Crypt library
-- Linking OpenSSL  
-Specify "--with-openssl" for configure command option, OpenSSL is default if you do not specify any option for crypt library.
-- Linking NSS(mozilla)  
-Specify "--with-nss" for configure command option.
-- Linking Nettle(gnutls)  
-Specify "--with-nettle" for configure command option.
-- Linking Gcrypt(gnutls)  
-Specify "--with-gcrypt" for configure command option.
 
+After successfully installing **K2HASH**, you will see the **k2himport** help text:
+```bash
+$ k2himport -h
+
+usage: 
+
+k2himport inputfile outputfile [-mdbm]
+k2himport -h
+```
