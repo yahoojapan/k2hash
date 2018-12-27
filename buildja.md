@@ -44,10 +44,10 @@ next_string: Developer
 [K2HASH](https://k2hash.antpick.ax/build.html)をビルドするときには、ひとつのSSL/TLSライブラリーを選択します。[K2HASH](https://k2hash.antpick.ax/build.html)がサポートしているSSL/TLSライブラリとヘッダファイルのパッケージ名は次のようになっています。
 
 | SSL/TLS library | pkg |
-|:--|:--|:--|
+|:--|:--|
 | [OpenSSL](https://www.openssl.org/) | libssl-dev(deb) / openssl-devel(rpm) |
-| [GnuTLS](https://gnutls.org/) (gcrypt)| libgcrypt11-dev(deb) |
-| [GnuTLS](https://gnutls.org/) (nettle)| nettle-dev(deb) |
+| [GnuTLS](https://gnutls.org/) (gcrypt) | libgcrypt11-dev(deb) |
+| [GnuTLS](https://gnutls.org/) (nettle) | nettle-dev(deb) |
 | [Mozilla NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) | nss-devel(rpm) |
 
 DebianStretchまたはUbuntu（Bionic Beaver）をお使いの場合は、以下の手順に従ってください。SSL/TLSライブラリとヘッダファイルのパッケージ名（libgcrypt11-dev）は、あなたアプリケーションが要求するSSL/TLSライブラリとヘッダファイルのパッケージ名と置き換えても良いです。

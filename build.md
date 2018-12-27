@@ -47,8 +47,8 @@ Table1. Development packages to build the [K2HASH](https://k2hash.antpick.ax/bui
 | SSL/TLS library | pkg |
 |:--|:--|
 | [OpenSSL](https://www.openssl.org/) | libssl-dev(deb) / openssl-devel(rpm) |
-| [GnuTLS](https://gnutls.org/) (gcrypt)| libgcrypt11-dev(deb) |
-| [GnuTLS](https://gnutls.org/) (nettle)| nettle-dev(deb) |
+| [GnuTLS](https://gnutls.org/) (gcrypt) | libgcrypt11-dev(deb) |
+| [GnuTLS](https://gnutls.org/) (nettle) | nettle-dev(deb) |
 | [Mozilla NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) | nss-devel(rpm) |
 
 For DebianStretch or Ubuntu(Bionic Beaver) users, follow the steps below. You can replace `libgcrypt11-dev` with the other SSL/TLS package your application requires:
