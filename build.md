@@ -24,7 +24,7 @@ This chapter consists of three parts:
 
 **K2HASH** primarily depends on **fullock**. **fullock**  and its header files are required to build **K2HASH**. We provide two ways to install them. You can select your favorite one.
 
-* Use [GitHub](https://github.com/)  
+* Use [GitHub](https://github.com/yahoojapan)  
   Install **fullock** source code and the header files. You will **build** them and install them.
 * Use [packagecloud.io](https://packagecloud.io/)  
   Install packages of **fullock** and its header files. You just install them. Libraries are already built.
@@ -36,13 +36,13 @@ Read the following documents for details:
 
 ### 1.2. Install fullock and its header files from packagecloud.io
 
-This section instructs how to install fullock and the header files from [packagecloud.io](https://packagecloud.io/). 
+This section instructs how to install fullock and the header files from [packagecloud.io - AntPickax stable repository](https://packagecloud.io/antpickax/stable). 
 
 **Note**: Skip reading this section if you have installed each dependent library and the header files from [GitHub](https://github.com/) in the previous section.
 
-[K2HASH](https://k2hash.antpick.ax/build.html) requires a SSL/TLS library and header files. Table1 shows Development packages to build the [K2HASH](https://k2hash.antpick.ax/build.html).
+[K2HASH](https://k2hash.antpick.ax/) requires a SSL/TLS library and header files. Table1 shows Development packages to build the [K2HASH](https://k2hash.antpick.ax/).
 
-Table1. Development packages to build the [K2HASH](https://k2hash.antpick.ax/build.html):
+Table1. Development packages to build the [K2HASH](https://k2hash.antpick.ax/):
 
 | SSL/TLS library | pkg |
 |:--|:--|
@@ -75,7 +75,7 @@ $ sudo yum install git -y
 
 ## 2. Clone the source code from GitHub
 
-Download the **K2HASH**'s source code from [GitHub](https://github.com/).
+Download the **K2HASH**'s source code from [GitHub](https://github.com/yahoojapan/k2hash).
 ```bash
 $ git clone https://github.com/yahoojapan/k2hash.git
 ```
@@ -84,7 +84,7 @@ $ git clone https://github.com/yahoojapan/k2hash.git
 
 Just follow the steps below to build **K2HASH** and install it. We use [GNU Automake](https://www.gnu.org/software/automake/) to build **K2HASH**.
 
-You need consider **K2HASH** also requires one SSL/TLS library. This means the [K2HASH](https://k2hash.antpick.ax/build.html) build option affects the **CHMPX** build option. Table1 shows possible configure options.
+You need consider **K2HASH** also requires one SSL/TLS library. This means the [K2HASH](https://k2hash.antpick.ax/) build option affects the [CHMPX](https://chmpx.antpick.ax/) build option. Table1 shows possible configure options.
 
 Table1. possible configure option:
 
