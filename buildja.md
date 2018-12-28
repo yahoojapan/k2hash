@@ -23,11 +23,11 @@ next_string: Developer
 
 ## 1. ビルド環境の構築
 
-**K2HASH**は主に、fullockに依存します。依存ライブラリとヘッダファイルは**K2HASH**をビルドするために必要です。依存ライブラリとヘッダファイルをインストールする方法は2つあります。好きなものを選ぶことができます。
+**K2HASH**は主に、[FULLOCK](https://fullock.antpick.ax/indexja.html)に依存します。依存ライブラリとヘッダファイルは**K2HASH**をビルドするために必要です。依存ライブラリとヘッダファイルをインストールする方法は2つあります。好きなものを選ぶことができます。
 
 * [GitHub](https://github.com/yahoojapan)から依存ファイルをインストール  
   依存ライブラリのソースコードとヘッダファイルをインストールします。あなたは依存ライブラリとヘッダファイルをビルドしてインストールします。
-* [packagecloud.io](https://packagecloud.io/)を使用する  
+* [packagecloud.io](https://packagecloud.io/antpickax/stable)を使用する  
   依存ライブラリのパッケージとヘッダファイルをインストールします。あなたは依存ライブラリとヘッダファイルをインストールするだけです。ライブラリはすでに構築されています。
 
 ### 1.1. GitHubから各依存ライブラリとヘッダファイルをインストール
@@ -39,7 +39,7 @@ next_string: Developer
 
 このセクションでは、[packagecloud.io - AntPickax stable repository](https://packagecloud.io/antpickax/stable)から各依存ライブラリとヘッダーファイルをインストールする方法を説明します。
 
-**注**：前のセクションでGitHubから依存ライブラリとヘッダーファイルをインストールした場合は、このセクションを読み飛ばしてください。
+**注**：前のセクションで[GitHub](https://github.com/yahoojapan)から依存ライブラリとヘッダーファイルをインストールした場合は、このセクションを読み飛ばしてください。
 
 [K2HASH](https://k2hash.antpick.ax/indexja.html)をビルドするときには、ひとつのSSL/TLSライブラリーを選択します。[K2HASH](https://k2hash.antpick.ax/indexja.html)がサポートしているSSL/TLSライブラリとヘッダファイルのパッケージ名は次のようになっています。
 
@@ -74,7 +74,7 @@ $ sudo yum install git -y
 
 ## 2. GitHubからソースコードを複製
 
-GitHubから**k2hash**の[ソースコード](https://github.com/yahoojapan/k2hash)をダウンロードしてください。
+[GitHub](https://github.com/yahoojapan)から**K2HASH**の[ソースコード](https://github.com/yahoojapan/k2hash)をダウンロードしてください。
 ```bash
 $ git clone https://github.com/yahoojapan/k2hash.git
 ```
