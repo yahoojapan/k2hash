@@ -22,11 +22,11 @@ This chapter consists of three parts:
 
 ## 1. Install prerequisites
 
-**K2HASH** primarily depends on **fullock**. **fullock**  and its header files are required to build **K2HASH**. We provide two ways to install them. You can select your favorite one.
+**K2HASH** primarily depends on [FULLOCK](https://fullock.antpick.ax/index.html). [FULLOCK](https://fullock.antpick.ax/index.html) and its header files are required to build **K2HASH**. We provide two ways to install them. You can select your favorite one.
 
 * Use [GitHub](https://github.com/yahoojapan)  
   Install **fullock** source code and the header files. You will **build** them and install them.
-* Use [packagecloud.io](https://packagecloud.io/)  
+* Use [packagecloud.io](https://packagecloud.io/antpickax/stable)  
   Install packages of **fullock** and its header files. You just install them. Libraries are already built.
 
 ### 1.1. Install fullock and its header files from GitHub
@@ -38,7 +38,7 @@ Read the following documents for details:
 
 This section instructs how to install fullock and the header files from [packagecloud.io - AntPickax stable repository](https://packagecloud.io/antpickax/stable). 
 
-**Note**: Skip reading this section if you have installed each dependent library and the header files from [GitHub](https://github.com/) in the previous section.
+**Note**: Skip reading this section if you have installed each dependent library and the header files from [GitHub](https://github.com/yahoojapan) in the previous section.
 
 [K2HASH](https://k2hash.antpick.ax/) requires a SSL/TLS library and header files. Table1 shows Development packages to build the [K2HASH](https://k2hash.antpick.ax/).
 
@@ -84,7 +84,7 @@ $ git clone https://github.com/yahoojapan/k2hash.git
 
 Just follow the steps below to build **K2HASH** and install it. We use [GNU Automake](https://www.gnu.org/software/automake/) to build **K2HASH**.
 
-You need consider **K2HASH** also requires one SSL/TLS library. This means the [K2HASH](https://k2hash.antpick.ax/) build option affects the [CHMPX](https://chmpx.antpick.ax/) build option. Table1 shows possible configure options.
+You need consider **K2HASH** also requires one SSL/TLS library. This means the [K2HASH](https://k2hash.antpick.ax/index.html) build option affects the [CHMPX](https://chmpx.antpick.ax/index.html) build option. Table1 shows possible configure options.
 
 Table1. possible configure option:
 
