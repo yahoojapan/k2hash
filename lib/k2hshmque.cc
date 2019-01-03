@@ -1409,7 +1409,6 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 					MSG_K2HPRN("After reading marker, the marker is empty or wrong size.");
 
 					K2H_Free(before_marker);
-					K2H_Free(after_marker);
 					K2H_Delete(psubkeys);
 					K2H_Free(pTmpValue);
 					break;													// automatically unlock ALObjCKI_Marker
@@ -1670,7 +1669,6 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 						MSG_K2HPRN("After reading marker, the marker is empty or wrong size.");
 
 						K2H_Free(current_marker);
-						K2H_Free(after_marker);
 						K2H_Delete(psubkeys);
 						K2H_Free(pTmpValue);
 						break;													// automatically unlock ALObjCKI_Marker
