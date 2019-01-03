@@ -36,8 +36,8 @@ class K2HPageFile : public K2HPage
 	protected:
 		K2HPageFile(const K2HShm* pk2hshm, int fd, off_t offset, bool nodup);
 
-		virtual void Clean(void);
-		virtual void CleanPageHead(void);
+		void Clean(void);
+		void CleanPageHead(void);
 		bool CloseFd(void);
 		bool DuplicateFd(int fd);
 

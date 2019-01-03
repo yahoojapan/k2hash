@@ -62,10 +62,10 @@ class K2HPage
 
 		virtual bool Free(PPAGEHEAD* ppRelLastPageHead, unsigned long* pPageCount, bool isAllPage) = 0;
 
-		virtual void Clean(void);
+		void Clean(void);
 		void CleanMemory(void);
-		virtual void CleanPageHead(void);
-		virtual void CleanLoadedData(void);
+		void CleanPageHead(void);
+		void CleanLoadedData(void);
 
 	public:
 		K2HPage(const K2HShm* pk2hshm = NULL);
