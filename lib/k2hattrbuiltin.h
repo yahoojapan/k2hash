@@ -152,7 +152,7 @@ class K2hAttrBuiltin : public K2hAttrOpsBase
 		virtual ~K2hAttrBuiltin(void);
 
 		virtual int GetType(void) const { return TYPE_ATTRBUILTIN; }
-		virtual void Clear(void);
+		void Clear(void);
 		virtual bool IsHandleAttr(const unsigned char* key, size_t keylen) const;
 		virtual bool UpdateAttr(K2HAttrs& attrs);
 		virtual void GetInfo(std::stringstream& ss) const;

@@ -65,7 +65,7 @@ K2hAttrOpsBase::K2hAttrOpsBase(void) : VerInfo(""), byKey(NULL), KeyLen(0), byVa
 
 K2hAttrOpsBase::~K2hAttrOpsBase(void)
 {
-	K2hAttrOpsBase::Clear();
+	Clear();
 }
 
 void K2hAttrOpsBase::Clear(void)
@@ -82,7 +82,7 @@ bool K2hAttrOpsBase::Set(const unsigned char* pkey, size_t key_len, const unsign
 	// [NOTE]
 	// Clear only this class member.
 	//
-	K2hAttrOpsBase::Clear();
+	Clear();
 
 	if(pkey && 0 < key_len){
 		byKey	= pkey;

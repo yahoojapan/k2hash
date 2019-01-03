@@ -71,7 +71,7 @@ class K2hAttrOpsBase
 		virtual ~K2hAttrOpsBase(void);
 
 		virtual int GetType(void) const { return TYPE_ATTROP; }
-		virtual void Clear(void);
+		void Clear(void);
 		virtual bool IsHandleAttr(const char* key) const;
 		virtual bool IsHandleAttr(const unsigned char* key, size_t keylen) const = 0;
 		virtual bool UpdateAttr(K2HAttrs& attrs) = 0;
