@@ -151,7 +151,8 @@ PBK2HMARKER K2HShm::UpdateK2HMarker(PBK2HMARKER pmarker, size_t& marklen, const 
 		memcpy((&(pnewmarker->byData[0]) + pnewmarker->marker.startoff),	(is_end ? (&(pmarker->byData[0]) + pmarker->marker.startoff) : byKey),	pnewmarker->marker.startlen);
 		memcpy((&(pnewmarker->byData[0]) + pnewmarker->marker.endoff),		(is_end ? byKey : (&(pmarker->byData[0]) + pmarker->marker.endoff)),	pnewmarker->marker.endlen);
 	}
-
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress uselessAssignmentPtrArg
 	K2H_Free(pmarker);
 
 	return pnewmarker;
@@ -191,8 +192,7 @@ PBK2HMARKER K2HShm::GetMarker(const unsigned char* byMark, size_t marklength, K2
 
 	// make hash and lock cindex
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
-	PCKINDEX	pCKIndex;
-	if(NULL == (pCKIndex = GetCKIndex(hash, *pALObjCKI))){
+	if(NULL == GetCKIndex(hash, *pALObjCKI)){
 		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
 		return NULL;							// automatically unlock ALObjCKI if it is local
 	}
@@ -249,8 +249,7 @@ bool K2HShm::UpdateStartK2HMarker(const unsigned char* byMark, size_t marklength
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
 
 	K2HLock		ALObjCKI(K2HLock::RWLOCK);										// LOCK
-	PCKINDEX	pCKIndex;
-	if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI))){
+	if(NULL == GetCKIndex(hash, ALObjCKI)){
 		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
 		return false;
 	}
@@ -694,6 +693,8 @@ bool K2HShm::AddFifoQueue(const unsigned char* byMark, size_t marklength, const 
 		//--------------------------------------
 		// Update marker
 		//--------------------------------------
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress nullPointer
 		if(after_marker && 0 < after_endlen){
 			// now marker has end of queue key
 			if(!before_marker || 0 == before_endlen){
@@ -704,6 +705,8 @@ bool K2HShm::AddFifoQueue(const unsigned char* byMark, size_t marklength, const 
 				ALObjCKI_Marker.Unlock();									// Unlock
 
 				// switch(after -> before)
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress identicalInnerCondition
 				K2H_Free(after_marker);
 				K2H_Free(before_marker);
 				before_marker	= GetMarker(byMark, marklength);
@@ -828,6 +831,8 @@ bool K2HShm::AddFifoQueue(const unsigned char* byMark, size_t marklength, const 
 				// before marker exists, and it has end of key.
 				// ---> we already added new key into subkey list for end key(=exists)
 				//
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress duplicateBranch
 				if(after_marker){
 					//
 					// there is now marker, but it's end key does not exist. probably already popped new key.
@@ -861,11 +866,12 @@ bool K2HShm::AddLifoQueue(const unsigned char* byMark, size_t marklength, const 
 	const unsigned char*	before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
 	size_t					before_startlen	= before_marker ? before_marker->marker.startlen : 0;
 	PBK2HMARKER				after_marker	= NULL;
-	const unsigned char*	after_startkey	= NULL;
-	size_t					after_startlen	= 0;
 	bool					result			= false;	// result code and for loop flag
 
 	do{
+		const unsigned char*	after_startkey	= NULL;
+		size_t					after_startlen	= 0;
+
 		//--------------------------------------
 		// (Re)Make new key with subkey list which is from marker
 		//--------------------------------------
@@ -904,6 +910,8 @@ bool K2HShm::AddLifoQueue(const unsigned char* byMark, size_t marklength, const 
 		//--------------------------------------
 		// Add new key into subkeys for start key in marker
 		//--------------------------------------
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress nullPointer
 		if(after_marker && 0 < after_startlen){
 			// now marker has start of queue key
 			if(!before_marker || 0 == before_startlen){
@@ -914,6 +922,8 @@ bool K2HShm::AddLifoQueue(const unsigned char* byMark, size_t marklength, const 
 				ALObjCKI_Marker.Unlock();									// Unlock
 
 				// switch(after -> before)
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress identicalInnerCondition
 				K2H_Free(after_marker);
 				K2H_Free(before_marker);
 				before_marker	= GetMarker(byMark, marklength);
@@ -1119,6 +1129,8 @@ bool K2HShm::PopQueueEx(const unsigned char* byMark, size_t marklength, bool& is
 		const unsigned char*	before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
 		size_t					before_startlen	= before_marker ? before_marker->marker.startlen : 0;
 
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress nullPointer
 		if(!before_marker || !before_startkey || 0 == before_startlen){
 			// there is no marker or no start key of queue, it means no stacked key in queue.
 			K2H_Free(before_marker);
@@ -1172,6 +1184,9 @@ bool K2HShm::PopQueueEx(const unsigned char* byMark, size_t marklength, bool& is
 		PBK2HMARKER				after_marker	= GetMarker(byMark, marklength, &ALObjCKI_Marker);
 		const unsigned char*	after_startkey	= after_marker ? &(after_marker->byData[after_marker->marker.startoff]) : NULL;
 		size_t					after_startlen	= after_marker ? after_marker->marker.startlen : 0;
+
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress nullPointer
 		if(!after_marker){
 			MSG_K2HPRN("After reading marker, the marker is empty or wrong size.");
 
@@ -1335,6 +1350,8 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 			const unsigned char*	before_startkey	= before_marker ? &(before_marker->byData[before_marker->marker.startoff]) : NULL;
 			size_t					before_startlen	= before_marker ? before_marker->marker.startlen : 0;
 
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress nullPointer
 			if(!before_marker || !before_startkey || 0 == before_startlen){
 				// there is no marker or no start key of queue, it means no stacked key in queue.
 				K2H_Free(before_marker);
@@ -1405,6 +1422,8 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 				PBK2HMARKER				after_marker	= GetMarker(byMark, marklength, &ALObjCKI_Marker);
 				const unsigned char*	after_startkey	= after_marker ? &(after_marker->byData[after_marker->marker.startoff]) : NULL;
 				size_t					after_startlen	= after_marker ? after_marker->marker.startlen : 0;
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress nullPointer
 				if(!after_marker){
 					MSG_K2HPRN("After reading marker, the marker is empty or wrong size.");
 
@@ -1485,6 +1504,8 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 			PBK2HMARKER				current_marker	= GetMarker(byMark, marklength);
 			const unsigned char*	current_endkey	= current_marker ? &(current_marker->byData[current_marker->marker.endoff]) : NULL;
 			size_t					current_endlen	= current_marker ? current_marker->marker.endlen : 0;
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress nullPointer
 			if(!current_marker || !current_endkey || 0 == current_endlen){
 				// there is no marker or no end key of queue, thus we do not check end key.
 				K2H_Free(current_marker);
@@ -1575,8 +1596,7 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 				//
 				K2HLock		ALObjCKI_TopKey(K2HLock::RWLOCK);				// auto release locking at leaving in this scope.
 				k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(ptopkey), topkeylen);
-				PCKINDEX	pCKIndex;
-				if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI_TopKey))){
+				if(NULL == GetCKIndex(hash, ALObjCKI_TopKey)){
 					MSG_K2HPRN("normal top queue key does not exist, probably removing it.");
 
 					K2H_Free(current_marker);
@@ -1665,6 +1685,8 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 					PBK2HMARKER				after_marker	= GetMarker(byMark, marklength, &ALObjCKI_Marker);
 					const unsigned char*	after_endkey	= after_marker ? &(after_marker->byData[after_marker->marker.endoff]) : NULL;
 					size_t					after_endlen	= after_marker ? after_marker->marker.endlen : 0;
+					// cppcheck-suppress unmatchedSuppression
+					// cppcheck-suppress nullPointer
 					if(!after_marker){
 						MSG_K2HPRN("After reading marker, the marker is empty or wrong size.");
 

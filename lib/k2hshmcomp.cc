@@ -388,8 +388,9 @@ bool K2HShm::CopyPageData(K2HPage* pSrcTop, K2HPage* pDestTop)
 	off_t		next_read_pos;
 	off_t		next_write_pos;
 	bool		isChangeDestPageLength	= false;
-	size_t		readlength;
 	for(pSrc = pSrcTop, pDest = pDestTop; true; read_offset = next_read_pos, write_offset = next_write_pos){
+		size_t	readlength;
+
 		// read one page data.
 		readlength		= 0UL;
 		next_read_pos	= 0L;

@@ -83,7 +83,7 @@ class K2hAttrPlugin : public K2hAttrOpsBase
 		static const int			TYPE_ATTRPLUGIN = 2;
 
 	public:
-		K2hAttrPlugin(const K2hAttrPluginLib* pLib = NULL);
+		explicit K2hAttrPlugin(const K2hAttrPluginLib* pLib = NULL);
 		virtual ~K2hAttrPlugin(void);
 
 		virtual int GetType(void) const { return TYPE_ATTRPLUGIN; }

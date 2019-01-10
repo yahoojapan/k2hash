@@ -90,7 +90,7 @@ class K2HSubKeys
 
 		K2HSubKeys();
 		K2HSubKeys(const K2HSubKeys& other);
-		K2HSubKeys(const char* pSubkeys);
+		explicit K2HSubKeys(const char* pSubkeys);
 		K2HSubKeys(const unsigned char* pSubkeys, size_t length);
 		virtual ~K2HSubKeys();
 
@@ -98,7 +98,7 @@ class K2HSubKeys
 		bool Serialize(const unsigned char* pSubkeys, size_t length);
 		strarr_t::size_type StringArray(strarr_t& strarr) const;
 
-		bool operator=(const K2HSubKeys& other);
+		K2HSubKeys& operator=(const K2HSubKeys& other);
 
 		void clear(void);
 		bool empty(void) const;
@@ -116,6 +116,7 @@ class K2HSubKeys
 //---------------------------------------------------------
 // Class K2HSKIterator
 //---------------------------------------------------------
+// cppcheck-suppress copyCtorAndEqOperator
 class K2HSKIterator : public std::iterator<std::forward_iterator_tag, SUBKEY>
 {
 		friend class K2HSubKeys;

@@ -263,7 +263,7 @@ class TestData
 		size_t				length;
 
 	public:
-		TestData(size_t datalen = 1) : pData(NULL), length(datalen)
+		explicit TestData(size_t datalen = 1) : pData(NULL), length(datalen)
 		{
 			if(1 <= datalen){
 				length = datalen;
@@ -697,7 +697,7 @@ static K2HShm* InitializeK2HashFile(BOPTS& benchopts)
 	return pk2hshm;
 }
 
-static int OpenBenchFile(const string filepath, size_t& totalsize, bool is_create)
+static int OpenBenchFile(const string& filepath, size_t& totalsize, bool is_create)
 {
 	int	fd;
 

@@ -44,14 +44,14 @@ class K2HLock : public FLRwlRcsv
 	protected:
 		static fdmodemap_t& GetFdModes(void);
 
-		bool Dup(const K2HLock& other);
+		K2HLock& Dup(const K2HLock& other);
 
 	public:
 		static bool AddReadModeFd(int fd);
 		static bool RemoveReadModeFd(int fd);
 
 	public:
-		K2HLock(bool isRead = K2HLock::RDLOCK);
+		explicit K2HLock(bool isRead = K2HLock::RDLOCK);
 		K2HLock(int fd, off_t offset, bool isRead = K2HLock::RDLOCK);
 		K2HLock(const K2HLock& other);
 		virtual ~K2HLock();
@@ -65,7 +65,7 @@ class K2HLock : public FLRwlRcsv
 		bool Lock(int fd, off_t offset, bool IsRead);
 		bool Unlock(void);
 
-		bool operator=(const K2HLock& other) { return Dup(other); }
+		K2HLock& operator=(const K2HLock& other) { return Dup(other); }
 };
 
 #endif	// K2HLOCK_H

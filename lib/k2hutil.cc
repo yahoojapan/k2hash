@@ -66,6 +66,7 @@ strarr_t::size_type ParseStringArray(const char* pData, size_t length, strarr_t&
 size_t GetTotalLengthByStringArray(strarr_t& strarr)
 {
 	size_t	length = 0UL;
+	// cppcheck-suppress postfixOperator
  	for(strarr_t::const_iterator iter = strarr.begin(); iter != strarr.end(); iter++){
 		length += (iter->length() + 1);
  	}
@@ -83,6 +84,7 @@ ssize_t AppendStringArray(strarr_t& strarr, char* pData, size_t length)
 		return -1;
 	}
 	ssize_t SetCount = 0;
+	// cppcheck-suppress postfixOperator
  	for(strarr_t::const_iterator iter = strarr.begin(); iter != strarr.end(); iter++){
 		strncpy(&pData[SetCount], iter->c_str(), iter->length());
 		SetCount += iter->length();

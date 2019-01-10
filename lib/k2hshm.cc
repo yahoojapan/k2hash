@@ -507,7 +507,6 @@ bool K2HShm::ExpandKIndexArea(K2HLock& ALObjCMask)
 
 	// Key Index
 	PCKINDEX	pCKIndex;
-	PKINDEX		pKIndex;
 	void*		pCKIndexShmBase;
 
 	// Collision Key Index
@@ -532,6 +531,7 @@ bool K2HShm::ExpandKIndexArea(K2HLock& ALObjCMask)
 	// Key Index
 	{
 		// Get start offset by alignment
+		PKINDEX	pKIndex;
 		off_t	new_area_start	= 0L;
 		int		kindex_count	= INIT_KINDEX_CNT(K2HShm::GetMaskBitCount(pHead->cur_mask));	// (new cur_mask) - 1 = old cur_mask
 		size_t	area_length		= sizeof(KINDEX) * kindex_count;
@@ -940,7 +940,11 @@ bool K2HShm::ArrangeToUpperKIndex(k2h_hash_t hash, k2h_hash_t mask) const
 	}
 
 	// CKey Indexes
+																	// cppcheck-suppress unmatchedSuppression
+																	// cppcheck-suppress nullPointerRedundantCheck
 	PCKINDEX	pUpperCKIndex	= static_cast<PCKINDEX>(Abs(pUpperKIndex->ckey_list));
+																	// cppcheck-suppress unmatchedSuppression
+																	// cppcheck-suppress nullPointerRedundantCheck
 	PCKINDEX	pLowerCKIndex	= static_cast<PCKINDEX>(Abs(pLowerKIndex->ckey_list));
 	if(!pUpperCKIndex || !pLowerCKIndex){
 		ERR_K2HPRN("FATAL: Upper CKeyIndex is %p or Lower CKeyIndex is %p", (pUpperKIndex ? pUpperKIndex : NULL), (pLowerKIndex ? pLowerKIndex : NULL));
@@ -1187,8 +1191,8 @@ unsigned long K2HShm::GetElementListUpCount(PELEMENT pElementList) const
 PELEMENT K2HShm::GetElement(PELEMENT pElementList, const unsigned char* byKey, size_t length) const
 {
 	PELEMENT	pElement;
-	K2HPage*	pPage;
 	for(pElement = pElementList ; pElement; pElement = static_cast<PELEMENT>(Abs(pElement->same))){
+		K2HPage*	pPage;
 		if(NULL == (pPage = GetPageObject(pElement->key))){
 			WAN_K2HPRN("Failed to make(get) Page Object");
 			continue;
@@ -1742,8 +1746,7 @@ bool K2HShm::ReservePages(const unsigned char* byData, size_t length, K2HPage** 
 char* K2HShm::Get(const char* pKey, bool checkattr, const char* encpass) const
 {
 	char*	pValue = NULL;
-	ssize_t	vallen;
-	if(0 > (vallen = Get(reinterpret_cast<const unsigned char*>(pKey), (pKey ? strlen(pKey) + 1 : 0UL), reinterpret_cast<unsigned char**>(&pValue), checkattr, encpass))){
+	if(0 > Get(reinterpret_cast<const unsigned char*>(pKey), (pKey ? strlen(pKey) + 1 : 0UL), reinterpret_cast<unsigned char**>(&pValue), checkattr, encpass)){
 		return NULL;
 	}
 	return pValue;
@@ -1924,9 +1927,8 @@ ssize_t K2HShm::Get(const unsigned char* byKey, size_t length, unsigned char** b
 
 char* K2HShm::Get(PELEMENT pElement, int type) const
 {
-	ssize_t			length;
 	unsigned char*	byData = NULL;
-	if(-1 == (length = Get(pElement, &byData, type)) || !byData){
+	if(-1 == Get(pElement, &byData, type) || !byData){
 		ERR_K2HPRN("Could not get page data as type(%d) from element.", type);
 		return NULL;
 	}
@@ -2140,6 +2142,8 @@ bool K2HShm::Set(const unsigned char* byKey, size_t keylength, const unsigned ch
 			}
 			if(pUniqId){
 				parent_uid = pUniqId;
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress identicalInnerCondition
 				K2H_Free(pUniqId);
 			}
 		}
@@ -3075,40 +3079,40 @@ bool K2HShm::ReplacePage(PELEMENT pElement, const unsigned char* byData, size_t 
 			trans_result = transobj.SetAll(byData, length, NULL, 0UL, NULL, 0UL, NULL, 0UL);
 
 		}else if(PAGEOBJ_VALUE == type){
-			K2HPage*				pPage		= NULL;
+			K2HPage*				pPage2		= NULL;
 			const unsigned char*	byKey		= NULL;
 			size_t					keylength	= 0UL;
-			if(NULL != (pPage = GetPage(pElement, PAGEOBJ_KEY)) && pPage->GetData(&byKey, &keylength)){
+			if(NULL != (pPage2 = GetPage(pElement, PAGEOBJ_KEY)) && pPage2->GetData(&byKey, &keylength)){
 				trans_result = transobj.ReplaceVal(byKey, keylength, byData, length);
 
 			}else{
 				WAN_K2HPRN("Could not get key value.");
 			}
-			K2H_Delete(pPage);
+			K2H_Delete(pPage2);
 
 		}else if(PAGEOBJ_SUBKEYS == type){
-			K2HPage*				pPage		= NULL;
+			K2HPage*				pPage2		= NULL;
 			const unsigned char*	byKey		= NULL;
 			size_t					keylength	= 0UL;
-			if(NULL != (pPage = GetPage(pElement, PAGEOBJ_KEY)) && pPage->GetData(&byKey, &keylength)){
+			if(NULL != (pPage2 = GetPage(pElement, PAGEOBJ_KEY)) && pPage2->GetData(&byKey, &keylength)){
 				trans_result = transobj.ReplaceSKey(byKey, keylength, byData, length);
 
 			}else{
 				WAN_K2HPRN("Could not get key value.");
 			}
-			K2H_Delete(pPage);
+			K2H_Delete(pPage2);
 
 		}else{	// PAGEOBJ_ATTRS == type
-			K2HPage*				pPage		= NULL;
+			K2HPage*				pPage2		= NULL;
 			const unsigned char*	byKey		= NULL;
 			size_t					keylength	= 0UL;
-			if(NULL != (pPage = GetPage(pElement, PAGEOBJ_KEY)) && pPage->GetData(&byKey, &keylength)){
+			if(NULL != (pPage2 = GetPage(pElement, PAGEOBJ_KEY)) && pPage2->GetData(&byKey, &keylength)){
 				trans_result = transobj.ReplaceAttrs(byKey, keylength, byData, length);
 
 			}else{
 				WAN_K2HPRN("Could not get key value.");
 			}
-			K2H_Delete(pPage);
+			K2H_Delete(pPage2);
 		}
 		if(!trans_result){
 			WAN_K2HPRN("Failed to put replacing transaction.");
@@ -4129,7 +4133,7 @@ bool K2HShm::CheckFileUpdate(void)
 		ALObjFU.Unlock();
 
 		// check mmap area
-		bool	is_change = false;
+		is_change = false;
 		if(!CheckAreaUpdate(is_change)){
 			return false;
 		}

@@ -146,8 +146,9 @@ PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, c
 				if(is_expire_check && attrman.IsExpire(*pAttr)){
 					// element is expired.
 					MSG_K2HPRN("the key is expired, so we do not write this element.");
+					// cppcheck-suppress unmatchedSuppression
+					// cppcheck-suppress identicalInnerCondition
 					K2H_Free(pElementBin);
-
 				}
 				// get mtime and check it
 				if(pElementBin && (pstartts || pendts)){
@@ -179,10 +180,14 @@ PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, c
 						if(need_check_start && pstartts && (mtime.tv_sec < pstartts->tv_sec || (mtime.tv_sec == pstartts->tv_sec && (mtime.tv_nsec < pstartts->tv_nsec)))){
 							// older than start time
 							MSG_K2HPRN("the element mtime is older then start time, so we do not write this element.");
+							// cppcheck-suppress unmatchedSuppression
+							// cppcheck-suppress identicalInnerCondition
 							K2H_Free(pElementBin);
 						}else if(pendts && (pendts->tv_sec < mtime.tv_sec || (pendts->tv_sec == mtime.tv_sec && (pendts->tv_nsec < mtime.tv_nsec)))){
 							// newer than end time
 							MSG_K2HPRN("the element mtime is newer then end time, so we do not write this element.");
+							// cppcheck-suppress unmatchedSuppression
+							// cppcheck-suppress identicalInnerCondition
 							K2H_Free(pElementBin);
 						}
 					}
@@ -346,8 +351,7 @@ bool K2HShm::SetElementByBinArray(const PRALLEDATA prawdata, const struct timesp
 	}
 
 	// check length
-	size_t	dataslen;
-	if(0 == (dataslen = calc_ralledata_datas_length(*prawdata))){
+	if(0 == calc_ralledata_datas_length(*prawdata)){
 		ERR_K2HPRN("prawdata(%p) datas length is 0", prawdata);
 		return false;
 	}

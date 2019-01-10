@@ -41,7 +41,7 @@ K2HPage::K2HPage(const K2HShm* pk2hshm) : pK2HShm(pk2hshm), pPageHead(NULL), pPa
 
 K2HPage::~K2HPage()
 {
-	Clean();
+	K2HPage::Clean();
 }
 
 //---------------------------------------------------------
@@ -103,6 +103,8 @@ unsigned char* K2HPage::AllocateData(ssize_t length)
 
 	if(NULL == (pPageData = (unsigned char*)malloc(length))){
 		ERR_K2HPRN("Could not allocation memory.");
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress memleak
 		return NULL;
 	}
 	AllocLength	= length;
@@ -211,10 +213,15 @@ bool K2HPage::CopyData(unsigned char** ppPageData, size_t* pLength) const
 	}
 	if(NULL == (*ppPageData = (unsigned char*)malloc(sizeof(unsigned char) * DataLength))){
 		ERR_K2HPRN("Could not allocation memory.");
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress memleak
 		return false;
 	}
 	memcpy(*ppPageData, pPageData, DataLength);
 	*pLength = DataLength;
+
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress memleak
 	return true;
 }
 

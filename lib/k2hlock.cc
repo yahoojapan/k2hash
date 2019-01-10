@@ -178,25 +178,24 @@ bool K2HLock::Unlock(void)
 	return FLRwlRcsv::Unlock();
 }
 
-bool K2HLock::Dup(const K2HLock& other)
+K2HLock& K2HLock::Dup(const K2HLock& other)
 {
 	bool	is_mutex_locked	= false;
-	bool	bresult			= false;
 
 	if(FLCK_READ_LOCK == other.lock_type || FLCK_WRITE_LOCK == other.lock_type){
-		if(false == (bresult = Set(other.lock_fd, other.lock_offset, other.lock_length, (FLCK_READ_LOCK == other.lock_type), is_mutex_locked))){
+		if(false == Set(other.lock_fd, other.lock_offset, other.lock_length, (FLCK_READ_LOCK == other.lock_type), is_mutex_locked)){
 			ERR_K2HPRN("Could not initialize object by other(fd(%d), offset(%zd), length(%zu), locktype(%s))", other.lock_fd, other.lock_offset, other.lock_length, STR_FLCKLOCKTYPE(other.lock_type));
 		}else{
 			if(other.is_locked){
 				if(FLCK_READ_LOCK == lock_type){
-					bresult = RawReadLock(is_mutex_locked);
+					RawReadLock(is_mutex_locked);
 				}else if(FLCK_WRITE_LOCK == lock_type){
-					bresult = RawWriteLock(is_mutex_locked);
+					RawWriteLock(is_mutex_locked);
 				}
 			}
 		}
 	}else{
-		if(false == (bresult = Set(other.lock_fd, other.lock_offset, other.lock_length, true, is_mutex_locked))){
+		if(false == Set(other.lock_fd, other.lock_offset, other.lock_length, true, is_mutex_locked)){
 			ERR_K2HPRN("Could not initialize object by other(fd(%d), offset(%zd), length(%zu), locktype(%s))", other.lock_fd, other.lock_offset, other.lock_length, STR_FLCKLOCKTYPE(other.lock_type));
 		}else{
 			// force set lock_type
@@ -207,7 +206,7 @@ bool K2HLock::Dup(const K2HLock& other)
 	if(is_mutex_locked){
 		FLRwlRcsv::StackUnlock();
 	}
-	return bresult;
+	return *this;
 }
 
 /*

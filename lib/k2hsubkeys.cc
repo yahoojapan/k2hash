@@ -71,6 +71,7 @@ bool K2HSubKeys::Serialize(unsigned char** ppSubkeys, size_t& length) const
 
 	// total length
 	size_t	tlength = sizeof(size_t);	// for subkey count as first data.
+	// cppcheck-suppress postfixOperator
 	for(iter = SubKeys.begin(); iter != SubKeys.end(); iter++){
 		tlength += sizeof(size_t);
 		tlength += iter->length;
@@ -88,9 +89,11 @@ bool K2HSubKeys::Serialize(unsigned char** ppSubkeys, size_t& length) const
 	*pCountPos = SubKeys.size();
 
 	// set datas.
-	size_t*			pLengthPos;
 	unsigned char*	bySetPos = bySerialize + sizeof(size_t);
-	for(skeyarr_t::const_iterator iter = SubKeys.begin(); iter != SubKeys.end(); iter++){
+	// cppcheck-suppress postfixOperator
+	for(iter = SubKeys.begin(); iter != SubKeys.end(); iter++){
+		size_t*		pLengthPos;
+
 		pLengthPos	= reinterpret_cast<size_t*>(bySetPos);
 		*pLengthPos	= iter->length;
 
@@ -123,11 +126,12 @@ bool K2HSubKeys::Serialize(const unsigned char* pSubkeys, size_t length)
 	}
 
 	// load
-	const size_t*			pLengthPos;
 	size_t					rest_length	= length;
 	const unsigned char*	byReadPos	= reinterpret_cast<const unsigned char*>(reinterpret_cast<size_t>(pSubkeys) + sizeof(size_t));
 
 	for(size_t cnt = 0; cnt < TotalCount; cnt++){
+		const size_t*		pLengthPos;
+
 		// each length
 		if(rest_length < sizeof(size_t)){
 			ERR_K2HPRN("Not enough length for loading.");
@@ -154,6 +158,7 @@ bool K2HSubKeys::Serialize(const unsigned char* pSubkeys, size_t length)
 strarr_t::size_type K2HSubKeys::StringArray(strarr_t& strarr) const
 {
 	strarr.clear();
+	// cppcheck-suppress postfixOperator
 	for(skeyarr_t::const_iterator iter = SubKeys.begin(); iter != SubKeys.end(); iter++){
 		string	strtmp(reinterpret_cast<const char*>(iter->pSubKey), iter->length);
 		strtmp += '\0';
@@ -164,6 +169,7 @@ strarr_t::size_type K2HSubKeys::StringArray(strarr_t& strarr) const
 
 void K2HSubKeys::clear(void)
 {
+	// cppcheck-suppress postfixOperator
 	for(skeyarr_t::iterator iter = SubKeys.begin(); iter != SubKeys.end(); iter++){
 		K2H_Free(iter->pSubKey);
 	}
@@ -180,14 +186,15 @@ size_t K2HSubKeys::size(void) const
 	return SubKeys.size();
 }
 
-bool K2HSubKeys::operator=(const K2HSubKeys& other)
+K2HSubKeys& K2HSubKeys::operator=(const K2HSubKeys& other)
 {
 	clear();
 
+	// cppcheck-suppress postfixOperator
 	for(skeyarr_t::const_iterator iter = other.SubKeys.begin(); iter != other.SubKeys.end(); iter++){
 		insert(iter->pSubKey, iter->length);
 	}
-	return true;
+	return *this;
 }
 
 K2HSubKeys::iterator K2HSubKeys::begin(void)
@@ -214,9 +221,10 @@ K2HSubKeys::iterator K2HSubKeys::find(const unsigned char* bySubkey, size_t leng
 	skeyarr_t::iterator	found_iter;
 	size_t	StartPos= 0;
 	size_t	EndPos	= SubKeys.size();
-	size_t	MidPos;
 	int		nResult;
 	while(true){
+		size_t	MidPos;
+
 		MidPos		= (StartPos + EndPos) / 2;
 		found_iter	= SubKeys.begin();
 		advance(found_iter, MidPos);
@@ -301,6 +309,8 @@ K2HSubKeys::iterator K2HSubKeys::insert(const unsigned char* bySubkey, size_t le
 	subkey.length = length;
 	if(NULL == (subkey.pSubKey = (unsigned char*)malloc(subkey.length))){
 		ERR_K2HPRN("Could not allocate memory.");
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress memleak
 		return K2HSKIterator(this, SubKeys.end());
 	}
 	memcpy(subkey.pSubKey, bySubkey, subkey.length);
@@ -309,9 +319,10 @@ K2HSubKeys::iterator K2HSubKeys::insert(const unsigned char* bySubkey, size_t le
 	skeyarr_t::iterator	insert_iter;
 	size_t	StartPos= 0;
 	size_t	EndPos	= SubKeys.size();
-	size_t	MidPos;
 	int		nResult;
 	while(true){
+		size_t	MidPos;
+
 		MidPos		= (StartPos + EndPos) / 2;
 		insert_iter	= SubKeys.begin();
 		advance(insert_iter, MidPos);
@@ -369,10 +380,8 @@ K2HSKIterator::K2HSKIterator(const K2HSubKeys* pK2HSKeys, skeyarr_t::iterator po
 {
 }
 
-K2HSKIterator::K2HSKIterator(const K2HSKIterator& iterator)
+K2HSKIterator::K2HSKIterator(const K2HSKIterator& iterator) : pK2HSubKeys(iterator.pK2HSubKeys), iter_pos(iterator.iter_pos)
 {
-	pK2HSubKeys		= iterator.pK2HSubKeys;
-	iter_pos		= iterator.iter_pos;
 }
 
 K2HSKIterator::~K2HSKIterator()
@@ -386,6 +395,7 @@ bool K2HSKIterator::Next(void)
 		return false;
 	}
 	if(iter_pos != pK2HSubKeys->SubKeys.end()){
+		// cppcheck-suppress postfixOperator
 		iter_pos++;
 	}
 	return true;

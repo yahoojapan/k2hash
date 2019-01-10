@@ -753,7 +753,7 @@ void* K2HMmapInfo::next(void* address, size_t datasize, bool is_update_check) co
 	}
 	K2HMmapInfo::GetMan().Unlock();
 
-	MSG_K2HPRN("Could not get next from (address=%p, length=%zd, file=\"%s\", K2HShm=%p)", address, datasize, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
+	MSG_K2HPRN("Could not get next from (address=%p, length=%zu, file=\"%s\", K2HShm=%p)", address, datasize, pK2Hshm->GetRawK2hashFilePath(), pK2Hshm);
 
 	if(is_update_check && pK2Hshm){
 		// try to update area information & retry to search
