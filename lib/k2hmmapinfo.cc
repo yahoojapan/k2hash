@@ -336,7 +336,7 @@ bool K2HMmapMan::Unmap(const K2HShm* pk2hshm, const char* file, long type, off_t
 		for(PK2HMMAPINFO pinfo = *ppmmapinfos; pinfo; pinfo = pinfo->next){
 			if(file_offset == pinfo->file_offset && length == pinfo->length){
 				if(type != pinfo->type){
-					WAN_K2HPRN("offset=%jd, length=%zu area is not same type(%ld : %ld), but continue to unmmap.", static_cast<intmax_t>(file_offset), length, type, pinfo->type);
+					WAN_K2HPRN("offset=%jd, length=%zu area is not same type(%ld : %ld), but continue to munmap.", static_cast<intmax_t>(file_offset), length, type, pinfo->type);
 				}
 				MSG_K2HPRN("Unmap offset=%jd, length=%zu for \"%s\"(%p)", static_cast<intmax_t>(file_offset), length, file ? file : "", pk2hshm);
 
@@ -518,7 +518,7 @@ bool K2HMmapInfo::Unmap(PK2HMMAPINFO pexistareatop)
 			}
 		}
 		if(!isFound){
-			MSG_K2HPRN("Unmmap Area(type=%ld, file_offset=%jd, length=%zu, base=%p)", pinfo->type, static_cast<intmax_t>(pinfo->file_offset), pinfo->length, pinfo->mmap_base);
+			MSG_K2HPRN("munmap Area(type=%ld, file_offset=%jd, length=%zu, base=%p)", pinfo->type, static_cast<intmax_t>(pinfo->file_offset), pinfo->length, pinfo->mmap_base);
 
 			PK2HMMAPINFO	pbupnext = pinfo->next;
 			k2h_mmap_info_list_unmap(ppInfoTop, pinfo);

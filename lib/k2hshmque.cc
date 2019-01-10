@@ -50,9 +50,9 @@ extern PK2HATTRPCK k2h_cvt_attrs_to_bin(K2HAttrs* pAttrs, int& attrspckcnt);
 //     -> Value for K2HKeyQueue - this means normal key-value's key, so this normal key allows any attribute like normal key.
 //
 // *) expire in queue key is not normal expire attribute, but it uses same attribute name.
-//    here, exipre inherits value if specified old attributes(which has expire attribute).
-//    if there is no exipre attribute in old attribute list, exipre is set new value when the builtin attribute object has expire seconds.
-//    if there is no expire and not set expire seconds in builtin object, exipre value is not set.
+//    here, expire inherits value if specified old attributes(which has expire attribute).
+//    if there is no expire attribute in old attribute list, expire is set new value when the builtin attribute object has expire seconds.
+//    if there is no expire and not set expire seconds in builtin object, expire value is not set.
 //
 //---------------------------------------------------------
 // Class methods
@@ -200,7 +200,7 @@ PBK2HMARKER K2HShm::GetMarker(const unsigned char* byMark, size_t marklength, K2
 	// get element
 	PELEMENT	pMarkerElement;
 	if(NULL == (pMarkerElement = GetElement(byMark, marklength, *pALObjCKI))){
-		MSG_K2HPRN("Could not get element for marker, probabry it is not existed.");
+		MSG_K2HPRN("Could not get element for marker, probably it is not existed.");
 		return NULL;							// automatically unlock ALObjCKI if it is local
 	}
 
@@ -208,7 +208,7 @@ PBK2HMARKER K2HShm::GetMarker(const unsigned char* byMark, size_t marklength, K2
 	unsigned char*	pmkval	= NULL;
 	ssize_t			mkvallen= Get(pMarkerElement, &pmkval, PAGEOBJ_VALUE);
 	if(!pmkval || 0 == mkvallen){
-		MSG_K2HPRN("Marker does not have value, probabry queue is empty.");
+		MSG_K2HPRN("Marker does not have value, probably queue is empty.");
 		return NULL;							// automatically unlock ALObjCKI if it is local
 	}
 
@@ -623,7 +623,7 @@ bool K2HShm::AddFifoQueue(const unsigned char* byMark, size_t marklength, const 
 
 				if(0 == k2hbincmp(before_endkey, before_endlen, last_endkey, last_endlen)){
 					// before end key in marker is as same as now, so marker is not updated with wrong end key.
-					ERR_K2HPRN("Key(%s) is not found, probabry marker end key is broken.", reinterpret_cast<const char*>(before_endkey));
+					ERR_K2HPRN("Key(%s) is not found, probably marker end key is broken.", reinterpret_cast<const char*>(before_endkey));
 					break;
 				}
 				// retry(switch before -> last)
@@ -751,7 +751,7 @@ bool K2HShm::AddFifoQueue(const unsigned char* byMark, size_t marklength, const 
 				PELEMENT	pNewkeyElement;
 				if(NULL == (pNewkeyElement = GetElement(byKey, keylength, ALObjCKI_Newkey))){
 					//
-					// there is no new key, probabry already popped it.
+					// there is no new key, probably already popped it.
 					// ---> thus we do not any processing.
 					//
 					result = true;											// automatically unlock ALObjCKI_Newkey
@@ -830,12 +830,12 @@ bool K2HShm::AddFifoQueue(const unsigned char* byMark, size_t marklength, const 
 				//
 				if(after_marker){
 					//
-					// there is now marker, but it's end key does not exist. probabry aready popped new key.
+					// there is now marker, but it's end key does not exist. probably already popped new key.
 					// ---> thus we do not any processing.
 					//
 				}else{
 					//
-					// there is not now marker. probabry aready popped new key(and all queued keys). thus we had already added new key in it.
+					// there is not now marker. probably already popped new key(and all queued keys). thus we had already added new key in it.
 					// ---> thus we do not any processing.
 					//
 				}
@@ -1079,12 +1079,12 @@ bool K2HShm::AddQueue(const unsigned char* byMark, size_t marklength, const unsi
 //	size_t&						keylength		: returns popped key binary length
 //	unsigned char**				ppValue			: returns popped key's value binary pointer
 //	size_t&						vallength		: returns popped key's value binary length
-//	K2HAttrs**					ppAttrs			: returns popped key's attibutes object pointer if ppAttrs is not NULL.(allowed null to this pointer)
+//	K2HAttrs**					ppAttrs			: returns popped key's attributes object pointer if ppAttrs is not NULL.(allowed null to this pointer)
 //	const char*					encpass			: encrypt pass phrase
 //
 //	[return]
-//	true										: one key is popped(updated marker) or there is no poped key(including expired key)
-//	false										: somthing error occurred.
+//	true										: one key is popped(updated marker) or there is no popped key(including expired key)
+//	false										: something error occurred.
 //
 bool K2HShm::PopQueueEx(const unsigned char* byMark, size_t marklength, bool& is_found, bool& is_expired, unsigned char** ppKey, size_t& keylength, unsigned char** ppValue, size_t& vallength, K2HAttrs** ppAttrs, const char* encpass)
 {
@@ -1260,7 +1260,7 @@ bool K2HShm::PopQueueEx(const unsigned char* byMark, size_t marklength, bool& is
 
 //
 // Always remove key from queue at top.
-// Controling FIFO or LIFO is decided at adding key into queue.
+// Controlling FIFO or LIFO is decided at adding key into queue.
 //
 // Returns	false:	Something error occurred.
 //			true:	Succeed
@@ -1293,7 +1293,7 @@ bool K2HShm::PopQueue(const unsigned char* byMark, size_t marklength, unsigned c
 	bool	is_expired	= false;
 	for(result = true, is_found = true, is_expired = false; result && is_found; is_expired = false){
 		if(false == (result = PopQueueEx(byMark, marklength, is_found, is_expired, ppKey, keylength, ppValue, vallength, ppAttrs, encpass))){
-			ERR_K2HPRN("Something error occurred during poping from queue.");
+			ERR_K2HPRN("Something error occurred during pooping from queue.");
 		}else{
 			if(!is_expired && is_found){
 				break;
@@ -1377,7 +1377,7 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 			// check by callback function
 			K2HQRMCBRES	res = K2HQRMCB_RES_CON_RM;			// default(if null == fp)
 			if(fp && pTmpValue){
-				// pTmpValue(Poped key's value) is data key for callback
+				// pTmpValue(Popped key's value) is data key for callback
 				if(K2HQRMCB_RES_ERROR == (res = fp(pTmpValue, static_cast<size_t>(tmpvallen), pattrspck, attrspckcnt, pExtData))){
 					// Stop loop
 					K2H_Free(before_marker);
@@ -1546,7 +1546,7 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 			// check by callback function
 			K2HQRMCBRES	res = K2HQRMCB_RES_CON_RM;			// default(if null == fp)
 			if(fp && pTmpValue){
-				// pTmpValue(Poped key's value) is data key for callback
+				// pTmpValue(Popped key's value) is data key for callback
 				if(K2HQRMCB_RES_ERROR == (res = fp(pTmpValue, static_cast<size_t>(tmpvallen), pattrspck, attrspckcnt, pExtData))){
 					// Stop loop
 					K2H_Free(current_marker);
@@ -1577,7 +1577,7 @@ int K2HShm::RemoveQueue(const unsigned char* byMark, size_t marklength, unsigned
 				k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(ptopkey), topkeylen);
 				PCKINDEX	pCKIndex;
 				if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI_TopKey))){
-					MSG_K2HPRN("normal top queue key does not exist, probabry removing it.");
+					MSG_K2HPRN("normal top queue key does not exist, probably removing it.");
 
 					K2H_Free(current_marker);
 					K2H_Delete(psubkeys);

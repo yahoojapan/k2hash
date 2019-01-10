@@ -303,7 +303,7 @@ K2HPage* K2HShm::CutOffPage(PPAGEHEAD pCurPageHead, PPAGEHEAD* ppTopPageHead, PP
 		return NULL;
 	}
 	if(CurPageHead.prev && NULL == (pPrevPage = GetPageObject(CurPageHead.prev, false))){
-		ERR_K2HPRN("Could not make previos page object.");
+		ERR_K2HPRN("Could not make previous page object.");
 		K2H_Delete(pCurPage);
 		return NULL;
 	}
@@ -314,12 +314,12 @@ K2HPage* K2HShm::CutOffPage(PPAGEHEAD pCurPageHead, PPAGEHEAD* ppTopPageHead, PP
 		return NULL;
 	}
 
-	// change previos object's next pointer
+	// change previous object's next pointer
 	if(pPrevPage){
 		// set next pointer to prev object's next.
 		if(!pPrevPage->SetPageHead(K2HPage::SETHEAD_NEXT, NULL, CurPageHead.next)){
 			// This error is not fatal.
-			ERR_K2HPRN("Could not set next pointer to previos object.");
+			ERR_K2HPRN("Could not set next pointer to previous object.");
 			K2H_Delete(pCurPage);
 			K2H_Delete(pPrevPage);
 			K2H_Delete(pNextPage);
@@ -342,13 +342,13 @@ K2HPage* K2HShm::CutOffPage(PPAGEHEAD pCurPageHead, PPAGEHEAD* ppTopPageHead, PP
 			// Because the pfree_pages's normal order is not broken, but only broken inverse order, and NOW not use inverse order.
 			// If using inverse order, this error is FATAL.
 			//
-			ERR_K2HPRN("Could not set previos pointer to next object. (plese see a comment in source code!)");
+			ERR_K2HPRN("Could not set previous pointer to next object. (please see a comment in source code!)");
 			K2H_Delete(pCurPage);
 			K2H_Delete(pNextPage);
 			return NULL;
 		}
 	}else{
-		// not need to set previos pointer.
+		// not need to set previous pointer.
 	}
 	K2H_Delete(pNextPage);
 
@@ -448,7 +448,7 @@ bool K2HShm::CopyPageData(K2HPage* pSrcTop, K2HPage* pDestTop)
 			pDest = pDestTmp;
 		}
 		if(isChangeDestPageLength){
-			MSG_K2HPRN("destination page object length is changed, probably it is safe because of it is not added page pbject.");
+			MSG_K2HPRN("destination page object length is changed, probably it is safe because of it is not added page object.");
 		}
 	}
 	K2H_Free(byBuff);
@@ -457,7 +457,7 @@ bool K2HShm::CopyPageData(K2HPage* pSrcTop, K2HPage* pDestTop)
 }
 
 //
-// Reserve pages without expection address range.
+// Reserve pages without expectation address range.
 // This method for compressing area.
 //
 K2HPage* K2HShm::ReservePages(size_t length, void* pRelExpArea, size_t ExpLength)
@@ -495,7 +495,7 @@ K2HPage* K2HShm::ReservePages(size_t length, void* pRelExpArea, size_t ExpLength
 
 		// check target area
 		if(pStartExpPos <= pRelCurPageHead && pRelCurPageHead < pLastExpPos){
-			// this page is expection area, skip it.
+			// this page is expectation area, skip it.
 			if(!CurPageHead.next){
 				break;
 			}
@@ -503,7 +503,7 @@ K2HPage* K2HShm::ReservePages(size_t length, void* pRelExpArea, size_t ExpLength
 		}
 
 		//
-		// cut off current page object from free list.(with set previos pointer to current object)
+		// cut off current page object from free list.(with set previous pointer to current object)
 		//
 		K2HPage*	pOneReservePage;
 		if(NULL == (pOneReservePage = CutOffPage(pRelCurPageHead, &(pHead->pfree_pages), pLastPageHead))){
@@ -568,7 +568,7 @@ K2HPage* K2HShm::ReservePages(size_t length, void* pRelExpArea, size_t ExpLength
 bool K2HShm::ReplacePageInElement(PELEMENT pElement, int type, void* pRelExpArea, size_t ExpLength)
 {
 	if(!pElement){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return false;
 	}
 	if(!IsAttached()){
@@ -616,7 +616,7 @@ bool K2HShm::ReplacePageInElement(PELEMENT pElement, int type, void* pRelExpArea
 	PPAGEHEAD	pStartExpPos	= reinterpret_cast<PPAGEHEAD>(pRelExpArea);
 	PPAGEHEAD	pLastExpPos		= ADDPTR(reinterpret_cast<PPAGEHEAD>(pRelExpArea), static_cast<off_t>(ExpLength));
 	if(pRelPageHead < pStartExpPos || pLastExpPos <= pRelPageHead){
-		// this page is not expection area, skip it.
+		// this page is not expectation area, skip it.
 		return true;
 	}
 
@@ -673,7 +673,7 @@ bool K2HShm::ReplacePageInElement(PELEMENT pElement, int type, void* pRelExpArea
 bool K2HShm::ReplacePagesInElement(PELEMENT pElement, void* pRelExpArea, size_t ExpLength)
 {
 	if(!pElement){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return false;
 	}
 	if(!IsAttached()){
@@ -686,7 +686,7 @@ bool K2HShm::ReplacePagesInElement(PELEMENT pElement, void* pRelExpArea, size_t 
 		!ReplacePageInElement(pElement, PAGEOBJ_SUBKEYS, pRelExpArea, ExpLength)||
 		!ReplacePageInElement(pElement, PAGEOBJ_ATTRS, pRelExpArea, ExpLength)	)
 	{
-		ERR_K2HPRN("Failed to replace page data in expection area to no-expection area.");
+		ERR_K2HPRN("Failed to replace page data in expectation area to no-expectation area.");
 		return false;
 	}
 	return true;
@@ -707,10 +707,10 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 
 	K2HLock	ALObjUnArea(ShmFd, Rel(&(pHead->unassign_area)), K2HLock::RWLOCK);	// LOCK
 
-	// get lastest infomation
+	// get lastest information
 	PK2HAREA	pLastestArea;
 	if(NULL == (pLastestArea = GetLastestArea())){
-		MSG_K2HPRN("Failed to get lastest area infomation, probably could not find a removable area.");
+		MSG_K2HPRN("Failed to get lastest area information, probably could not find a removable area.");
 		return true;
 	}
 	long	type		= pLastestArea->type;
@@ -736,7 +736,7 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 
 		K2HLock	ALObjFPC(ShmFd, Rel(&(pHead->free_page_count)), K2HLock::RWLOCK);		// LOCK
 
-		// check to remove lastest page area( is all expection pages in free page list? )
+		// check to remove lastest page area( is all expectation pages in free page list? )
 		PPAGEHEAD		pStartPos		= reinterpret_cast<PPAGEHEAD>(ExpOffset);
 		PPAGEHEAD		pLastPos		= ADDPTR(reinterpret_cast<PPAGEHEAD>(ExpOffset), static_cast<off_t>(ExpLength));
 		unsigned long	area_page_count = static_cast<unsigned long>(ExpLength / GetPageSize());
@@ -768,7 +768,7 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 			return true;
 		}
 
-		// remove expection pages from free page list.
+		// remove expectation pages from free page list.
 		for(K2HPage* pCurPage = GetPageObject(pHead->pfree_pages, false); pCurPage; pCurPage = GetPageObject(CurPageHead.next, false)){
 			// at first for getting next pagehead.
 			if(!pCurPage->GetPageHead(&CurPageHead)){
@@ -784,7 +784,7 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 
 			// check
 			if(pStartPos <= pRelCurPageHead && pRelCurPageHead < pLastPos){
-				// cut off curent page from list
+				// cut off current page from list
 				if(NULL == (pCurPage = CutOffPage(pRelCurPageHead, &(pHead->pfree_pages), NULL))){
 					ERR_K2HPRN("[FATAL] Could not cut off a page, some page objects are leaked!!!");		// LEAK!!!
 					return false;
@@ -802,7 +802,7 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 			}
 		}
 
-		// recheck( is there no expection pages in free page list? )
+		// recheck( is there no expectation pages in free page list? )
 		bool	isFoundPage = false;
 		for(K2HPage* pCurPage = GetPageObject(pHead->pfree_pages, false); pCurPage; pCurPage = GetPageObject(CurPageHead.next, false)){
 			PPAGEHEAD	pRelCurPageHead = pCurPage->GetPageHeadRelAddress();
@@ -843,7 +843,7 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 			}
 		}
 
-		// check to remove lastest element area( is all expection element in free page list? )
+		// check to remove lastest element area( is all expectation element in free page list? )
 		PELEMENT		pStartPos			= reinterpret_cast<PELEMENT>(ExpOffset);
 		PELEMENT		pLastPos			= ADDPTR(reinterpret_cast<PELEMENT>(ExpOffset), static_cast<off_t>(ExpLength));
 		unsigned long	area_element_count	= static_cast<unsigned long>(ExpLength / sizeof(ELEMENT));
@@ -859,10 +859,10 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 			return true;
 		}
 
-		// remove expection element from free element list.
+		// remove expectation element from free element list.
 		for(PELEMENT pCurElement = pHead->pfree_elements; pCurElement; pCurElement = static_cast<PELEMENT>(Abs(pCurElement))->same){
 			if(pStartPos <= pCurElement && pCurElement < pLastPos){
-				// cut off curent element from list
+				// cut off current element from list
 				PELEMENT	pPrevElement = static_cast<PELEMENT>(Abs(pCurElement))->parent;
 				PELEMENT	pNextElement = static_cast<PELEMENT>(Abs(pCurElement))->same;
 				if(pPrevElement){
@@ -880,7 +880,7 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 			}
 		}
 
-		// recheck( is there no expection pages in free element list? )
+		// recheck( is there no expectation pages in free element list? )
 		for(PELEMENT pCurElement = pHead->pfree_elements; pCurElement; pCurElement = static_cast<PELEMENT>(Abs(pCurElement))->same){
 			if(pStartPos <= pCurElement && pCurElement < pLastPos){
 				// found
@@ -894,10 +894,10 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 		return true;
 	}
 
-	// unmmap lastest area
+	// munmap lastest area
 	if(isFullMapping || K2H_AREA_PAGE != type){
 		if(!MmapInfos.Unmap(type, ExpOffset, ExpLength)){
-			MSG_K2HPRN("Failed to unmmap area, because alreay does not have mmap area. it is no problem, then continue...");
+			MSG_K2HPRN("Failed to munmap area, because already does not have mmap area. it is no problem, then continue...");
 		}
 	}
 
@@ -925,7 +925,7 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 	// need to check area update
 	if(is_need_check){
 		if(!DoAreaUpdate()){
-			ERR_K2HPRN("Somthing error occurred during updating area infomration, but continue...");
+			ERR_K2HPRN("Something error occurred during updating area information, but continue...");
 		}
 	}
 	return true;

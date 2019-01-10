@@ -149,7 +149,7 @@ bool K2HShm::ParseHistoryKey(const unsigned char* byHisKey, size_t hiskeylen, un
 		ERR_K2HPRN("The history key is wrong format.");
 		return false;
 	}
-	// check sepalator
+	// check separator
 	const unsigned char* byTmp;
 	for(byTmp = &byHisKey[hiskeylen - 2]; byHisKey < byTmp; --byTmp){
 		if(0x00 == *byTmp){
@@ -216,7 +216,7 @@ K2HShm::~K2HShm()
 // This likes "MAP_NOCORE"(maybe 0x20000) flag on FreeBSD's mmap.
 // 
 // [Truncate]
-// If using ftruncate for expanding mmaped file, At First you should initialize expanding area 
+// If using ftruncate for expanding mmap file, At First you should initialize expanding area 
 // by like fwrite function before using mmap area. If you did not, it was fatal error.
 // 
 // [ No Sync ]
@@ -312,11 +312,11 @@ bool K2HShm::Attach(const char* file, bool isReadOnly, bool isCreate, bool isTem
 	Clean(false);
 
 	if(-1 == K2HShm::InitialSystemPageSize()){
-		ERR_K2HPRN("Somthing error occured in getting page size.");
+		ERR_K2HPRN("Something error occured in getting page size.");
 		return false;
 	}
 	if(!K2HShm::CheckSystemLimit()){
-		ERR_K2HPRN("Somthing error occured in checking(setting) system limit.");
+		ERR_K2HPRN("Something error occured in checking(setting) system limit.");
 		return false;
 	}
 
@@ -383,7 +383,7 @@ bool K2HShm::CheckExpandingKeyArea(PCKINDEX pCKIndex)
 	}
 
 	// For performance
-	// First locks as RDLOCK, and checks. If need to expanging, locks as RWLOCK.
+	// First locks as RDLOCK, and checks. If need to expanding, locks as RWLOCK.
 	// 
 	K2HLock	ALObjCMask(ShmFd, Rel(&(pHead->cur_mask)), K2HLock::RDLOCK);		// LOCK
 	K2HLock	ALObjCKI(ShmFd, Rel(pCKIndex), K2HLock::RDLOCK);					// LOCK
@@ -443,7 +443,7 @@ void* K2HShm::ExpandArea(long type, size_t area_length, off_t& new_area_start)
 	}else{
 		// Initialize expanded file area
 		if(!K2HShm::InitializeFileZero(ShmFd, pHead->unassign_area, area_length + (new_area_start - pHead->unassign_area))){
-			ERR_K2HPRN("Could not ilitialize new area in file for element.");
+			ERR_K2HPRN("Could not initialize new area in file for element.");
 			return NULL;
 		}
 		// mapping
@@ -491,7 +491,7 @@ void* K2HShm::ExpandArea(long type, size_t area_length, off_t& new_area_start)
 	// need to check area update
 	if(is_need_check){
 		if(!DoAreaUpdate()){
-			ERR_K2HPRN("Somthing error occurred during updating area infomration, but continue...");
+			ERR_K2HPRN("Something error occurred during updating area information, but continue...");
 		}
 	}
 	return pNewArea;
@@ -755,7 +755,7 @@ bool K2HShm::ExpandPages(K2HPage* pLastPage, size_t length)
 	}
 
 	if(!pLastPage->SetPageHead(K2HPage::SETHEAD_NEXT, NULL, pNewPages->GetPageHeadRelAddress())){
-		ERR_K2HPRN("Could not set next pointer for resavating page object.");
+		ERR_K2HPRN("Could not set next pointer for reserving page object.");
 		pNewPages->Free();
 		K2H_Delete(pNewPages);
 		return false;
@@ -927,7 +927,7 @@ bool K2HShm::ArrangeToUpperKIndex(k2h_hash_t hash, k2h_hash_t mask) const
 		return false;
 	}
 
-	// Key Indexs
+	// Key Indexes
 	k2h_hash_t	lower_mask	= (mask >> 1);
 	PKINDEX		pUpperKIndex= GetReservedKIndex(hash, true, &mask);				// not using cur_mask
 	PKINDEX		pLowerKIndex= GetReservedKIndex(hash, true, &lower_mask);
@@ -939,7 +939,7 @@ bool K2HShm::ArrangeToUpperKIndex(k2h_hash_t hash, k2h_hash_t mask) const
 		return true;
 	}
 
-	// CKey Indexs
+	// CKey Indexes
 	PCKINDEX	pUpperCKIndex	= static_cast<PCKINDEX>(Abs(pUpperKIndex->ckey_list));
 	PCKINDEX	pLowerCKIndex	= static_cast<PCKINDEX>(Abs(pLowerKIndex->ckey_list));
 	if(!pUpperCKIndex || !pLowerCKIndex){
@@ -947,7 +947,7 @@ bool K2HShm::ArrangeToUpperKIndex(k2h_hash_t hash, k2h_hash_t mask) const
 		return false;
 	}
 
-	// Move lower child elements to uppper
+	// Move lower child elements to upper
 	K2HLock			ALObjCKI1(K2HLock::RWLOCK);
 	K2HLock			ALObjCKI2(K2HLock::RWLOCK);
 	k2h_arrpos_t	CKIndexCount = pHead->collision_mask + 1;		// Array count
@@ -978,7 +978,7 @@ bool K2HShm::ArrangeToUpperKIndex(k2h_hash_t hash, k2h_hash_t mask) const
 }
 
 //
-// This fuction checks and moves a element ckey index in lower ket index to ckey in upper.
+// This function checks and moves a element ckey index in lower key index to ckey in upper.
 // Be careful, this function calls own.
 // 
 // [NOTICE]
@@ -1006,7 +1006,7 @@ bool K2HShm::MoveElementToUpperMask(PELEMENT pElement, PCKINDEX pSrcCKIndex, PCK
 			pElement->same = NULL;
 		}else{
 			if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->same)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
-				ERR_K2HPRN("Failed to move same cildren elements.");
+				ERR_K2HPRN("Failed to move same children elements.");
 				return false;
 			}
 		}
@@ -1017,7 +1017,7 @@ bool K2HShm::MoveElementToUpperMask(PELEMENT pElement, PCKINDEX pSrcCKIndex, PCK
 			pElement->small = NULL;
 		}else{
 			if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->small)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
-				ERR_K2HPRN("Failed to move small cildren elements.");
+				ERR_K2HPRN("Failed to move small children elements.");
 				return false;
 			}
 		}
@@ -1028,7 +1028,7 @@ bool K2HShm::MoveElementToUpperMask(PELEMENT pElement, PCKINDEX pSrcCKIndex, PCK
 			pElement->big = NULL;
 		}else{
 			if(!MoveElementToUpperMask(static_cast<PELEMENT>(Abs(pElement->big)), pSrcCKIndex, pDstCKIndex, target_mask, target_masked_val)){
-				ERR_K2HPRN("Failed to move big cildren elements.");
+				ERR_K2HPRN("Failed to move big children elements.");
 				return false;
 			}
 		}
@@ -1516,10 +1516,10 @@ bool K2HShm::TakeOffElement(PCKINDEX pCKIndex, PELEMENT pElement) const
 		}
 		// check & repair
 		if(NULL == pCKIndex->element_list && 0UL != pCKIndex->element_count){
-			WAN_K2HPRN("Element count in collistion Key Index is wrong, so repair it.");
+			WAN_K2HPRN("Element count in collision Key Index is wrong, so repair it.");
 			pCKIndex->element_count = 0UL;
 		}else if(NULL != pCKIndex->element_list && 0UL == pCKIndex->element_count){
-			WAN_K2HPRN("Element count in collistion Key Index is wrong, so repair it.");
+			WAN_K2HPRN("Element count in collision Key Index is wrong, so repair it.");
 			pCKIndex->element_count = K2HShm::GetElementListUpCount(static_cast<PELEMENT>(Abs(pCKIndex->element_list)));
 		}
 	}
@@ -1643,7 +1643,7 @@ K2HPage* K2HShm::ReservePages(size_t length)
 	while(((GetPageSize() - PAGEHEAD_SIZE) * (pHead->free_page_count)) < length){
 		// Need to expand
 		if(!ExpandPageArea()){
-			ERR_K2HPRN("Could not expand page erea");
+			ERR_K2HPRN("Could not expand page area");
 			return NULL;
 		}
 		// [NOTICE]
@@ -1673,7 +1673,7 @@ K2HPage* K2HShm::ReservePages(size_t length)
 		}
 	}
 
-	// set prev/next pointer for resavating/new top page object.
+	// set prev/next pointer for reserving/new top page object.
 	K2HPage*	pNewFreeTopPage;
 	if(NULL != (pNewFreeTopPage = GetPageObject(LastPageHead.next, false))){
 		if(!pNewFreeTopPage->SetPageHead(K2HPage::SETHEAD_PREV, NULL)){
@@ -1695,7 +1695,7 @@ K2HPage* K2HShm::ReservePages(size_t length)
 		}
 
 		if(!pLastPage->SetPageHead(K2HPage::SETHEAD_NEXT, NULL, NULL)){
-			ERR_K2HPRN("FATAL: Could not set next pointer for resavating page object, this case can not recorver, so pages area is leaked!!!!");
+			ERR_K2HPRN("FATAL: Could not set next pointer for reserving page object, this case can not recover, so pages area is leaked!!!!");
 			if(pStartPage != pLastPage){
 				K2H_Delete(pStartPage);
 			}
@@ -2149,7 +2149,7 @@ bool K2HShm::Set(const unsigned char* byKey, size_t keylength, const unsigned ch
 		size_t			sublength = 0UL;			// Do not change this value for transaction in this function end.
 		if(isRemoveSubKeys && pRmSubKeys && pSubKeys){
 			// If new subkeys list has subkey which is listed for removing,
-			// that subkey retrive from removing list.
+			// that subkey retrieve from removing list.
 			for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); ++iter){
 				if(pRmSubKeys->end() != pRmSubKeys->find(iter->pSubKey, iter->length)){
 					pRmSubKeys->erase(iter->pSubKey, iter->length);
@@ -2186,7 +2186,7 @@ bool K2HShm::Set(const unsigned char* byKey, size_t keylength, const unsigned ch
 			PELEMENT	pElementList;
 			if(NULL != (pElementList = GetElementList(pCKIndex, hash, subhash)) && NULL != GetElement(pElementList, byKey, keylength)){
 				// [NOTE]
-				// found removed key which probabry create for unlocking time.
+				// found removed key which probably create for unlocking time.
 				// thus retry.
 				// Notice about translist is kept.
 				//
@@ -2253,7 +2253,7 @@ bool K2HShm::Set(const unsigned char* byKey, size_t keylength, const unsigned ch
 						return false;
 					}
 				}else{
-					// parent uniqid is same, so nothing to do because of aready setting it in attrs.
+					// parent uniqid is same, so nothing to do because of already setting it in attrs.
 				}
 			}
 
@@ -2360,16 +2360,16 @@ PELEMENT K2HShm::AllocateElement(k2h_hash_t hash, k2h_hash_t subhash, const unsi
 		!ReservePages(byAttrs, attrlength, &pAttrPage)	)
 	{
 		if(pKeyPage && !pKeyPage->Free()){
-			ERR_K2HPRN("FATAL: In error recoverly logic, failed to free pages.");
+			ERR_K2HPRN("FATAL: In error recovery logic, failed to free pages.");
 		}
 		if(pValPage && !pValPage->Free()){
-			ERR_K2HPRN("FATAL: In error recoverly logic, failed to free pages.");
+			ERR_K2HPRN("FATAL: In error recovery logic, failed to free pages.");
 		}
 		if(pSubPage && !pSubPage->Free()){
-			ERR_K2HPRN("FATAL: In error recoverly logic, failed to free pages.");
+			ERR_K2HPRN("FATAL: In error recovery logic, failed to free pages.");
 		}
 		if(pAttrPage && !pAttrPage->Free()){
-			ERR_K2HPRN("FATAL: In error recoverly logic, failed to free pages.");
+			ERR_K2HPRN("FATAL: In error recovery logic, failed to free pages.");
 		}
 		K2H_Delete(pKeyPage);
 		K2H_Delete(pValPage);
@@ -2585,7 +2585,7 @@ bool K2HShm::Remove(const unsigned char* byKey, size_t keylength, const unsigned
 bool K2HShm::RemoveEx(PELEMENT pElement, const unsigned char* bySubKey, size_t length, K2HLock& ALObjCKI, bool& is_check_updated)
 {
 	if(!pElement || !bySubKey || 0L == length){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return false;
 	}
 	if(!IsAttached()){
@@ -2715,12 +2715,12 @@ bool K2HShm::RemoveEx(PELEMENT pElement, k2htransobjlist_t* ptranslist, bool& is
 
 //
 // [NOTE]
-// Remove key and subkeys, this method runs reantrant.
+// Remove key and subkeys, this method runs reentrant.
 //
 bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, k2htransobjlist_t* ptranslist, bool& is_check_updated)
 {
 	if(!byKey || 0L == keylength){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return false;
 	}
 	if(!IsAttached()){
@@ -3026,7 +3026,7 @@ bool K2HShm::ReplacePage(PELEMENT pElement, const char* pData, int type)
 bool K2HShm::ReplacePage(PELEMENT pElement, const unsigned char* byData, size_t length, int type)
 {
 	if(!pElement){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return false;
 	}
 	if(!IsAttached()){
@@ -3045,7 +3045,7 @@ bool K2HShm::ReplacePage(PELEMENT pElement, const unsigned char* byData, size_t 
 	if(!ReplacePage(pElement, pPage, length, type)){
 		ERR_K2HPRN("Failed to replace data(type: %d).", type);
 		if(pPage && !pPage->Free()){
-			ERR_K2HPRN("FATAL: In error recoverly logic, failed to free pages.");
+			ERR_K2HPRN("FATAL: In error recovery logic, failed to free pages.");
 		}
 		K2H_Delete(pPage);
 		return false;
@@ -3057,7 +3057,7 @@ bool K2HShm::ReplacePage(PELEMENT pElement, const unsigned char* byData, size_t 
 	// [NOTICE]
 	// If dead lock in transaction, it probably is effected by ALObjFEC locking.
 	// Here, do not unlock ALObjFEC if it is locked.
-	// If something problem is occurred, should check this ALObjFEC lockging.
+	// If something problem is occurred, should check this ALObjFEC locking.
 	//
 	K2HTransaction	transobj(this);
 	if(transobj.IsEnable()){
@@ -3487,7 +3487,7 @@ bool K2HShm::Rename(const unsigned char* byOldKey, size_t oldkeylen, const unsig
 //
 // Rename for history(backup)
 //
-// Like rename() method, but this method genarates new key name automatically and marks history into attributes.
+// Like rename() method, but this method generates new key name automatically and marks history into attributes.
 //
 bool K2HShm::RenameForHistory(const unsigned char* byKey, size_t keylen, string* puniqid, k2htransobjlist_t* ptranslist)
 {
@@ -3719,7 +3719,7 @@ K2HDAccess* K2HShm::GetDAccessObj(const unsigned char* byKey, size_t keylength, 
 		return NULL;
 	}
 	if(isReadMode && acsmode != K2HDAccess::READ_ACCESS){
-		ERR_K2HPRN("K2HASH is opened READ mode, but paraemter mode is with write.");
+		ERR_K2HPRN("K2HASH is opened READ mode, but parameter mode is with write.");
 		return NULL;
 	}
 	K2HFILE_UPDATE_CHECK(this);
@@ -3819,7 +3819,7 @@ K2HShm::iterator K2HShm::end(bool isSubKey)
 // The best way is searching in key_index_area array, but that way returns sometimes
 // same value or skips some elements. Because a area of element is expanded and elements
 // is arranged mapping in ckindex delay(at the time of next action).
-// So for iterator this function searchs in area for elements, this is a certain way
+// So for iterator this function searches in area for elements, this is a certain way
 // for find-next.
 //
 PELEMENT K2HShm::FindNextElement(PELEMENT pLastElement, K2HLock& ALObjCKI) const
@@ -4184,7 +4184,7 @@ bool K2HShm::DoAreaUpdate(void)
 	// Old version locked ALObjCMask as RWLOCK because of suspending all thread(process).
 	// But this locking is not needed, because in most cases the AREA is only increase and
 	// HEAD AREA is not replaced.
-	// In the first place, this area extention notice is triggered that k2hash library
+	// In the first place, this area extension notice is triggered that k2hash library
 	// captures the change of monitor file. And already cur_mask in HEAD AREA has been
 	// changed when library notices this change. Thus, we do not need to LOCK ALObjCMask.
 	//

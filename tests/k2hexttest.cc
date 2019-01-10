@@ -185,8 +185,8 @@ int main(int argc, char** argv)
 	printf("  6)  Remove \"TestKey_2\" without subkeys\n");
 	printf("  7)  Remove \"TestKey_3\" with subkey \"TestSubkey_1\"\n");
 	printf("  8)  Remove \"TestSubkey_0\" (without subkeys)\n");
-	printf("  9)  Rplace(add) value for \"TestKey_0\" as \"Add_Value_0\"\n");
-	printf("  10) Rplace(add) subkey for \"TestKey_1\" as \"TestSubkey_2\"\n");
+	printf("  9)  Replace(add) value for \"TestKey_0\" as \"Add_Value_0\"\n");
+	printf("  10) Replace(add) subkey for \"TestKey_1\" as \"TestSubkey_2\"\n");
 	printf("  11) Remove \"TestKey_0\"\n");
 	printf("  12) Remove \"TestKey_1\" with subkey \"TestSubkey_2\"\n");
 	printf("\n");
@@ -227,9 +227,9 @@ int main(int argc, char** argv)
 		ERR_K2HPRN("Could not remove TestSubkey_0 without subkey");
 		exit(-1);
 	}
-	// replave
+	// replace
 	if(!k2hash.ReplaceValue(reinterpret_cast<const unsigned char*>("TestKey_0"), strlen("TestKey_0") + 1, reinterpret_cast<const unsigned char*>("Add_Value_0"), strlen("Add_Value_0") + 1)){
-		ERR_K2HPRN("Could not replave TestKey_0 value Add_Value_0.");
+		ERR_K2HPRN("Could not replace TestKey_0 value Add_Value_0.");
 		exit(-1);
 	}
 	if(!k2hash.Set("TestSubkey_2", "Value_Sub_2")){
@@ -246,7 +246,7 @@ int main(int argc, char** argv)
 		exit(-1);
 	}
 	if(!k2hash.ReplaceSubkeys(reinterpret_cast<const unsigned char*>("TestKey_1"), strlen("TestKey_1") + 1, pSubKeys, subkey_length)){
-		ERR_K2HPRN("Could not replave TestKey_1 subkey TestSubkey_2.");
+		ERR_K2HPRN("Could not replace TestKey_1 subkey TestSubkey_2.");
 		K2H_Free(pSubKeys);
 		exit(-1);
 	}
@@ -355,7 +355,7 @@ bool k2h_trans(k2h_h handle, PBCOM pBinCom)
 	string	skey	= "skey=";
 
 	if(pBinCom){
-		Mode	= &(pBinCom->scom.szCommand[1]);	// First charactor is "\n", so skip it
+		Mode	= &(pBinCom->scom.szCommand[1]);	// First character is "\n", so skip it
 		type	= pBinCom->scom.type;
 
 		if(0UL < pBinCom->scom.key_length){

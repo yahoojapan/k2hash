@@ -69,7 +69,7 @@ bool K2HCommandArchive::DelKey(const unsigned char* byKey, size_t keylength)
 bool K2HCommandArchive::Put(long type, const unsigned char* byKey, size_t keylength, const unsigned char* byVal, size_t vallength, const unsigned char* bySKey, size_t skeylength, const unsigned char* byAttrs, size_t attrlength, const unsigned char* byExdata, size_t exdatalength)
 {
 	if(!byKey || 0L == keylength){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return false;
 	}
 	// length
@@ -93,7 +93,7 @@ bool K2HCommandArchive::Put(long type, const unsigned char* byKey, size_t keylen
 		total += attrlength;
 		total += exdatalength;
 	}else{
-		ERR_K2HPRN("Paramter type(%ld) are wrong.", type);
+		ERR_K2HPRN("Parameter type(%ld) are wrong.", type);
 		return false;
 	}
 

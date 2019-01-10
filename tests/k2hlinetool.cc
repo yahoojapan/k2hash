@@ -183,7 +183,7 @@ class ConsoleInput
 		strarr_t		history;
 		ssize_t			history_pos;
 		string			input;
-		size_t			input_pos;	// == cursole pos
+		size_t			input_pos;	// == cursor pos
 		struct termios	tty_backup;
 		bool			is_set_terminal;
 		int				last_errno;
@@ -312,13 +312,13 @@ void ConsoleInput::ClearInput(void)
 
 void ConsoleInput::ClearLine(void)
 {
-	for(size_t Count = 0; Count < input_pos; Count++){		// cursol to head
+	for(size_t Count = 0; Count < input_pos; Count++){		// cursor to head
 		putchar('\x08');
 	}
 	for(size_t Count = 0; Count < input.length(); Count++){	// clear by space
 		putchar(' ');
 	}
-	for(size_t Count = 0; Count < input.length(); Count++){	// rewind cursol to head
+	for(size_t Count = 0; Count < input.length(); Count++){	// rewind cursor to head
 		putchar('\x08');
 	}
 	fflush(stdout);
@@ -348,7 +348,7 @@ bool ConsoleInput::GetCommand(void)
 
 	char	input_char;
 	while(true){
-		// read one charactor
+		// read one character
 		if(!ReadByte(input_char)){
 			if(EINTR == last_errno){
 				last_errno = 0;
@@ -364,12 +364,12 @@ bool ConsoleInput::GetCommand(void)
 			break;
 
 		}else if('\x1b' == input_char){
-			// escape charactor --> next byte read
+			// escape character --> next byte read
 			if(!ReadByte(input_char)){
 				break;
 			}
 			if('\x5b' == input_char){
-				// read more charactor
+				// read more character
 				if(!ReadByte(input_char)){
 					break;
 				}
@@ -429,7 +429,7 @@ bool ConsoleInput::GetCommand(void)
 					}
 
 				}else if('\x31' == input_char){
-					// read more charactor
+					// read more character
 					if(!ReadByte(input_char)){
 						break;
 					}
@@ -443,7 +443,7 @@ bool ConsoleInput::GetCommand(void)
 					}
 
 				}else if('\x34' == input_char){
-					// read more charactor
+					// read more character
 					if(!ReadByte(input_char)){
 						break;
 					}
@@ -457,7 +457,7 @@ bool ConsoleInput::GetCommand(void)
 					}
 
 				}else if('\x33' == input_char){
-					// read more charactor
+					// read more character
 					if(!ReadByte(input_char)){
 						break;
 					}
@@ -531,7 +531,7 @@ bool ConsoleInput::GetCommand(void)
 			fflush(stdout);
 
 		}else if(isprint(input_char)){
-			// normal charactor
+			// normal character
 			input.insert(input_pos, 1, input_char);
 			for(size_t Count = input_pos; Count < input.length(); Count++){
 				putchar(input[Count]);
@@ -621,13 +621,13 @@ static void Help(const char* progname)
 	PRN("       -libversion          display k2hash library version");
 	PRN("       -run <file path>     run command(history) file.");
 	PRN(NULL);
-	PRN("(*1)These option(value) is for debugging about extending hash erea.");
+	PRN("(*1)These option(value) is for debugging about extending hash area.");
 	PRN("    Usually, you don\'t need to specify these.");
 	PRN("(*2)You can set debug level by another way which is setting environment as \"K2HDBGMODE\".");
-	PRN("    \"K2HDBGMODE\" enviroment is took as \"SILENT\", \"ERR\", \"WAN\" or \"INFO\" value.");
-	PRN("    When this process gets SIGUSER1 signal, the debug level is bumpup.");
+	PRN("    \"K2HDBGMODE\" environment is took as \"SILENT\", \"ERR\", \"WAN\" or \"INFO\" value.");
+	PRN("    When this process gets SIGUSR1 signal, the debug level is bumpup.");
 	PRN("    The debug level is changed as \"SILENT\"->\"ERR\"->\"WAN\"->\"INFO\"->...");
-	PRN("(*3)You can set debugging message log file by the envirnment. \"K2HDBGFILE\".");
+	PRN("(*3)You can set debugging message log file by the environment. \"K2HDBGFILE\".");
 	PRN("(*4)For setting builtin attribute, you can specify following environments.");
 	PRN("    \"K2HATTR_MTIME\", \"K2HATTR_HISTORY\", \"K2HATTR_EXPIRE_SEC\", \"K2HATTR_DEFENC\", \"K2HATTR_ENCFILE\"");
 	PRN(NULL);
@@ -639,7 +639,7 @@ static void Help(const char* progname)
 // help(h)                                  					print help
 // quit(q)/exit                             					quit
 // info(i) [state]                          					print k2hash file/memory information and with state
-// dump(d) <parameter>                      					dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+// dump(d) <parameter>                      					dump k2hash, parameter: head(default) / kindex / ckindex / element / full
 // set(s) <key> <value> [rmsub] [pass=....] [expire=sec]       set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
 // settrial(st) <key>											set key-value if key is not existed.
 // setsub <parent key> <key> <value>        					set key-value under parent key. if value is "null", it means no value.
@@ -684,7 +684,7 @@ static void Help(const char* progname)
 // builtinattr(ba) [mtime] [history] [expire=second]
 //                                       [enc] [pass=file path] set builtin attribute
 // loadpluginattr(lpa) filepath                                 load plugin attribute library.
-// addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+// addpassphrase(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
 // cleanallattr(caa)                                            clear all attribute setting.
 // shell														exit shell(same as "!" command).
 // echo <string>...												echo string
@@ -698,7 +698,7 @@ static void LineHelp(void)
 	PRN("help(h)                                                      print help");
 	PRN("quit(q)/exit                                                 quit");
 	PRN("info(i) [state]                                              print k2hash file/memory information and with state");
-	PRN("dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full");
+	PRN("dump(d) <parameter>                                          dump k2hash, parameter: head(default) / kindex / ckindex / element / full");
 	PRN("set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is \"null\", it means no value.");
 	PRN("settrial(st) <key> [pass=....]                               set key-value if key is not existed.");
 	PRN("setsub <parent key> <key> <value>                            set key-value under parent key. if value is \"null\", it means no value.");
@@ -746,7 +746,7 @@ static void LineHelp(void)
 	PRN("builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]");
 	PRN("                                                             set builtin attribute.");
 	PRN("loadpluginattr(lpa) filepath                                 load plugin attribute library.");
-	PRN("addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.");
+	PRN("addpassphrase(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.");
 	PRN("cleanallattr(caa)                                            clear all attribute setting.");
 	PRN("shell                                                        exit shell(same as \"!\" command).");
 	PRN("echo <string>...                                             echo string");
@@ -844,8 +844,8 @@ const OPTTYPE LineOptionTypes[] = {
 	{"ba",				"builtinattr",		0,	6},
 	{"loadpluginattr",	"loadpluginattr",	1,	1},
 	{"lpa",				"loadpluginattr",	1,	1},
-	{"addpassphrese",	"addpassphrese",	1,	2},
-	{"app",				"addpassphrese",	1,	2},
+	{"addpassphrase",	"addpassphrase",	1,	2},
+	{"app",				"addpassphrase",	1,	2},
 	{"cleanallattr",	"cleanallattr",		0,	0},
 	{"caa",				"cleanallattr",		0,	0},
 	{"sh",				"shell",			0,	0},
@@ -877,7 +877,7 @@ static bool BaseOptionParser(strlist_t& args, CPOPTTYPE pTypes, option_t& opts)
 		for(Count2 = 0; pTypes[Count2].option; Count2++){
 			if(0 == strcasecmp(args[Count].c_str(), pTypes[Count2].option)){
 				if(args.size() < ((Count + 1) + pTypes[Count2].min_param_cnt)){
-					ERR("Option(%s) needs %d paraemter.", args[Count].c_str(), pTypes[Count2].min_param_cnt);
+					ERR("Option(%s) needs %d parameter.", args[Count].c_str(), pTypes[Count2].min_param_cnt);
 					return false;
 				}
 
@@ -932,10 +932,10 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 
 	strlist_t	args;
 	string		strParameter;
-	bool		isMakeParamter	= false;
+	bool		isMakeParameter	= false;
 	bool		isQuart			= false;
 	for(const_pchar pPos = pCommand; '\0' != *pPos && '\n' != *pPos; ++pPos){
-		if(isMakeParamter){
+		if(isMakeParameter){
 			// keeping parameter
 			if(isQuart){
 				// pattern: "...."
@@ -946,7 +946,7 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 						return false;
 					}
 					// end of quart
-					isMakeParamter	= false;
+					isMakeParameter	= false;
 					isQuart			= false;
 
 				}else if('\\' == *pPos && '\"' == *(pPos + sizeof(char))){
@@ -965,10 +965,10 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 					}
 					strParameter += *pPos;
 				}else{
-					isMakeParamter = false;
+					isMakeParameter = false;
 				}
 			}
-			if(!isMakeParamter){
+			if(!isMakeParameter){
 				// end of one parameter
 				if(0 < strParameter.length()){
 					args.push_back(strParameter);
@@ -979,7 +979,7 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 			// not keeping parameter
 			if(0 == isspace(*pPos)){
 				strParameter.clear();
-				isMakeParamter	= true;
+				isMakeParameter	= true;
 				isQuart			= false;
 
 				if('\"' == *pPos){
@@ -988,7 +988,7 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 					isQuart		= false;
 
 					if('\\' == *pPos){
-						// found escape charactor
+						// found escape character
 						pPos++;
 						if('\0' == *pPos || '\n' == *pPos){
 							break;
@@ -1001,7 +1001,7 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 		}
 	}
 	// last check
-	if(isMakeParamter){
+	if(isMakeParameter){
 		if(isQuart){
 			ERR("Quart is not matching.");
 			return false;
@@ -1036,7 +1036,7 @@ static bool ReadLine(int fd, string& line)
 	line.erase();
 	while(true){
 		szBuff = '\0';
-		// read one charactor
+		// read one character
 		if(-1 == (readlength = read(fd, &szBuff, 1))){
 			line.erase();
 			return false;
@@ -1047,7 +1047,7 @@ static bool ReadLine(int fd, string& line)
 			return false;
 		}
 
-		// check charactor
+		// check character
 		if('\r' == szBuff || '\0' == szBuff){
 			// skip words
 
@@ -1194,12 +1194,12 @@ static bool InfoCommand(K2HShm& k2hash, params_t& params)
 	PRN("-------------------------------------------------------");
 	if(isModeCAPI){
 		if(!k2h_dump_head(reinterpret_cast<k2h_h>(&k2hash), NULL)){
-			ERR("Something error occurred while dumpping head of k2hash.");
+			ERR("Something error occurred while dumping head of k2hash.");
 			return true;	// for continue.
 		}
 	}else{
 		if(!k2hash.Dump(stdout, K2HShm::DUMP_HEAD)){
-			ERR("Something error occurred while dumpping head of k2hash.");
+			ERR("Something error occurred while dumping head of k2hash.");
 			return true;	// for continue.
 		}
 	}
@@ -1313,7 +1313,7 @@ static bool DumpCommand(K2HShm& k2hash, params_t& params)
 		result = k2hash.Dump(stdout, DumpMode);
 	}
 	if(!result){
-		ERR("Something error occurred while dumpping head of k2hash.");
+		ERR("Something error occurred while dumping head of k2hash.");
 		return true;	// for continue.
 	}
 	return true;
@@ -2515,7 +2515,7 @@ static bool StreamCommand(K2HShm& k2hash, params_t& params)
 			PRN("");
 			PRN("*** Output stream test : \"%s\" key *********************", params[0].c_str());
 			PRN(" You can specify any string for writing value to stream.");
-			PRN(" The string does not terminate null charactor.");
+			PRN(" The string does not terminate null character.");
 			PRN(" If you need to terminate it, specify \"ends\".");
 			PRN(" If you specify \"endl\", puts 0x0a.");
 			PRN(" Specify \".\" only to exit this interactive mode.");
@@ -3238,13 +3238,13 @@ static bool QueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& par
 		}
 
 		if(!pval || 0 == vallen){
-			ERR("There is no poped queue.");
+			ERR("There is no popped queue.");
 			k2h_q_free(qhandle);
 			return true;	// for continue.
 		}
 
-		if(!BinaryDumpUtility("POPED QUEUE", pval, vallen)){
-			ERR("Something error occurred during printing poped queue.");
+		if(!BinaryDumpUtility("POPPED QUEUE", pval, vallen)){
+			ERR("Something error occurred during printing popped queue.");
 			K2H_Free(pval);
 			k2h_q_free(qhandle);
 			return true;	// for continue.
@@ -3271,12 +3271,12 @@ static bool QueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& par
 		}
 
 		if(!pval || 0 == vallen){
-			ERR("There is no poped queue.");
+			ERR("There is no popped queue.");
 			return true;	// for continue.
 		}
 
-		if(!BinaryDumpUtility("POPED QUEUE", pval, vallen)){
-			ERR("Something error occurred during printing poped queue.");
+		if(!BinaryDumpUtility("POPPED QUEUE", pval, vallen)){
+			ERR("Something error occurred during printing popped queue.");
 			K2H_Free(pval);
 			return true;	// for continue.
 		}
@@ -3948,15 +3948,15 @@ static bool KeyQueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& 
 		}
 
 		if(!pkey || 0 == keylen){
-			ERR("There is no poped queue.");
+			ERR("There is no popped queue.");
 			K2H_Free(pkey);
 			K2H_Free(pval);
 			k2h_keyq_free(keyqhandle);
 			return true;	// for continue.
 		}
 
-		if(!BinaryDumpUtility("POPED QUEUE(KEY)  ", pkey, keylen)){
-			ERR("Something error occurred during printing poped queue.");
+		if(!BinaryDumpUtility("POPPED QUEUE(KEY)  ", pkey, keylen)){
+			ERR("Something error occurred during printing popped queue.");
 			K2H_Free(pkey);
 			K2H_Free(pval);
 			k2h_keyq_free(keyqhandle);
@@ -3971,8 +3971,8 @@ static bool KeyQueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& 
 			return true;	// for continue.
 		}
 
-		if(!BinaryDumpUtility("POPED QUEUE(VALUE)", pval, vallen)){
-			ERR("Something error occurred during printing poped queue.");
+		if(!BinaryDumpUtility("POPPED QUEUE(VALUE)", pval, vallen)){
+			ERR("Something error occurred during printing popped queue.");
 			K2H_Free(pval);
 			k2h_keyq_free(keyqhandle);
 			return true;	// for continue.
@@ -4001,14 +4001,14 @@ static bool KeyQueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& 
 		}
 
 		if(!pkey || 0 == keylen){
-			ERR("There is no poped queue.");
+			ERR("There is no popped queue.");
 			K2H_Free(pkey);
 			K2H_Free(pval);
 			return true;	// for continue.
 		}
 
-		if(!BinaryDumpUtility("POPED QUEUE(KEY)  ", pkey, keylen)){
-			ERR("Something error occurred during printing poped queue.");
+		if(!BinaryDumpUtility("POPPED QUEUE(KEY)  ", pkey, keylen)){
+			ERR("Something error occurred during printing popped queue.");
 			K2H_Free(pkey);
 			K2H_Free(pval);
 			return true;	// for continue.
@@ -4016,13 +4016,13 @@ static bool KeyQueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& 
 		K2H_Free(pkey);
 
 		if(!pval || 0 == vallen){
-			ERR("There is no poped queue.");
+			ERR("There is no popped queue.");
 			K2H_Free(pval);
 			return true;	// for continue.
 		}
 
-		if(!BinaryDumpUtility("POPED QUEUE(VALUE)", pval, vallen)){
-			ERR("Something error occurred during printing poped queue.");
+		if(!BinaryDumpUtility("POPPED QUEUE(VALUE)", pval, vallen)){
+			ERR("Something error occurred during printing popped queue.");
 			K2H_Free(pval);
 			return true;	// for continue.
 		}
@@ -4328,7 +4328,7 @@ static bool LoadPluginAttrCommand(K2HShm& k2hash, params_t& params)
 static bool AddPassPhraseCommand(K2HShm& k2hash, params_t& params)
 {
 	if(1 > params.size()){
-		ERR("addpassphrese command need one parameter.");
+		ERR("addpassphrase command need one parameter.");
 		return true;		// for continue.
 	}
 	bool	IsDefault = false;
@@ -4442,7 +4442,7 @@ static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const cha
 	if(opts.end() != opts.find("help") || opts.end() != opts.find("h")){
 		LineHelp();
 	}else if(opts.end() != opts.find("quit") || opts.end() != opts.find("q") || opts.end() != opts.find("exit")){
-		PRN("Quit & Detacch.");
+		PRN("Quit & Detach.");
 
 		// normal exit
 		is_exit = true;
@@ -4622,8 +4622,8 @@ static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const cha
 			CleanOptionMap(opts);
 			return false;
 		}
-	}else if(opts.end() != opts.find("addpassphrese")){
-		if(!AddPassPhraseCommand(k2hash, opts["addpassphrese"])){
+	}else if(opts.end() != opts.find("addpassphrase")){
+		if(!AddPassPhraseCommand(k2hash, opts["addpassphrase"])){
 			CleanOptionMap(opts);
 			return false;
 		}
@@ -4686,7 +4686,7 @@ static bool CommandHandle(K2HShm& k2hash, ConsoleInput& InputIF)
 	const string	strLine = InputIF.c_str();
 	bool			is_exit = false;
 	if(0 < strLine.length() && '!' == strLine[0]){
-		// special charactor("!") command
+		// special character("!") command
 		const char*	pSpecialCommand = strLine.c_str();
 		pSpecialCommand++;
 
@@ -4876,11 +4876,11 @@ int main(int argc, char** argv)
 		isTrlib = true;
 	}
 
-	// -g / -glog / SIGUSER1
+	// -g / -glog / SIGUSR1
 	if(opts.end() != opts.find("-g")){
 		if(0 == opts["-g"].size()){
 			// nothing to do.
-			// deafult is silent
+			// default is silent
 		}else if(0 == strcasecmp(opts["-g"][0].c_str(), "ERR")){
 			if(isModeCAPI){
 				k2h_set_debug_level_error();
@@ -4907,12 +4907,12 @@ int main(int argc, char** argv)
 	{
 		bool result;
 		if(isModeCAPI){
-			result = k2h_set_bumup_debug_signal_user1();
+			result = k2h_set_bumpup_debug_signal_user1();
 		}else{
 			result = SetSignalUser1();
 		}
 		if(!result){
-			ERR("Failed to set SIGUSER1 handler for bumpup debug level.");
+			ERR("Failed to set SIGUSR1 handler for bumpup debug level.");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -4959,11 +4959,11 @@ int main(int argc, char** argv)
 			PRN("Permanent file:                         %s", FilePath.c_str());
 		}
 	}else if(isTempFile){
-		PRN("Temporaly file:                         %s", FilePath.c_str());
+		PRN("Temporary file:                         %s", FilePath.c_str());
 	}else{	// isMemory
 		PRN("On memory mode");
 	}
-	PRN("Attached paraemters:");
+	PRN("Attached parameters:");
 	PRN("    Full are mapping:                   %s", isFullMap ? "true" : "false");
 	PRN("    Key Index mask count:               %d", MaskBitCnt);
 	PRN("    Collision Key Index mask count:     %d", CMaskBitCnt);
@@ -4995,7 +4995,7 @@ int main(int argc, char** argv)
 				exit(EXIT_FAILURE);
 			}
 		}
-		PRN("Permanent file(%s) is completely initialied.", FilePath.c_str());
+		PRN("Permanent file(%s) is completely initialized.", FilePath.c_str());
 		PRN(NULL);
 	}else{
 		if(isModeCAPI){

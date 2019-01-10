@@ -122,7 +122,7 @@ class K2HKeyQueue : public K2HQueue
 //---------------------------------------------------------
 // K2HLowOpsQueue Class
 //---------------------------------------------------------
-// This class opelates only queue key names in queue marker, and supports
+// This class operates only queue key names in queue marker, and supports
 // those operation manually.
 // This class operates no queue key which is listed in queue list too.
 // 
@@ -130,7 +130,7 @@ class K2HKeyQueue : public K2HQueue
 // modifying queue marker. So that You can use this class for only
 // modifying/reading queue marker.
 // 
-// We make this class for distributed k2hash claster, because the queue
+// We make this class for distributed k2hash cluster, because the queue
 // marker and queue keys is not same k2hash file(machine) on distributed
 // k2hash environment.
 // 

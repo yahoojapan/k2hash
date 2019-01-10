@@ -443,7 +443,7 @@ K2HPage* K2HPageMem::SetData(const unsigned char* byData, size_t length, off_t o
 				}
 				return NULL;
 			}
-			// force reset page head poionter.
+			// force reset page head pointer.
 			pCurPageHead = pCurrentPage->pPageHead;
 			isChangeSize = true;
 		}

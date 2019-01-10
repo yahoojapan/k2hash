@@ -38,7 +38,7 @@ using namespace std;
 //
 // [NOTE]
 // This function generates system-wide unique ID.
-// If gerarated ID does not unique, but we do not care for it.
+// If generated ID does not unique, but we do not care for it.
 // Because k2hash needs unique ID for only one key's history.
 // This means that it may be a unique only to one key.
 //

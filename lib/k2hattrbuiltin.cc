@@ -116,7 +116,7 @@ K2hCryptContext::~K2hCryptContext(void)
 }
 
 //---------------------------------------------------------
-// K2hAttrBuiltin Class varialbles
+// K2hAttrBuiltin Class variables
 //---------------------------------------------------------
 const char*		K2hAttrBuiltin::ATTR_ENV_MTIME		= K2HATTR_ENV_MTIME;
 const char*		K2hAttrBuiltin::ATTR_ENV_HISTORY	= K2HATTR_ENV_HISTORY;
@@ -609,7 +609,7 @@ bool K2hAttrBuiltin::UpdateAttr(K2HAttrs& attrs)
 				return false;
 			}
 		}else{
-			// no exire
+			// no expire
 			RemoveAttr(attrs, K2hAttrBuiltin::ATTR_EXPIRE);
 		}
 	}
@@ -823,7 +823,7 @@ bool K2hAttrBuiltin::IsExpire(K2HAttrs& attrs) const
 	const unsigned char*	pval	= NULL;
 	size_t					vallen	= 0;
 	if(!GetAttr(attrs, K2hAttrBuiltin::ATTR_EXPIRE, &pval, vallen) || !pval){
-		// attr does not have exipre key
+		// attr does not have expire key
 		return false;
 	}
 	if(sizeof(struct timespec) != vallen){
@@ -916,9 +916,9 @@ bool K2hAttrBuiltin::GetEncryptType(K2HAttrs& attrs, K2HATTR_ENC_TYPE& enctype) 
 
 // 
 // This method returns copied the Value if the value is not encrypted.
-// If the value is encrypted, there is following perttern.
+// If the value is encrypted, there is following pattern.
 // 1) if specify encpass, compare encpass's md5 and md5 in attrs.
-//    if the result of comparision is correct, do decrypt value.
+//    if the result of comparison is correct, do decrypt value.
 // 2) if not specify encpass, search attrs's md5 in loaded pass list.
 //    if found it, do decrypt value.
 // 3) if not found attrs's md5 in loaded pass list, check this object's
@@ -975,7 +975,7 @@ unsigned char* K2hAttrBuiltin::GetDecryptValue(K2HAttrs& attrs, const char* encp
 	}else{
 		// value is not encrypted, so copy value to result
 		if(NULL == (presult = reinterpret_cast<unsigned char*>(malloc(ValLen)))){
-			ERR_K2HPRN("Could not allcation memory.");
+			ERR_K2HPRN("Could not allocation memory.");
 			return presult;
 		}
 		memcpy(presult, byValue, ValLen);

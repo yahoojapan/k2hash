@@ -6,7 +6,7 @@ K2HREPLACE \- Utility Tool for K2HASH
 [ \-d ] SOURCE_FILE DESTINATION_FILE
 .SH DESCRIPTION
 .PP
-k2hreplace is a tool for replacing K2HASH file safty when another processes are using it. After doing, destination file is moved with suffix.
+k2hreplace is a tool for replacing K2HASH file safety when another processes are using it. After doing, destination file is moved with suffix.
 .SH OPTIONS
 .TP
 \fBSOURCE_FILE\fR
@@ -21,7 +21,7 @@ run with debugging mode
 .TP
 \fBK2HDBGMODE\fR
 K2HDBGMODE environment sets debugging message level as same as \-g option. The value is set as SILENT, ERR, WAN or INFO.
-When k2hlinetool catches SIGUSER1 signal, the debugging message level is bumpup. The level is changed as order by SILENT, ERR, WAN, INFO, SILENT...
+When k2hlinetool catches SIGUSR1 signal, the debugging message level is bumpup. The level is changed as order by SILENT, ERR, WAN, INFO, SILENT...
 .TP
 \fK2HDBGFILE\fR
 K2HDBGFILE environment sets the file which is debugging message, this is as same as \-glog option.
@@ -32,4 +32,4 @@ k2hash(1), k2hlinetool(1), k2hcompress(1), k2htouch(1), k2hedit(1)
 .TP
 Please report owner and committers.
 .SH AUTHOR
-k2hash has been written by Takeshi Nakatani <ggtakec@gmail.com>.
+k2hash has been written by Takeshi Nakatani <nakatani@yahoo-corp.jp>.

@@ -145,7 +145,7 @@ bool K2HShm::InitializeElementArray(void* pShmBase, PELEMENT pElement, int count
 bool K2HShm::InitializePageArray(int fd, off_t start, ssize_t pagesize, int count, PPAGEHEAD pLastRelPage)
 {
 	if(-1 == fd){
-		ERR_K2HPRN("file discriptor is wrong");
+		ERR_K2HPRN("file descriptor is wrong");
 		return false;
 	}
 	//
@@ -218,7 +218,7 @@ ssize_t K2HShm::InitialSystemPageSize(void)
 	// Page size for K2HASH is minimum 8192, it will be support for long life for this.
 	if(K2HShm::MIN_SYSPAGE_SIZE >= psize){
 		if(K2HShm::MIN_SYSPAGE_SIZE != psize){
-			MSG_K2HPRN("System Page size is %ld, but for safty K2HASH set %d", psize, K2HShm::MIN_SYSPAGE_SIZE);
+			MSG_K2HPRN("System Page size is %ld, but for safety K2HASH set %d", psize, K2HShm::MIN_SYSPAGE_SIZE);
 			psize = K2HShm::MIN_SYSPAGE_SIZE;
 		}
 	}else{
@@ -263,15 +263,15 @@ bool K2HShm::InitializeFile(const char* file, bool isfullmapping, int mask_bitcn
 		return false;
 	}
 	if(mask_bitcnt < K2HShm::MIN_MASK_BITCOUNT && K2HShm::MAX_MASK_BITCOUNT < mask_bitcnt){
-		// Warnning
+		// Warning
 		WAN_K2HPRN("Mask bit count(%d) for hash should be from %d to %d.", mask_bitcnt, K2HShm::MIN_MASK_BITCOUNT, K2HShm::MAX_MASK_BITCOUNT);
 	}
 	if(K2HShm::DEFAULT_COLLISION_MASK_BITCOUNT < cmask_bitcnt){
-		// Warnning
+		// Warning
 		WAN_K2HPRN("Collision Mask bit count(%d) for hash should be under %d.", cmask_bitcnt, K2HShm::DEFAULT_COLLISION_MASK_BITCOUNT);
 	}
 	if(pagesize < static_cast<size_t>(K2HShm::MIN_PAGE_SIZE)){
-		// Warnning
+		// Warning
 		WAN_K2HPRN("Page size(%zu) is under minimum size(%d), so pagesize set minimum size.", pagesize, K2HShm::MIN_PAGE_SIZE);
 		pagesize = static_cast<size_t>(K2HShm::MIN_PAGE_SIZE);
 	}
@@ -320,7 +320,7 @@ bool K2HShm::InitializeFile(const char* file, bool isfullmapping, int mask_bitcn
 	// ELEMENT * Y * Z		Element area				= Element size * initial collision key count * element coefficient
 	// PAGE * (Y * Z) * P	Page area					= page size * Element count * page coefficient
 	//
-	// *** All erea must align page size. ***
+	// *** All area must align page size. ***
 	//
 	INITAREAMMAP	area_mmap[INITAREAMMAP_SIZE];
 	size_t			mmap_size;
@@ -718,7 +718,7 @@ bool K2HShm::ContractMmapInfo(void)
 		k2h_mmap_info_list_add(&pAreaListTop, pinfo);
 	}
 
-	// check and unmmap
+	// check and munmap
 	bool	result = MmapInfos.Unmap(pAreaListTop);
 
 	k2h_mmap_info_list_freeall(&pAreaListTop);

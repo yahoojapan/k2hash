@@ -33,19 +33,19 @@ DECL_EXTERN_C_START
 // For k2hash structure
 #define	K2H_VERSION							2				// version string value
 #define	K2H_VERSION_FORMAT					"K2H V%d"		// must be 8byte with nil
-#define	MAX_K2HAREA_COUNT					2048			// muximum count for areas member in k2hash
+#define	MAX_K2HAREA_COUNT					2048			// maximum count for areas member in k2hash
 #define	MAX_KINDEX_AREA_COUNT				32				// maximum count for key_index_area member in k2hash(this means bit count)
 
 // For collision key index structure
 #define	KINDEX_NOTASSIGNED					0L
 #define	KINDEX_ASSIGNED						1L
 
-// use long* for escaping warnning
+// use long* for escaping warning
 #if defined(__cplusplus)
-#define	CVT_ABS(shmbase, offset, type)		reinterpret_cast<type>(reinterpret_cast<off_t>(shmbase) + reinterpret_cast<off_t>(offset)) 	// To Absorute address
+#define	CVT_ABS(shmbase, offset, type)		reinterpret_cast<type>(reinterpret_cast<off_t>(shmbase) + reinterpret_cast<off_t>(offset)) 	// To Absolute address
 #define	CVT_REL(shmbase, address, type)		reinterpret_cast<type>(reinterpret_cast<off_t>(address) - reinterpret_cast<off_t>(shmbase))	// To Relative address
 #else
-#define	CVT_ABS(shmbase, offset, type)		(type)((off_t)shmbase + (off_t)offset) 		// To Absorute address
+#define	CVT_ABS(shmbase, offset, type)		(type)((off_t)shmbase + (off_t)offset) 		// To Absolute address
 #define	CVT_REL(shmbase, address, type)		(type)((off_t)address - (off_t)shmbase)		// To Relative address
 #endif
 
@@ -150,9 +150,9 @@ typedef struct collision_key_index{
 // is shifted right by collision key mask bit count. So that range of one
 // of structure has range.
 // ckey_list is list, this list count is set by collision key mask, this 
-// means ckey_list count can not be changed. This K2Hash archtecture is 
+// means ckey_list count can not be changed. This K2Hash architecture is 
 // double array by masked hash.
-// If assaign member is KINDEX_NOTASSIGNED, it means that this structure 
+// If assigned member is KINDEX_NOTASSIGNED, it means that this structure 
 // is not used after increasing cur_mask yet. Because this is occurred by 
 // that starting using structure is not same at increasing cur_mask.
 //
@@ -204,7 +204,7 @@ typedef struct k2h_area{
 // 
 // [NOTICE]
 // About Key Index Pointer Array(key_index_area)
-// 	This array posision links Key Index array for each cur_mask bit.
+// 	This array position links Key Index array for each cur_mask bit.
 // 	For example, key_index_area[3] has key index array which for 0x07
 // 	as cur_mask value.
 // 	If cur_mask is 0x0F, key_index_area[0] to key_index_area[4] is set
@@ -223,11 +223,11 @@ typedef struct k2hash{
 	char			hash_version[K2H_HASH_FUNC_VER_LENGTH];	// Version string as Hash Function
 	size_t			total_size;								// Total size for this k2hash
 	size_t			page_size;								// Paging size(system)
-	k2h_hash_t		max_mask;								// Muximum value for cur_mask
+	k2h_hash_t		max_mask;								// Maximum value for cur_mask
 	k2h_hash_t		min_mask;								// Minimum value for cur_mask
 	k2h_hash_t		cur_mask;								// Current mask value for hash(This value is changed automatically)
 	k2h_hash_t		collision_mask;							// Mask value for collision when masked hash value by cur_mask(This value is not changed)
-	unsigned long	max_element_count;						// Muximum count for elements in collision key index structure(Increasing cur_mask when this value is over)
+	unsigned long	max_element_count;						// Maximum count for elements in collision key index structure(Increasing cur_mask when this value is over)
 	struct timeval	last_update;							// Last update(write data)
 	struct timeval	last_area_update;						// last update(expand area)
 	K2HAREA			areas[MAX_K2HAREA_COUNT];				// all of K2hash area list

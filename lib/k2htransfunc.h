@@ -30,8 +30,8 @@
 //---------------------------------------------------------
 // K2Hash library has two type functions for transaction.
 // 1) k2h_trans         - transaction callback function.
-//                        default buitin function does nothing.
-// 2) k2h_trans_version - returns transaction function verson
+//                        default builtin function does nothing.
+// 2) k2h_trans_version - returns transaction function version
 //                        string
 // 
 // You can overwrite these functions by follow two way.
@@ -45,7 +45,7 @@
 //    You can load your library(so) which has these functions by
 //    calling Load() member function in K2HTransDynLib class.
 // 
-// If you use these functions for exsample: recieves transaction,
+// If you use these functions for example: receives transaction,
 // checking function version. You can call below macros which is
 // defined in this header file, so you call rightly function
 // regardless of overwriting functions.

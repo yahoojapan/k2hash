@@ -90,7 +90,7 @@ bool K2HDALock::Lock(const unsigned char* byKey, size_t keylength)
 }
 
 //---------------------------------------------------------
-// K2HDAccess : Valiables
+// K2HDAccess : Variables
 //---------------------------------------------------------
 const int	K2HDAccess::FILE_IO_BLOCK;
 
@@ -197,7 +197,7 @@ bool K2HDAccess::Open(const unsigned char* byKey, size_t keylength)
 		}
 		// retry to lock
 		if(!pALObjCKI->Lock(byKey, keylength)){
-			ERR_K2HPRN("Failed to get existed object, somthing wrong.");
+			ERR_K2HPRN("Failed to get existed object, something wrong.");
 			return false;
 		}
 	}
@@ -258,8 +258,8 @@ bool K2HDAccess::IsSetValPage(bool isRead) const
 // offset is not NA.
 //
 // [BE CAREFUL]
-// If the value erea is expanded because it's length is short when isRead is false, the expanding value
-// erea is not initialized.
+// If the value area is expanded because it's length is short when isRead is false, the expanding value
+// area is not initialized.
 //
 bool K2HDAccess::SetOffset(off_t offset, size_t length, bool isRead)
 {
@@ -287,7 +287,7 @@ bool K2HDAccess::SetOffset(off_t offset, size_t length, bool isRead)
 				// This case is that page object is null, asb_offset = offset(0), BE CAREFUL!
 				//
 			}else{
-				// make new key-value without inilializing
+				// make new key-value without initializing
 				if(NULL == (pValPage = pK2HShm->ReservePages(length + offset))){
 					ERR_K2HPRN("Failed to reserve value page object.");
 					return false;

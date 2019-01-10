@@ -102,11 +102,11 @@ while read oneline; do
 		TEST_CONTENTS=`echo "${oneline}" | grep '^[-][-].*[ ][ ].*$'`
 		PKG_RF2822=`echo "${TEST_CONTENTS}" | grep -o '[ ][ ].*'`
 		PKG_RF2822=`echo ${PKG_RF2822}`
-		PKG_COMITTER=`echo "${TEST_CONTENTS}" | grep -o '.*[ ][ ]' | sed 's/^[-][-][ ]//'`
-		if [ "X${PKG_RF2822}" != "X" -a "X${PKG_COMITTER}" != "X" ]; then
+		PKG_COMMITTER=`echo "${TEST_CONTENTS}" | grep -o '.*[ ][ ]' | sed 's/^[-][-][ ]//'`
+		if [ "X${PKG_RF2822}" != "X" -a "X${PKG_COMMITTER}" != "X" ]; then
 			INONEVER=0
 			PKG_DATE=`echo ${PKG_RF2822} | sed 's/,/ /g' | awk '{print $1" "$3" "$2" "$4}'`
-			PKG_LINE="* ${PKG_DATE} ${PKG_COMITTER} ${PKG_VERSION}${DETAILS}"
+			PKG_LINE="* ${PKG_DATE} ${PKG_COMMITTER} ${PKG_VERSION}${DETAILS}"
 			if [ "X${ALLLINES}" != "X" ]; then
 				ALLLINES="${ALLLINES}\\n\\n${PKG_LINE}"
 			else

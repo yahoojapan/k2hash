@@ -56,7 +56,7 @@ class K2HUniqTimespec
 {
 	protected:
 		struct timespec	uniq_count;					// uses for building uniq key name
-		int				LockVal;					// like mutex for valiables
+		int				LockVal;					// like mutex for variables
 
 	public:
 		static K2HUniqTimespec* Get(void);
@@ -110,7 +110,7 @@ void K2HUniqTimespec::GetUniqTimespec(struct timespec& ts)
 }
 
 //---------------------------------------------------------
-// K2HQueue Class : Valiables
+// K2HQueue Class : Variables
 //---------------------------------------------------------
 // The builtin prefix is "\0K2HQUEUE_PREFIX_".
 //
@@ -122,7 +122,7 @@ const unsigned char	K2HQueue::builtin_pref[] = {'\0', 'K', '2', 'H', 'Q', 'U', '
 unsigned char* K2HQueue::GetMarkerName(const unsigned char* pref, size_t preflen, size_t& markerlength)
 {
 	if(!pref || 0 == preflen){
-		ERR_K2HPRN("Parametera are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return NULL;
 	}
 	// make marker key
@@ -137,7 +137,7 @@ unsigned char* K2HQueue::GetMarkerName(const unsigned char* pref, size_t preflen
 unsigned char* K2HQueue::GetUniqKeyName(const unsigned char* pref, size_t preflen, pid_t tid, size_t& keylength)
 {
 	if(!pref || 0 == preflen){
-		ERR_K2HPRN("Parametera are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return NULL;
 	}
 	// get counter

@@ -31,7 +31,7 @@ func_usage()
 	echo "Usage:  $1 [-buildnum <build number>] [-product <product name>] [-y]"
 	echo "        -buildnum                     specify build number for packaging(default 1)"
 	echo "        -product                      specify product name(use PACKAGE_NAME in Makefile s default)"
-	echo "        -y                            runs no interacitive mode."
+	echo "        -y                            runs no interactive mode."
 	echo "        -h                            print help"
 	echo ""
 }
@@ -156,7 +156,7 @@ fi
 #
 rpmbuild -vv -ba --define "_topdir ${RPM_TOPDIR}" --define "_prefix /usr" --define "_mandir /usr/share/man" --define "_defaultdocdir /usr/share/doc" --define "package_revision ${BUILD_NUMBER}" *.spec
 if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : failed to build rpm packages by rpmbuld." 1>&2
+	echo "[ERROR] ${PRGNAME} : failed to build rpm packages by rpmbuild." 1>&2
 	exit 1
 fi
 

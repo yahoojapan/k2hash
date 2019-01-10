@@ -2,17 +2,17 @@
  K2HASH TOOL
 -------------------------------------------------------
 Permanent file:                         /tmp/k2hash_test_linetool.k2h
-Attached paraemters:
+Attached parameters:
     Full are mapping:                   false
     Key Index mask count:               8
     Collision Key Index mask count:     4
     Max element count:                  32
 -------------------------------------------------------
 
-Permanent file(/tmp/k2hash_test_linetool.k2h) is completely initialied.
+Permanent file(/tmp/k2hash_test_linetool.k2h) is completely initialized.
 
 
-K2HASH library Version 1.0.57 (commit: 36eb21e) with OpenSSL
+K2HASH library Version 1.0.68 (commit: be78055) with OpenSSL
 
 Copyright(C) 2013 Yahoo Japan Corporation.
 
@@ -23,7 +23,7 @@ which Key can layer. And can support multi-processing and
 multi-thread, and is provided safely as available KVS.
 
 
-FULLOCK Version 1.0.27 (commit: 7d68fdc)
+FULLOCK Version 1.0.33 (commit: dd55155)
 
 Copyright(C) 2015 Yahoo Japan Corporation.
 
@@ -34,7 +34,7 @@ FULLOCK is following specifications.
  K2HASH TOOL
 -------------------------------------------------------
 On memory mode
-Attached paraemters:
+Attached parameters:
     Full are mapping:                   true
     Key Index mask count:               4
     Collision Key Index mask count:     2
@@ -48,7 +48,7 @@ Command: [command] [parameters...]
 help(h)                                                      print help
 quit(q)/exit                                                 quit
 info(i) [state]                                              print k2hash file/memory information and with state
-dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+dump(d) <parameter>                                          dump k2hash, parameter: head(default) / kindex / ckindex / element / full
 set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
 settrial(st) <key> [pass=....]                               set key-value if key is not existed.
 setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
@@ -96,7 +96,7 @@ keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
 builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
                                                              set builtin attribute.
 loadpluginattr(lpa) filepath                                 load plugin attribute library.
-addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+addpassphrase(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
 cleanallattr(caa)                                            clear all attribute setting.
 shell                                                        exit shell(same as "!" command).
 echo <string>...                                             echo string
@@ -234,15 +234,15 @@ sleep <second>                                               sleep seconds
  READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que read fifo 5
 > que pop fifo
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo
 > que push fifo quevalue1 pass=testpass
 > que push fifo quevalue2 pass=testpass
@@ -284,15 +284,15 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue4 pass=testpass
 > que push fifo quevalue5 pass=testpass
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo pass=testpass
 > que push fifo quevalue1 expire=1
 > que push fifo quevalue2 expire=1
@@ -317,15 +317,15 @@ sleep <second>                                               sleep seconds
  READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que read fifo 5
 > que pop fifo
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo
 > que push fifo quevalue1 expire=1
 > que push fifo quevalue2 expire=1
@@ -391,15 +391,15 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue4 pass=testpass expire=1
 > que push fifo quevalue5 pass=testpass expire=1
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo pass=testpass
 > que push fifo quevalue1 pass=testpass expire=1
 > que push fifo quevalue2 pass=testpass expire=1
@@ -471,20 +471,20 @@ sleep <second>                                               sleep seconds
  READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque read fifo 5
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo
 > kque push fifo kquekey1 kquevalue1 pass=testpass
 > kque push fifo kquekey2 kquevalue2 pass=testpass
@@ -531,20 +531,20 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey4 kquevalue4 pass=testpass
 > kque push fifo kquekey5 kquevalue5 pass=testpass
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo pass=testpass
 > kque push fifo kquekey1 kquevalue1 expire=1
 > kque push fifo kquekey2 kquevalue2 expire=1
@@ -574,20 +574,20 @@ sleep <second>                                               sleep seconds
  READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque read fifo 5
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo
 > kque push fifo kquekey1 kquevalue1 expire=1
 > kque push fifo kquekey2 kquevalue2 expire=1
@@ -658,20 +658,20 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo pass=testpass
 > kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
 > kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
@@ -729,12 +729,12 @@ sleep <second>                                               sleep seconds
 "testkey" => attribute is not found
 > rm testkey
 > exit
-Quit & Detacch.
+Quit & Detach.
 -------------------------------------------------------
  K2HASH TOOL
 -------------------------------------------------------
 On memory mode
-Attached paraemters:
+Attached parameters:
     Full are mapping:                   true
     Key Index mask count:               4
     Collision Key Index mask count:     2
@@ -748,7 +748,7 @@ Command: [command] [parameters...]
 help(h)                                                      print help
 quit(q)/exit                                                 quit
 info(i) [state]                                              print k2hash file/memory information and with state
-dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+dump(d) <parameter>                                          dump k2hash, parameter: head(default) / kindex / ckindex / element / full
 set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
 settrial(st) <key> [pass=....]                               set key-value if key is not existed.
 setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
@@ -796,7 +796,7 @@ keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
 builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
                                                              set builtin attribute.
 loadpluginattr(lpa) filepath                                 load plugin attribute library.
-addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+addpassphrase(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
 cleanallattr(caa)                                            clear all attribute setting.
 shell                                                        exit shell(same as "!" command).
 echo <string>...                                             echo string
@@ -1280,12 +1280,12 @@ sleep <second>                                               sleep seconds
 "testkey" => attribute is not found
 > rm testkey
 > exit
-Quit & Detacch.
+Quit & Detach.
 -------------------------------------------------------
  K2HASH TOOL
 -------------------------------------------------------
-Temporaly file:                         /tmp/k2hash_test_linetool.k2h
-Attached paraemters:
+Temporary file:                         /tmp/k2hash_test_linetool.k2h
+Attached parameters:
     Full are mapping:                   true
     Key Index mask count:               4
     Collision Key Index mask count:     2
@@ -1299,7 +1299,7 @@ Command: [command] [parameters...]
 help(h)                                                      print help
 quit(q)/exit                                                 quit
 info(i) [state]                                              print k2hash file/memory information and with state
-dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+dump(d) <parameter>                                          dump k2hash, parameter: head(default) / kindex / ckindex / element / full
 set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
 settrial(st) <key> [pass=....]                               set key-value if key is not existed.
 setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
@@ -1347,7 +1347,7 @@ keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
 builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
                                                              set builtin attribute.
 loadpluginattr(lpa) filepath                                 load plugin attribute library.
-addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+addpassphrase(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
 cleanallattr(caa)                                            clear all attribute setting.
 shell                                                        exit shell(same as "!" command).
 echo <string>...                                             echo string
@@ -1485,15 +1485,15 @@ sleep <second>                                               sleep seconds
  READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que read fifo 5
 > que pop fifo
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo
 > que push fifo quevalue1 pass=testpass
 > que push fifo quevalue2 pass=testpass
@@ -1535,15 +1535,15 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue4 pass=testpass
 > que push fifo quevalue5 pass=testpass
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo pass=testpass
 > que push fifo quevalue1 expire=1
 > que push fifo quevalue2 expire=1
@@ -1568,15 +1568,15 @@ sleep <second>                                               sleep seconds
  READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que read fifo 5
 > que pop fifo
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo
 > que push fifo quevalue1 expire=1
 > que push fifo quevalue2 expire=1
@@ -1642,15 +1642,15 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue4 pass=testpass expire=1
 > que push fifo quevalue5 pass=testpass expire=1
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo pass=testpass
 > que push fifo quevalue1 pass=testpass expire=1
 > que push fifo quevalue2 pass=testpass expire=1
@@ -1722,20 +1722,20 @@ sleep <second>                                               sleep seconds
  READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque read fifo 5
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo
 > kque push fifo kquekey1 kquevalue1 pass=testpass
 > kque push fifo kquekey2 kquevalue2 pass=testpass
@@ -1782,20 +1782,20 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey4 kquevalue4 pass=testpass
 > kque push fifo kquekey5 kquevalue5 pass=testpass
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo pass=testpass
 > kque push fifo kquekey1 kquevalue1 expire=1
 > kque push fifo kquekey2 kquevalue2 expire=1
@@ -1825,20 +1825,20 @@ sleep <second>                                               sleep seconds
  READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque read fifo 5
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo
 > kque push fifo kquekey1 kquevalue1 expire=1
 > kque push fifo kquekey2 kquevalue2 expire=1
@@ -1909,20 +1909,20 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo pass=testpass
 > kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
 > kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
@@ -1980,12 +1980,12 @@ sleep <second>                                               sleep seconds
 "testkey" => attribute is not found
 > rm testkey
 > exit
-Quit & Detacch.
+Quit & Detach.
 -------------------------------------------------------
  K2HASH TOOL
 -------------------------------------------------------
 Permanent file:                         /tmp/k2hash_test_linetool.k2h
-Attached paraemters:
+Attached parameters:
     Full are mapping:                   true
     Key Index mask count:               4
     Collision Key Index mask count:     2
@@ -1999,7 +1999,7 @@ Command: [command] [parameters...]
 help(h)                                                      print help
 quit(q)/exit                                                 quit
 info(i) [state]                                              print k2hash file/memory information and with state
-dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+dump(d) <parameter>                                          dump k2hash, parameter: head(default) / kindex / ckindex / element / full
 set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
 settrial(st) <key> [pass=....]                               set key-value if key is not existed.
 setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
@@ -2047,7 +2047,7 @@ keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
 builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
                                                              set builtin attribute.
 loadpluginattr(lpa) filepath                                 load plugin attribute library.
-addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+addpassphrase(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
 cleanallattr(caa)                                            clear all attribute setting.
 shell                                                        exit shell(same as "!" command).
 echo <string>...                                             echo string
@@ -2185,15 +2185,15 @@ sleep <second>                                               sleep seconds
  READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que read fifo 5
 > que pop fifo
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo
 > que push fifo quevalue1 pass=testpass
 > que push fifo quevalue2 pass=testpass
@@ -2235,15 +2235,15 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue4 pass=testpass
 > que push fifo quevalue5 pass=testpass
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo pass=testpass
 > que push fifo quevalue1 expire=1
 > que push fifo quevalue2 expire=1
@@ -2268,15 +2268,15 @@ sleep <second>                                               sleep seconds
  READ QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que read fifo 5
 > que pop fifo
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo
 > que push fifo quevalue1 expire=1
 > que push fifo quevalue2 expire=1
@@ -2342,15 +2342,15 @@ sleep <second>                                               sleep seconds
 > que push fifo quevalue4 pass=testpass expire=1
 > que push fifo quevalue5 pass=testpass expire=1
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
+ POPPED QUEUE = quevalue1ÿ          71 75 65 76 61 6C 75 65  31 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
+ POPPED QUEUE = quevalue2ÿ          71 75 65 76 61 6C 75 65  32 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
+ POPPED QUEUE = quevalue3ÿ          71 75 65 76 61 6C 75 65  33 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
+ POPPED QUEUE = quevalue4ÿ          71 75 65 76 61 6C 75 65  34 00 
 > que pop fifo pass=testpass
- POPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
+ POPPED QUEUE = quevalue5ÿ          71 75 65 76 61 6C 75 65  35 00 
 > que pop fifo pass=testpass
 > que push fifo quevalue1 pass=testpass expire=1
 > que push fifo quevalue2 pass=testpass expire=1
@@ -2422,20 +2422,20 @@ sleep <second>                                               sleep seconds
  READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque read fifo 5
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo
 > kque push fifo kquekey1 kquevalue1 pass=testpass
 > kque push fifo kquekey2 kquevalue2 pass=testpass
@@ -2482,20 +2482,20 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey4 kquevalue4 pass=testpass
 > kque push fifo kquekey5 kquevalue5 pass=testpass
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo pass=testpass
 > kque push fifo kquekey1 kquevalue1 expire=1
 > kque push fifo kquekey2 kquevalue2 expire=1
@@ -2525,20 +2525,20 @@ sleep <second>                                               sleep seconds
  READ QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque read fifo 5
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo
 > kque push fifo kquekey1 kquevalue1 expire=1
 > kque push fifo kquekey2 kquevalue2 expire=1
@@ -2609,20 +2609,20 @@ sleep <second>                                               sleep seconds
 > kque push fifo kquekey4 kquevalue4 pass=testpass expire=1
 > kque push fifo kquekey5 kquevalue5 pass=testpass expire=1
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
- POPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
+ POPPED QUEUE(KEY)   = kquekey1ÿ           6B 71 75 65 6B 65 79 31  00 
+ POPPED QUEUE(VALUE) = kquevalue1ÿ         6B 71 75 65 76 61 6C 75  65 31 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
- POPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
+ POPPED QUEUE(KEY)   = kquekey2ÿ           6B 71 75 65 6B 65 79 32  00 
+ POPPED QUEUE(VALUE) = kquevalue2ÿ         6B 71 75 65 76 61 6C 75  65 32 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
- POPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
+ POPPED QUEUE(KEY)   = kquekey3ÿ           6B 71 75 65 6B 65 79 33  00 
+ POPPED QUEUE(VALUE) = kquevalue3ÿ         6B 71 75 65 76 61 6C 75  65 33 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
- POPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
+ POPPED QUEUE(KEY)   = kquekey4ÿ           6B 71 75 65 6B 65 79 34  00 
+ POPPED QUEUE(VALUE) = kquevalue4ÿ         6B 71 75 65 76 61 6C 75  65 34 00 
 > kque pop fifo pass=testpass
- POPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
- POPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
+ POPPED QUEUE(KEY)   = kquekey5ÿ           6B 71 75 65 6B 65 79 35  00 
+ POPPED QUEUE(VALUE) = kquevalue5ÿ         6B 71 75 65 76 61 6C 75  65 35 00 
 > kque pop fifo pass=testpass
 > kque push fifo kquekey1 kquevalue1 pass=testpass expire=1
 > kque push fifo kquekey2 kquevalue2 pass=testpass expire=1
@@ -2680,12 +2680,12 @@ sleep <second>                                               sleep seconds
 "testkey" => attribute is not found
 > rm testkey
 > exit
-Quit & Detacch.
+Quit & Detach.
 -------------------------------------------------------
  K2HASH TOOL
 -------------------------------------------------------
 On memory mode
-Attached paraemters:
+Attached parameters:
     Full are mapping:                   true
     Key Index mask count:               2
     Collision Key Index mask count:     2
@@ -2699,7 +2699,7 @@ Command: [command] [parameters...]
 help(h)                                                      print help
 quit(q)/exit                                                 quit
 info(i) [state]                                              print k2hash file/memory information and with state
-dump(d) <parameter>                                          dump k2hash, paraemter: head(default) / kindex / ckindex / element / full
+dump(d) <parameter>                                          dump k2hash, parameter: head(default) / kindex / ckindex / element / full
 set(s) <key> <value> [rmsub] [pass=....] [expire=sec]        set key-value, if rmsub is specified, remove all subkey under key. if value is "null", it means no value.
 settrial(st) <key> [pass=....]                               set key-value if key is not existed.
 setsub <parent key> <key> <value>                            set key-value under parent key. if value is "null", it means no value.
@@ -2747,7 +2747,7 @@ keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...]
 builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path]
                                                              set builtin attribute.
 loadpluginattr(lpa) filepath                                 load plugin attribute library.
-addpassphrese(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
+addpassphrase(app) <pass phrase> [default]                   add pass phrase for crypt into builtin attribute.
 cleanallattr(caa)                                            clear all attribute setting.
 shell                                                        exit shell(same as "!" command).
 echo <string>...                                             echo string
@@ -2767,4 +2767,4 @@ sleep <second>                                               sleep seconds
 +"key27" => "value1"
 +"key1" => "value1"
 > exit
-Quit & Detacch.
+Quit & Detach.

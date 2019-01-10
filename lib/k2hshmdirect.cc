@@ -35,7 +35,7 @@ using namespace std;
 PBALLEDATA K2HShm::GetElementToBinary(PELEMENT pAbsElement) const
 {
 	if(!pAbsElement){
-		ERR_K2HPRN("Paramter is wrong.");
+		ERR_K2HPRN("Parameter is wrong.");
 		return NULL;
 	}
 
@@ -103,7 +103,7 @@ PBALLEDATA K2HShm::GetElementToBinary(PELEMENT pAbsElement) const
 PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, const struct timespec* pstartts, const struct timespec* pendts, const k2h_hash_t target_hash, const k2h_hash_t target_max_hash, const k2h_hash_t old_hash, const k2h_hash_t old_max_hash, const long target_hash_range, bool is_expire_check) const
 {
 	if(!pRelElement || !pdatacnt){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return NULL;
 	}
 	*pdatacnt = 0;
@@ -145,7 +145,7 @@ PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, c
 				// check expire
 				if(is_expire_check && attrman.IsExpire(*pAttr)){
 					// element is expired.
-					MSG_K2HPRN("the key is expired, so we do not wirte this element.");
+					MSG_K2HPRN("the key is expired, so we do not write this element.");
 					K2H_Free(pElementBin);
 
 				}
@@ -154,7 +154,7 @@ PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, c
 					struct timespec	mtime;
 					if(!attrman.GetMTime(*pAttr, mtime)){
 						// element does not have mtime attribute.
-						//MSG_K2HPRN("probabry, the key dose not have mtime, so we write this element.");
+						//MSG_K2HPRN("probably, the key dose not have mtime, so we write this element.");
 
 					}else{
 						// [NOTE]
@@ -261,9 +261,9 @@ PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, c
 //	startts				: [IN]	limit of update time start range
 //	endts				: [IN]	limit of update time end range
 //	target_hash			: [IN]	search target hash start value in target_max_hash
-//	target_max_hash		: [IN]	maximum count of rounded circle hash value(= maximum hash vallue + 1)
+//	target_max_hash		: [IN]	maximum count of rounded circle hash value(= maximum hash value + 1)
 //	old_hash			: [IN]	old target hash in old_max_hash
-//	old_max_hash		: [IN]	maximum count of old rounded circle hash value(= maximum hash vallue + 1)
+//	old_max_hash		: [IN]	maximum count of old rounded circle hash value(= maximum hash value + 1)
 //	target_hash_range	: [IN]	search target hash range(count) from start value(this value must be as same as old)
 //  is_expire_check		: [IN]  whether checking expire time
 //	pnexthash			: [OUT] start hash value for next search
@@ -278,7 +278,7 @@ PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, c
 bool K2HShm::GetElementsByHash(const k2h_hash_t starthash, const struct timespec startts, const struct timespec endts, const k2h_hash_t target_hash, const k2h_hash_t target_max_hash, const k2h_hash_t old_hash, const k2h_hash_t old_max_hash, const long target_hash_range, bool is_expire_check, k2h_hash_t* pnexthash, PK2HBIN* ppbindatas, size_t* pdatacnt) const
 {
 	if(!pnexthash || !ppbindatas || !pdatacnt){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return false;
 	}
 	if(!IsAttached()){
@@ -313,7 +313,7 @@ bool K2HShm::GetElementsByHash(const k2h_hash_t starthash, const struct timespec
 				}
 				return true;
 			}
-			MSG_K2HPRN("Found element, but it is not target element(expierd or out of time range), so search next...");
+			MSG_K2HPRN("Found element, but it is not target element(expired or out of time range), so search next...");
 		}
 		ALObjCKI.Unlock();							// UNLOCK
 	}
@@ -341,7 +341,7 @@ bool K2HShm::GetElementsByHash(const k2h_hash_t starthash, const struct timespec
 bool K2HShm::SetElementByBinArray(const PRALLEDATA prawdata, const struct timespec* pts)
 {
 	if(!prawdata || !pts){
-		ERR_K2HPRN("Paramters are wrong.");
+		ERR_K2HPRN("Parameters are wrong.");
 		return false;
 	}
 
@@ -396,7 +396,7 @@ bool K2HShm::SetElementByBinArray(const PRALLEDATA prawdata, const struct timesp
 					// If existed key does not have mtime, so we can not compare mtime.
 					// Thus we always over write by requested key.
 					//
-					MSG_K2HPRN("probabry, the key dose not have mtime, so we over write this key.");
+					MSG_K2HPRN("probably, the key dose not have mtime, so we over write this key.");
 				}else{
 					if(pts->tv_sec < mtime.tv_sec || (pts->tv_sec == mtime.tv_sec && pts->tv_nsec <= mtime.tv_nsec)){
 						MSG_K2HPRN("the existing key mtime is newer than requested key, so we do not over write it.");

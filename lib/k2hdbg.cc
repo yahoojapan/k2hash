@@ -82,7 +82,7 @@ class K2HDbgControl
 };
 
 //
-// Class valiables
+// Class variables
 //
 const char*	K2HDbgControl::DBGENVNAME = "K2HDBGMODE";
 const char*	K2HDbgControl::DBGENVFILE = "K2HDBGFILE";

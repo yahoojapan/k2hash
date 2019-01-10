@@ -62,7 +62,7 @@ bool k2h_crypt_lib_initialize(void)
 bool k2h_crypt_lib_terminate(void)
 {
 	if(SECSuccess != NSS_Shutdown()){
-		ERR_K2HPRN("Failed NSS_Shutdown, probabry anyone handles NSS context or objects.");
+		ERR_K2HPRN("Failed NSS_Shutdown, probably anyone handles NSS context or objects.");
 		return false;
 	}
 	return true;
@@ -246,7 +246,7 @@ unsigned char* k2h_encrypt_aes256_cbc(const char* pass, const unsigned char* org
 
 	// allocated for encrypted data area
 	if(NULL == (encryptdata = reinterpret_cast<unsigned char*>(malloc(orglen + K2H_ENCRYPTED_DATA_EX_LENGTH)))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -447,7 +447,7 @@ unsigned char* k2h_decrypt_aes256_cbc(const char* pass, const unsigned char* enc
 
 	// allocated for decrypted data area
 	if(NULL == (decryptdata = reinterpret_cast<unsigned char*>(malloc(encbodylen)))){	// decbodylen < encbodylen
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -657,7 +657,7 @@ unsigned char* k2h_encrypt_aes256_cbc_pbkdf2(const char* pass, int iter, const u
 
 	// allocated for encrypted data area
 	if(NULL == (encryptdata = reinterpret_cast<unsigned char*>(malloc(orglen + K2H_ENCRYPTED_DATA_EX2_LENGTH)))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -847,7 +847,7 @@ unsigned char* k2h_decrypt_aes256_cbc_pbkdf2(const char* pass, const unsigned ch
 
 	// allocated for decrypted data area
 	if(NULL == (decryptdata = reinterpret_cast<unsigned char*>(malloc(encbodylen)))){	// decbodylen < encbodylen
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 

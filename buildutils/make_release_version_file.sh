@@ -76,7 +76,7 @@ while [ $# -ne 0 ]; do
 		CHANGELOGFILE=${SRCTOP}/$1
 
 	else
-		echo "ERROR: Unkown option $1" 1>&2
+		echo "ERROR: Unknown option $1" 1>&2
 		exit 1
 	fi
 	shift
@@ -131,9 +131,9 @@ fi
 # If version number from git release tag is later than one from ChangeLog,
 # this script puts error and exits.
 # The other case, this script continue to work and puts version number
-# to RELEASE_VERION file.
+# to RELEASE_VERSION file.
 # If there are no version number from git release tag and ChangeLog, this
-# script checks RELEASE_VERION file existing.
+# script checks RELEASE_VERSION file existing.
 #
 IS_PUT_RELEASE_VERSION_FILE=yes
 

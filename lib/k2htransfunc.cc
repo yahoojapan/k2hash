@@ -43,12 +43,12 @@ bool k2h_trans(k2h_h handle, PBCOM pBinCom)
 {
 	MSG_K2HPRN("transaction function call, %s", szVersion);
 
-	// Do not check dis/enable transaction because already check it before comming this function.
+	// Do not check dis/enable transaction because already check it before coming this function.
 	// (so do not call K2HTransManager::isEnable)
 	//
 	int	arfd;
 	if(-1 == (arfd = K2HTransManager::Get()->GetArchiveFd(reinterpret_cast<const K2HShm*>(handle)))){
-		ERR_K2HPRN("There is no archive file discripter.");
+		ERR_K2HPRN("There is no archive file descriptor.");
 		return false;
 	}
 

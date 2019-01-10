@@ -42,7 +42,7 @@ using namespace std;
 //---------------------------------------------------------
 #define	KEY_FORMAT				"KEY-%016X"
 #define	KEY_FORMAT_UNIQ			"KEY-%016X-%016X"
-#define	KEY_BUFF_LENGTH			48							// max 37 charactor + null + etc.
+#define	KEY_BUFF_LENGTH			48							// max 37 character + null + etc.
 #define	BENCH_TMP_FILE_FORM		"/tmp/k2hbench-%d.dat"
 #define	BENCH_FILE_LENGTH		256
 #define	BENCH_TYPE_RO			1
@@ -98,7 +98,7 @@ typedef struct bench_opts{
 typedef struct child_control{
 	int				procid;				// process id for child
 	int				threadid;			// thread id(gettid)
-	pthread_t		pthreadid;			// pthead id(pthread_create)
+	pthread_t		pthreadid;			// pthread id(pthread_create)
 	bool			is_ready;			// 
 	bool			is_exit;			// 
 	struct timespec	ts;					// result time
@@ -271,7 +271,7 @@ class TestData
 					ERR("Could not allocate memory.");
 					length = 0;
 				}else{
-					// data is repeating from 0x20 - 0x7e charactor.
+					// data is repeating from 0x20 - 0x7e character.
 					memset(pData, (static_cast<char>(gettid() % static_cast<int>('}' - ' ')) + ' '), length - 1);
 				}
 			}else{
@@ -323,8 +323,8 @@ static void Help(char* progname)
 	PRN("       -g <debug level>     debugging mode: ERR(default) / WAN / INFO(*1)");
 	PRN(NULL);
 	PRN("(*1)You can set debug level by another way which is setting environment as \"K2HDBGMODE\".");
-	PRN("    \"K2HDBGMODE\" enviroment is took as \"SILENT\", \"ERR\", \"WAN\" or \"INFO\" value.");
-	PRN("    When this process gets SIGUSER1 signal, the debug level is bumpup.");
+	PRN("    \"K2HDBGMODE\" environment is took as \"SILENT\", \"ERR\", \"WAN\" or \"INFO\" value.");
+	PRN("    When this process gets SIGUSR1 signal, the debug level is bumpup.");
 	PRN("    The debug level is changed as \"SILENT\"->\"ERR\"->\"WAN\"->\"INFO\"->...");
 	PRN(NULL);
 }

@@ -85,7 +85,7 @@ basic_k2hstreambuf<CharT, Traits>::basic_k2hstreambuf(K2HShm* pk2hshm, const cha
 		return;
 	}
 	if(!init(pk2hshm, pkey, opmode)){
-		WAN_K2HPRN("Parameters are sonmething wrong");
+		WAN_K2HPRN("Parameters are something wrong");
 		return;
 	}
 }

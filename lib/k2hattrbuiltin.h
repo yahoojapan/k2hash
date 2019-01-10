@@ -124,7 +124,7 @@ class K2hAttrBuiltin : public K2hAttrOpsBase
 		int						AttrMask;							// attribute mask for temporary on the object
 
 	protected:
-		static K2hCryptContext& GetCryptLibContext(void);			// singleton for crypt library(initializer/destructor)
+		static K2hCryptContext& GetCryptLibContext(void);			// singleton for crypt library(constructor/destructor)
 		static k2hbapackmap_t& GetAttrPackMap(void);				// builtin attribute setting map for each shm
 
 		static PK2HBATTRPACK GetBuiltinAttrPack(const K2HShm* pshm);

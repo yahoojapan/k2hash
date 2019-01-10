@@ -42,7 +42,7 @@ const char* k2h_hash_version(void);
 // This is simple macros for making hash code.
 // If you can use hash function which is licensed, you can replace
 // this macros for your macros.
-// (for exsample, if you know, macros name is xxx_ComputeBuffer_hcodeX).
+// (for example, if you know, macros name is xxx_ComputeBuffer_hcodeX).
 // 
 #define Test_ComputeBuffer_hcode(buffer_name, buffer_name_len, hc) \
 		{\

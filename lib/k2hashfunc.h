@@ -30,7 +30,7 @@
 // K2Hash library has three type functions for HASHING.
 // 1) k2h_hash         - convert binary array to hash value(unsigned long)
 // 3) k2h_second_hash  - secondary hash function like k2h_hash
-// 3) k2h_hash_version - returns hash function verson string
+// 3) k2h_hash_version - returns hash function version string
 // 
 // You can overwrite these three functions by follow two way.
 // 1) Built'in these function in your source codes(binary)
@@ -43,7 +43,7 @@
 //    You can load your library(so) which has these functions by
 //    calling Load() member function in K2HashDynLib class.
 // 
-// If you use these functions for exsample: making hash code,
+// If you use these functions for example: making hash code,
 // checking function version. You can call below macros which is
 // defined in this header file, so you call rightly function
 // regardless of overwriting functions.

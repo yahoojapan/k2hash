@@ -129,9 +129,9 @@ bool K2HShm::Dump(FILE* stream, int dumpmask) const
 		nest++;
 		DUMP_PRINT_NV(stream, nest, "Version",			NULL, "= %s\n",				pHead->version);
 		DUMP_PRINT_NV(stream, nest, "Hash func Version",NULL, "= %s\n",				pHead->hash_version);
-		DUMP_PRINT_NV(stream, nest, "Toal Size",		NULL, "= %zu\n",			pHead->total_size);
+		DUMP_PRINT_NV(stream, nest, "Total Size",		NULL, "= %zu\n",			pHead->total_size);
 		DUMP_PRINT_NV(stream, nest, "Page Size",		NULL, "= %zu\n",		 	pHead->page_size);
-		DUMP_PRINT_NV(stream, nest, "Muximum Mask",		NULL, "= %p(%" PRIx64 ")\n",reinterpret_cast<void*>(pHead->max_mask), pHead->max_mask);
+		DUMP_PRINT_NV(stream, nest, "Maximum Mask",		NULL, "= %p(%" PRIx64 ")\n",reinterpret_cast<void*>(pHead->max_mask), pHead->max_mask);
 		DUMP_PRINT_NV(stream, nest, "Minimum Mask",		NULL, "= %p(%" PRIx64 ")\n",reinterpret_cast<void*>(pHead->min_mask), pHead->min_mask);
 		DUMP_PRINT_NV(stream, nest, "Current Mask",		NULL, "= %p(%" PRIx64 ")\n",reinterpret_cast<void*>(pHead->cur_mask), pHead->cur_mask);
 		DUMP_PRINT_NV(stream, nest, "Collision Mask",	NULL, "= %p(%" PRIx64 ")\n",reinterpret_cast<void*>(pHead->collision_mask), pHead->collision_mask);
@@ -211,7 +211,7 @@ bool K2HShm::Dump(FILE* stream, int dumpmask) const
 	{
 		K2HLock	ALObjUnArea(ShmFd, Rel(&(pHead->unassign_area)), K2HLock::RDLOCK);	// LOCK
 
-		DUMP_PRINT_NV(stream, nest, "Unassaigned area", NULL, "%p(%jd)\n",	reinterpret_cast<void*>(pHead->unassign_area), static_cast<intmax_t>(pHead->unassign_area));
+		DUMP_PRINT_NV(stream, nest, "Unassigned area", NULL, "%p(%jd)\n",	reinterpret_cast<void*>(pHead->unassign_area), static_cast<intmax_t>(pHead->unassign_area));
 	}
 
 	// Extra pointer
@@ -222,7 +222,7 @@ bool K2HShm::Dump(FILE* stream, int dumpmask) const
 		K2HLock	ALObjFEC(ShmFd, Rel(&(pHead->free_element_count)), K2HLock::RDLOCK);	// LOCK
 
 		if(!DumpFreeElements(stream, nest, pHead->pfree_elements, pHead->free_element_count)){
-			ERR_K2HPRN("Somthing error occurred in dumping Free Elements.");
+			ERR_K2HPRN("Something error occurred in dumping Free Elements.");
 			return false;
 		}
 	}
@@ -232,14 +232,14 @@ bool K2HShm::Dump(FILE* stream, int dumpmask) const
 		K2HLock	ALObjFPC(ShmFd, Rel(&(pHead->free_page_count)), K2HLock::RDLOCK);		// LOCK
 
 		if(!DumpFreePages(stream, nest, pHead->pfree_pages, pHead->free_page_count)){
-			ERR_K2HPRN("Somthing error occurred in dumping Free Pages.");
+			ERR_K2HPRN("Something error occurred in dumping Free Pages.");
 			return false;
 		}
 	}
 
 	// Key Index
 	if(!DumpKeyIndex(stream, nest, &(pHead->key_index_area[0]), K2HShm::GetMaskBitCount(pHead->collision_mask), dumpmask)){
-		ERR_K2HPRN("Somthing error occurred in dumping Key Index array.");
+		ERR_K2HPRN("Something error occurred in dumping Key Index array.");
 		return false;
 	}
 
@@ -492,7 +492,7 @@ bool K2HShm::DumpElement(FILE* stream, int nest, PELEMENT pRelElement, int dumpm
 		}
 
 	}else{
-		// print each element detail(rentrant)
+		// print each element detail(reentrant)
 		DUMP_LOWPRINT(stream, nest, "[%d] = {\n", element_count++);
 		nest++;
 
@@ -504,7 +504,7 @@ bool K2HShm::DumpElement(FILE* stream, int nest, PELEMENT pRelElement, int dumpm
 			!DumpPageData(stream, nest, pElement->subkeys, "subkeys", dumpmask)	||
 			!DumpPageData(stream, nest, pElement->attrs, "attrs", dumpmask)		)
 		{
-			ERR_K2HPRN("Something error occurred in dumping PELEMENT menbers.");
+			ERR_K2HPRN("Something error occurred in dumping PELEMENT members.");
 			return false;
 		}
 
@@ -723,7 +723,7 @@ bool K2HShm::DumpQueue(FILE* stream, const unsigned char* byMark, size_t marklen
 
 		K2H_Delete(psubkeys);
 	}
-	K2H_Free(bykey);	// for safty
+	K2H_Free(bykey);	// for safety
 
 	return true;
 }
@@ -754,12 +754,12 @@ bool K2HShm::PrintState(FILE* stream) const
 	DUMP_PRINT_NV(stream, 0, "Total Page",			NULL, "= %ld ( %zu byte )\n",	pState->total_page_count,			static_cast<size_t>(pState->total_page_count * pState->page_size));
 	DUMP_PRINT_NV(stream, 1, "Assigned Page",		NULL, "= %ld ( %zu byte )\n",	pState->assigned_page_count,		static_cast<size_t>(pState->assigned_page_count * pState->page_size));
 	DUMP_PRINT_NV(stream, 1, "Free Page",			NULL, "= %ld ( %zu byte )\n",	pState->unassigned_page_count,		static_cast<size_t>(pState->unassigned_page_count * pState->page_size));
-	DUMP_PRINT_NV(stream, 1, "Data raito per Page",	NULL, "= %zu %% ( %zu byte / %zu byte)\n\n",	(((pState->page_size - PAGEHEAD_SIZE) * 100) / pState->page_size), pState->page_size - PAGEHEAD_SIZE, pState->page_size);
+	DUMP_PRINT_NV(stream, 1, "Data ratio per Page",	NULL, "= %zu %% ( %zu byte / %zu byte)\n\n",	(((pState->page_size - PAGEHEAD_SIZE) * 100) / pState->page_size), pState->page_size - PAGEHEAD_SIZE, pState->page_size);
 
 	DUMP_PRINT_NV(stream, 0, "Total Key count",		NULL, "= %ld\n",				pState->total_element_count);
 	DUMP_PRINT_NV(stream, 0, "System usage",		NULL, "= %zu byte\n",			(pState->total_used_size - static_cast<size_t>(pState->total_page_count * (pState->page_size - PAGEHEAD_SIZE))));
 	DUMP_PRINT_NV(stream, 0, "Total real data size",NULL, "= %zu byte\n",			static_cast<size_t>(pState->total_page_count * (pState->page_size - PAGEHEAD_SIZE)));
-	DUMP_PRINT_NV(stream, 0, "real data raito",		NULL, "= %zu %%\n",				(static_cast<size_t>(pState->total_page_count * (pState->page_size - PAGEHEAD_SIZE) * 100) / pState->total_used_size));
+	DUMP_PRINT_NV(stream, 0, "real data ratio",		NULL, "= %zu %%\n",				(static_cast<size_t>(pState->total_page_count * (pState->page_size - PAGEHEAD_SIZE) * 100) / pState->total_used_size));
 
 	K2H_Free(pState);
 
@@ -823,7 +823,7 @@ PK2HSTATE K2HShm::GetState(void) const
 		pState->unassigned_element_count	= pHead->free_element_count;
 		pState->unassigned_page_count		= pHead->free_page_count;
 
-		// calac
+		// calculate
 		for(int nCnt = 0; nCnt < MAX_K2HAREA_COUNT; nCnt++){
 			if(K2H_AREA_UNKNOWN != pHead->areas[nCnt].type){
 				(pState->assigned_area_count)++;

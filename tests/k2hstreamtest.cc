@@ -248,7 +248,7 @@ static bool TestHandle(K2HShm& k2hash)
 			strm >> strTmp2;
 			PRN("string max = \"%s\", \"%s\"", strTmp1.c_str(), strTmp2.c_str());
 			if(0 != strcmp(strTmp1.c_str(), TEST_DATA_MAX) || 0 != strcmp(strTmp2.c_str(), TEST_DATA_MAX)){
-				// strTmp length included '\0' charactor = 257, so use strcmp function.
+				// strTmp length included '\0' character = 257, so use strcmp function.
 				ERR("           * Error string max(256) data is wrong(compare).");
 				result_max = false;
 			}

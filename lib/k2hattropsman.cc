@@ -166,7 +166,7 @@ bool K2hAttrOpsMan::RemovePluginLib(const K2HShm* pshm)
 		// delete list
 		K2H_Delete(plist);
 
-		// retreive list from map
+		// retrieve list from map
 		K2hAttrOpsMan::GetLibMap().erase(miter);
 	}
 	return true;
@@ -237,7 +237,7 @@ bool K2hAttrOpsMan::Clean(void)
 }
 
 //
-// Queue and KeyQueue need to mask attributes because thier keys does not need history etc.
+// Queue and KeyQueue need to mask attributes because their keys does not need history etc.
 // The marker key does not need any attribute, and the key for KeyQueue is as same as marker.
 // Queue's Key does not need only history attribute.
 // So we control these case by type parameter in this method.
@@ -252,7 +252,7 @@ bool K2hAttrOpsMan::Initialize(const K2HShm* pshm, const unsigned char* pkey, si
 	Clean();
 
 	if(K2hAttrOpsMan::OPSMAN_MASK_ALL != type){
-		// if has lib list in map, make attr plugin objects from plugin library list, and push objct list.
+		// if has lib list in map, make attr plugin objects from plugin library list, and push object list.
 		k2hattrlibmap_t::const_iterator	miter = K2hAttrOpsMan::GetLibMap().find(pshm);
 		if(K2hAttrOpsMan::GetLibMap().end() != miter){
 			const k2hattrliblist_t*	plist = miter->second;
@@ -349,7 +349,7 @@ void K2hAttrOpsMan::GetInfos(stringstream& ss) const
 		if(pAttrOp){
 			pAttrOp->GetInfo(ss);
 		}else{
-			ss << "Attribute library Version:              Unknown(somthing wrong in program)" << endl;
+			ss << "Attribute library Version:              Unknown(something wrong in program)" << endl;
 		}
 	}
 }

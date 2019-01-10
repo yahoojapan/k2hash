@@ -32,7 +32,7 @@ func_usage()
         echo "        REPEAT-COUNT          repeat writing count"
         echo "        VALUE                 value for test data(default is already set)"
         echo ""
-        echo "Mode:   -m                    anoymous memory mode"
+        echo "Mode:   -m                    anonymous memory mode"
         echo "        -f FILENAME           using shm file(data area is not mmap)"
         echo "        -t FILENAME           using temporary shm file(full mmap)"
         echo "        -r FILENAME           dumping shm file"
@@ -62,7 +62,7 @@ if [ "X${TESTPROGDIR}" = "X" ]; then
 fi
 
 ##############
-# Paraemters
+# Parameters
 ##############
 echo ""
 
@@ -274,7 +274,7 @@ if [ "X$MYDBG" != "X" ]; then
 fi
 
 ##############
-# Execte
+# Execute
 ##############
 
 if [ "X$MODE" = "XR" ]; then

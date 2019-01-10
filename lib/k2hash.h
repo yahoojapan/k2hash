@@ -104,11 +104,11 @@ typedef struct k2h_state{
 	char			trans_version[K2H_HASH_FUNC_VER_LENGTH];// Version string as Transaction Function
 
 	int				trans_pool_count;						// Transaction plugin thread pool count
-	k2h_hash_t		max_mask;								// Muximum value for cur_mask
+	k2h_hash_t		max_mask;								// Maximum value for cur_mask
 	k2h_hash_t		min_mask;								// Minimum value for cur_mask
 	k2h_hash_t		cur_mask;								// Current mask value for hash(This value is changed automatically)
 	k2h_hash_t		collision_mask;							// Mask value for collision when masked hash value by cur_mask(This value is not changed)
-	unsigned long	max_element_count;						// Muximum count for elements in collision key index structure(Increasing cur_mask when this value is over)
+	unsigned long	max_element_count;						// Maximum count for elements in collision key index structure(Increasing cur_mask when this value is over)
 
 	size_t			total_size;								// Total size of k2hash
 	size_t			page_size;								// Paging size(system)
@@ -171,8 +171,8 @@ typedef K2HQRMCBRES (*k2h_q_remove_trial_callback)(const unsigned char* bydata, 
 //	This function is called from inner Remove function.
 //	This callback returns whichever the queued data should be removed or
 //	not. And whichever removing should be stopped or not. You can use
-//	enum symbol in K2HQRMCBRES for the return value. The extention value
-//	pExtData is the paraemter when you call Remove function. For example,
+//	enum symbol in K2HQRMCBRES for the return value. The extension value
+//	pExtData is the parameter when you call Remove function. For example,
 //	you can use this value for that keeping the removed keys(datas).
 //
 //	static K2HQRMCBRES QueueRemoveCallback(const unsigned char* bydata, size_t datalen, const PK2HATTRPCK pattrs, int attrscnt, void* pExtData)
@@ -198,15 +198,15 @@ typedef K2HQRMCBRES (*k2h_q_remove_trial_callback)(const unsigned char* bydata, 
 //---------------------------------------------------------
 // [debug]
 //
-// k2h_bump_debug_level				bumpup debugging level(silent -> error -> warning -> messages ->...)
-// k2h_set_debug_level_silent		set silent for debugging level
-// k2h_set_debug_level_error		set error for debugging level
-// k2h_set_debug_level_warning		set warning for debugging level
-// k2h_set_debug_level_message		set message for debugging level
-// k2h_set_debug_file				set file path for debugging message
-// k2h_unset_debug_file				unset file path for debugging message to stderr(default)
-// k2h_load_debug_env				set debugging level and file path by loading environment.
-// k2h_set_bumup_debug_signal_user1	set signal USER1 handler for bumpup debug level
+// k2h_bump_debug_level					bumpup debugging level(silent -> error -> warning -> messages ->...)
+// k2h_set_debug_level_silent			set silent for debugging level
+// k2h_set_debug_level_error			set error for debugging level
+// k2h_set_debug_level_warning			set warning for debugging level
+// k2h_set_debug_level_message			set message for debugging level
+// k2h_set_debug_file					set file path for debugging message
+// k2h_unset_debug_file					unset file path for debugging message to stderr(default)
+// k2h_load_debug_env					set debugging level and file path by loading environment.
+// k2h_set_bumpup_debug_signal_user1	set signal USER1 handler for bumpup debug level
 //
 extern void k2h_bump_debug_level(void);
 extern void k2h_set_debug_level_silent(void);
@@ -216,7 +216,7 @@ extern void k2h_set_debug_level_message(void);
 extern bool k2h_set_debug_file(const char* filepath);
 extern bool k2h_unset_debug_file(void);
 extern bool k2h_load_debug_env(void);
-extern bool k2h_set_bumup_debug_signal_user1(void);
+extern bool k2h_set_bumpup_debug_signal_user1(void);
 
 // [load library]
 //
@@ -245,7 +245,7 @@ extern bool k2h_unload_transaction_library(void);
 //						simple interface to k2h_open.
 // k2h_open_mem			attach k2hash on memory, this function is simple interface
 //						to k2h_open.
-// k2h_close			detach k2hash file(memory) immediatry
+// k2h_close			detach k2hash file(memory) immediately
 // k2h_close_wait		detach k2hash file(memory) with timeout(or blocking)
 //
 extern bool k2h_create(const char* filepath, int maskbitcnt, int cmaskbitcnt, int maxelementcnt, size_t pagesize);
@@ -269,7 +269,7 @@ extern bool k2h_close_wait(k2h_h handle, long waitms);
 // k2h_enable_transaction_param_we		enable transaction, this function is simple interface to k2h_transaction
 // k2h_disable_transaction				disable transaction, this function is simple interface to k2h_transaction
 // 
-// k2h_get_transaction_archive_fd		get transaction archive file discriptor, if it is set.
+// k2h_get_transaction_archive_fd		get transaction archive file descriptor, if it is set.
 // 
 // k2h_load_archive						load from (transaction formatted)archive file
 // k2h_put_archive						put to (transaction formatted)archive file
@@ -729,7 +729,7 @@ extern bool k2h_keyq_dump(k2h_keyq_h keyqhandle, FILE* stream);
 
 // [dump]
 //
-// k2h_dump_head			dump head infomation for k2hash file(memory)
+// k2h_dump_head			dump head information for k2hash file(memory)
 // k2h_dump_keytable		dump key hash table for k2hash file(memory)
 // k2h_dump_full_keytable	dump full key hash table for k2hash file(memory)
 // k2h_dump_elementtable	dump elements for k2hash file(memory)

@@ -55,7 +55,7 @@ bool k2h_trans(k2h_h handle, PBCOM pBinCom)
 
 	string	strTrans;
 	if(pBinCom){
-		string	Mode	= &(pBinCom->scom.szCommand[1]);	// First charactor is "\n", so skip it
+		string	Mode	= &(pBinCom->scom.szCommand[1]);	// First character is "\n", so skip it
 		long	type	= pBinCom->scom.type;
 		string	key		= "key=";
 		string	val		= "val=";

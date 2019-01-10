@@ -27,7 +27,7 @@
 using namespace std;
 
 //---------------------------------------------------------
-// K2HLock Class Valiable/Methods
+// K2HLock Class Variables/Methods
 //---------------------------------------------------------
 const bool	K2HLock::RDLOCK;
 const bool	K2HLock::RWLOCK;
