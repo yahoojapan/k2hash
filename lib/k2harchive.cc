@@ -102,6 +102,7 @@ bool K2HArchive::Save(K2HShm* pShm) const
 	ssize_t			vallength;
 	ssize_t			skeylength;
 	ssize_t			attrlength;
+	// cppcheck-suppress postfixOperator
 	for(K2HShm::iterator iter = pShm->begin(); iter != pShm->end(); iter++){
 		K2H_Delete(pDAccess);
 		K2H_Free(byKey);
@@ -249,6 +250,8 @@ bool K2HArchive::Save(K2HShm* pShm) const
 	K2H_Free(byVal);
 	K2H_Free(bySKey);
 	K2H_Free(byAttrs);
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(fd);
 
 	return result;
@@ -372,6 +375,9 @@ bool K2HArchive::Load(K2HShm* pShm) const
 		}
 	}
 	k2harchive_load_init_vals(pBinCom, byKey, byVal, bySKey, byAttrs, byExdata);
+
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(fd);
 
 	return result;
@@ -387,6 +393,8 @@ void* K2HArchive::ReadFile(int fd, size_t count, off_t offset) const
 
 	if(NULL == (pReadData = malloc(count))){
 		ERR_K2HPRN("Could not allocation memory.");
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress memleak
 		return NULL;
 	}
 	ssize_t	read_length;

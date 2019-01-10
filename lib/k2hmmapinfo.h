@@ -181,7 +181,7 @@ class K2HMmapInfo
 		PK2HMMAPINFO*	ppInfoTop;
 
 	public:
-		K2HMmapInfo(K2HShm* pk2hshm = NULL);
+		explicit K2HMmapInfo(K2HShm* pk2hshm = NULL);
 		virtual ~K2HMmapInfo();
 
 	private:

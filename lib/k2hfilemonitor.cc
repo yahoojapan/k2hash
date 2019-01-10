@@ -199,7 +199,7 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 
 			// truncate
 			if(-1 == ftruncate(fmfd, sizeof(SFMONWRAP))){
-				ERR_K2HPRN("Failed to truncate to %zd monitor file %s by errno(%d), so Remove monitor file.", sizeof(SFMONWRAP), bup_monfile.c_str(), errno);
+				ERR_K2HPRN("Failed to truncate to %zu monitor file %s by errno(%d), so Remove monitor file.", sizeof(SFMONWRAP), bup_monfile.c_str(), errno);
 				unlink(bup_monfile.c_str());
 				CloseOnlyFile();
 				umask(old_umask);

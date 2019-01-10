@@ -487,7 +487,7 @@ K2hAttrBuiltin::K2hAttrBuiltin(void) : K2hAttrOpsBase(), pBuiltinAttrPack(NULL),
 
 K2hAttrBuiltin::~K2hAttrBuiltin(void)
 {
-	Clear();
+	K2hAttrBuiltin::Clear();
 }
 
 void K2hAttrBuiltin::Clear(void)

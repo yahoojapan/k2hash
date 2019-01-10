@@ -519,6 +519,7 @@ bool getsubkey()
 	if (mykeys != NULL) {
 		strarr_t	strarr;
 		mykeys->StringArray(strarr) ;
+		// cppcheck-suppress postfixOperator
 		for(strarr_t::iterator iter = strarr.begin(); iter != strarr.end(); iter++)
 			cout << iter->c_str() << endl ;
 	}
@@ -550,6 +551,7 @@ bool listall()
 	bool answer = EXIT_SUCCESS ;
 	K2HShm    k2hash;
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
+	// cppcheck-suppress postfixOperator
 	for(K2HShm::iterator iter = k2hash.begin(); iter != k2hash.end(); iter++) {
 		char* pKey   = k2hash.Get(*iter, K2HShm::PAGEOBJ_KEY);
 		char* pValue = k2hash.Get(*iter, K2HShm::PAGEOBJ_VALUE);

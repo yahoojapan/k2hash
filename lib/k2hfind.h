@@ -31,6 +31,7 @@ class K2HShm;
 //---------------------------------------------------------
 // Class K2HIterator
 //---------------------------------------------------------
+// cppcheck-suppress copyCtorAndEqOperator
 class K2HIterator : public std::iterator<std::forward_iterator_tag, PELEMENT>
 {
 		friend class K2HShm;

@@ -747,6 +747,7 @@ bool k2h_get_subkeys(k2h_h handle, const unsigned char* pkey, size_t keylength, 
 
 	// copy
 	int	setpos = 0;
+	// cppcheck-suppress postfixOperator
 	for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); iter++){
 		if(0UL == iter->length){
 			WAN_K2HPRN("Subkey is empty.");
@@ -819,6 +820,7 @@ int k2h_get_str_subkeys(k2h_h handle, const char* pkey, char*** ppskeyarray)
 
 	// copy
 	int	setpos = 0;
+	// cppcheck-suppress postfixOperator
 	for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); iter++){
 		if(0UL == iter->length){
 			WAN_K2HPRN("Subkey is empty.");
@@ -887,6 +889,7 @@ bool k2h_get_subkeys_np(k2h_h handle, const unsigned char* pkey, size_t keylengt
 
 	// copy
 	int	setpos = 0;
+	// cppcheck-suppress postfixOperator
 	for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); iter++){
 		if(0UL == iter->length){
 			WAN_K2HPRN("Subkey is empty.");
@@ -959,6 +962,7 @@ int k2h_get_str_subkeys_np(k2h_h handle, const char* pkey, char*** ppskeyarray)
 
 	// copy
 	int	setpos = 0;
+	// cppcheck-suppress postfixOperator
 	for(K2HSubKeys::iterator iter = pSubKeys->begin(); iter != pSubKeys->end(); iter++){
 		if(0UL == iter->length){
 			WAN_K2HPRN("Subkey is empty.");
@@ -1004,6 +1008,7 @@ bool k2h_free_keypack(PK2HKEYPCK pkeys, int keycnt)
 	for(int cnt = 0; cnt < keycnt; cnt++){
 		K2H_Free(pkeys[cnt].pkey);
 	}
+	// cppcheck-suppress uselessAssignmentPtrArg
 	K2H_Free(pkeys);
 
 	return true;
@@ -1015,8 +1020,11 @@ bool k2h_free_keyarray(char** pkeys)
 		return true;
 	}
 	for(char** ptmp = pkeys; *ptmp; ptmp++){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress identicalInnerCondition
 		K2H_Free(*ptmp);
 	}
+	// cppcheck-suppress uselessAssignmentPtrArg
 	K2H_Free(pkeys);
 
 	return true;
@@ -1040,6 +1048,7 @@ PK2HATTRPCK k2h_cvt_attrs_to_bin(K2HAttrs* pAttrs, int& attrspckcnt)
 
 	// copy
 	int	setpos = 0;
+	// cppcheck-suppress postfixOperator
 	for(K2HAttrs::iterator iter = pAttrs->begin(); iter != pAttrs->end(); iter++){
 		if(0UL == iter->keylength){
 			WAN_K2HPRN("Attr key is empty, skip this.");
@@ -1147,6 +1156,7 @@ bool k2h_free_attrpack(PK2HATTRPCK pattrs, int attrcnt)
 		K2H_Free(pattrs[cnt].pkey);
 		K2H_Free(pattrs[cnt].pval);
 	}
+	// cppcheck-suppress uselessAssignmentPtrArg
 	K2H_Free(pattrs);
 
 	return true;
@@ -1740,6 +1750,7 @@ bool k2h_find_get_subkeys(k2h_find_h findhandle, PK2HKEYPCK* ppskeypck, int* psk
 	}
 
 	int	setpos = 0;
+	// cppcheck-suppress postfixOperator
 	for(K2HSubKeys::iterator iter = Subkeys.begin(); iter != Subkeys.end(); iter++){
 		if(0UL == iter->length){
 			WAN_K2HPRN("Subkey is empty.");
@@ -1806,6 +1817,7 @@ int k2h_find_get_str_subkeys(k2h_find_h findhandle, char*** ppskeyarray)
 
 	// copy
 	int	setpos = 0;
+	// cppcheck-suppress postfixOperator
 	for(K2HSubKeys::iterator iter = Subkeys.begin(); iter != Subkeys.end(); iter++){
 		if(0UL == iter->length){
 			WAN_K2HPRN("Subkey is empty.");
@@ -2764,6 +2776,7 @@ void free_k2hbin(PK2HBIN pk2hbin)
 	if(pk2hbin){
 		K2H_Free(pk2hbin->byptr);
 	}
+	// cppcheck-suppress uselessAssignmentPtrArg
 	K2H_Free(pk2hbin);
 }
 
@@ -2772,6 +2785,7 @@ void free_k2hbins(PK2HBIN pk2hbin, size_t count)
 	for(size_t cnt = 0; pk2hbin && cnt < count; ++cnt){
 		K2H_Free(pk2hbin[cnt].byptr);
 	}
+	// cppcheck-suppress uselessAssignmentPtrArg
 	K2H_Free(pk2hbin);
 }
 

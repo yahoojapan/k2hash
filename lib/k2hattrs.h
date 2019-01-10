@@ -110,7 +110,7 @@ class K2HAttrs
 
 		K2HAttrs();
 		K2HAttrs(const K2HAttrs& other);
-		K2HAttrs(const char* pattrs);
+		explicit K2HAttrs(const char* pattrs);
 		K2HAttrs(const unsigned char* pattrs, size_t attrslength);
 		virtual ~K2HAttrs();
 
@@ -118,7 +118,7 @@ class K2HAttrs
 		bool Serialize(const unsigned char* pattrs, size_t attrslength);
 		strarr_t::size_type KeyStringArray(strarr_t& strarr) const;
 
-		bool operator=(const K2HAttrs& other);
+		K2HAttrs& operator=(const K2HAttrs& other);
 
 		void clear(void);
 		bool empty(void) const;
@@ -137,6 +137,7 @@ class K2HAttrs
 //---------------------------------------------------------
 // Class K2HAttrIterator
 //---------------------------------------------------------
+// cppcheck-suppress copyCtorAndEqOperator
 class K2HAttrIterator : public std::iterator<std::forward_iterator_tag, K2HATTR>
 {
 		friend class K2HAttrs;

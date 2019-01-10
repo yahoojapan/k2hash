@@ -120,9 +120,9 @@ class LapTime
 		struct timeval	start;
 
 	public:
-		static bool Toggle(void) { return LapTime::Set(!LapTime::isEnable); }
-		static bool Enable(void) { return LapTime::Set(true); }
-		static bool Disable(void) { return LapTime::Set(false); }
+		static bool Toggle(void) { return Set(!LapTime::isEnable); }
+		static bool Enable(void) { return Set(true); }
+		static bool Disable(void) { return Set(false); }
 
 		LapTime();
 		virtual ~LapTime();
@@ -940,7 +940,6 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 			if(isQuart){
 				// pattern: "...."
 				if('\"' == *pPos){
-					isQuart = false;
 					if(0 == isspace(*(pPos + sizeof(char))) && '\0' != *(pPos + sizeof(char))){
 						ERR("Quart is not matching.");
 						return false;
@@ -980,7 +979,6 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 			if(0 == isspace(*pPos)){
 				strParameter.clear();
 				isMakeParameter	= true;
-				isQuart			= false;
 
 				if('\"' == *pPos){
 					isQuart		= true;
@@ -1031,10 +1029,11 @@ static bool LineOptionParser(const char* pCommand, option_t& opts)
 static bool ReadLine(int fd, string& line)
 {
 	char	szBuff;
-	ssize_t	readlength;
 
 	line.erase();
 	while(true){
+		ssize_t	readlength;
+
 		szBuff = '\0';
 		// read one character
 		if(-1 == (readlength = read(fd, &szBuff, 1))){
@@ -1721,7 +1720,7 @@ static bool RemoveSubkeyCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool PrintKeys(K2HShm& k2hash, const char* pKey, string spacer, bool isSubkey, bool is_check_attr, const char* pass)
+static bool PrintKeys(K2HShm& k2hash, const char* pKey, const string& spacer, bool isSubkey, bool is_check_attr, const char* pass)
 {
 	string	myspacer = spacer + "  ";
 
@@ -1760,6 +1759,7 @@ static bool PrintKeys(K2HShm& k2hash, const char* pKey, string spacer, bool isSu
 	if(pSubKey){
 		strarr_t	strarr;
 		if(0 < pSubKey->StringArray(strarr)){
+			// cppcheck-suppress postfixOperator
 			for(strarr_t::iterator iter = strarr.begin(); iter != strarr.end(); iter++){
 				if(isSubkey){
 					// reentrant
@@ -1961,8 +1961,9 @@ static bool DirectPrintCommand(K2HShm& k2hash, params_t& params)
 	char	szChBuff[32];
 	char	szTmpBuff[16];
 	size_t	pos;
-	size_t	wpos;
 	for(pos = 0UL; pos < vallength; pos++){
+		size_t	wpos;
+
 		if(0 == (pos % 8)){
 			sprintf(szBinBuff, "                            ");	// Base for "00 00 00 00  00 00 00 00    "
 			sprintf(szChBuff, "         ");						// Base for "SSSS SSSS"
@@ -2302,6 +2303,7 @@ static bool ListCommand(K2HShm& k2hash, params_t& params)
 				K2H_Free(pKey);
 			}
 		}else{
+			// cppcheck-suppress postfixOperator
 			for(K2HShm::iterator iter = k2hash.begin(params[0].c_str()); iter != k2hash.end(true); iter++){
 				// [TODO]
 				// Subkey should be unsigned char type, but params is based on string now.
@@ -2351,6 +2353,7 @@ static bool ListCommand(K2HShm& k2hash, params_t& params)
 				}
 				if(pSubKeys){
 					string	strSubkeys = "";
+					// cppcheck-suppress postfixOperator
 					for(K2HSubKeys::iterator iter2 = pSubKeys->begin(); iter2 != pSubKeys->end(); iter2++){
 						if(iter2->pSubKey){
 							if(0 < strSubkeys.length()){
@@ -2377,6 +2380,7 @@ static bool ListCommand(K2HShm& k2hash, params_t& params)
 			}
 
 		}else{
+			// cppcheck-suppress postfixOperator
 			for(K2HShm::iterator iter = k2hash.begin(); iter != k2hash.end(); iter++){
 				unsigned char*	byKey	= NULL;
 				unsigned char*	byVal	= NULL;
@@ -2396,6 +2400,7 @@ static bool ListCommand(K2HShm& k2hash, params_t& params)
 				K2HSubKeys*	pSubKeys;
 				if(NULL != (pSubKeys = k2hash.GetSubKeys(pKey))){
 					string	strSubkeys = "";
+					// cppcheck-suppress postfixOperator
 					for(K2HSubKeys::iterator iter2 = pSubKeys->begin(); iter2 != pSubKeys->end(); iter2++){
 						if(iter2->pSubKey){
 							if(0 < strSubkeys.length()){
@@ -2553,6 +2558,7 @@ static bool HistoryCommand(ConsoleInput& InputIF)
 	const strarr_t&	history = InputIF.GetAllHistory();
 
 	int	nCnt = 1;
+	// cppcheck-suppress postfixOperator
 	for(strarr_t::const_iterator iter = history.begin(); iter != history.end(); iter++, nCnt++){
 		PRN(" %d  %s", nCnt, iter->c_str());
 	}
@@ -2568,6 +2574,7 @@ static bool SaveCommand(ConsoleInput& InputIF, params_t& params)
 	}
 
 	const strarr_t&	history = InputIF.GetAllHistory();
+	// cppcheck-suppress postfixOperator
 	for(strarr_t::const_iterator iter = history.begin(); iter != history.end(); iter++){
 		// check except command for writing file
 		if(	0 == strncasecmp(iter->c_str(), "his",		strlen("his"))		||
@@ -4434,6 +4441,8 @@ static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const cha
 	if(!LineOptionParser(pCommand, opts)){
 		return true;	// for continue.
 	}
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress stlSize
 	if(0 == opts.size()){
 		return true;
 	}

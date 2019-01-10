@@ -115,10 +115,11 @@ bool K2HShm::Dump(FILE* stream, int dumpmask) const
 
 	int		nCnt;
 	int		nest = 0;
-	char	szTime[32];
 	string	strTmp;
 
 	{
+		char	szTime[32];
+
 		K2HLock	ALObjCMask(ShmFd, Rel(&(pHead->cur_mask)), K2HLock::RDLOCK);			// LOCK
 
 		// [NOTICE]
@@ -587,8 +588,9 @@ bool K2HShm::DumpPageData(FILE* stream, int nest, PPAGEHEAD pRelPageHead, const 
 				char	szChBuff[32];
 				char	szTmpBuff[16];
 				size_t	pos;
-				size_t	wpos;
 				for(pos = 0; pos < read_length; pos++){
+					size_t	wpos;
+
 					if(0 == (pos % 8)){
 						sprintf(szBinBuff, "                            ");	// Base for "00 00 00 00  00 00 00 00    "
 						sprintf(szChBuff, "         ");						// Base for "SSSS SSSS"
@@ -642,8 +644,7 @@ bool K2HShm::DumpQueue(FILE* stream, const unsigned char* byMark, size_t marklen
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
 
 	K2HLock		ALObjCKI(K2HLock::RWLOCK);			// LOCK
-	PCKINDEX	pCKIndex;
-	if(NULL == (pCKIndex = GetCKIndex(hash, ALObjCKI))){
+	if(NULL == GetCKIndex(hash, ALObjCKI)){
 		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
 		return false;
 	}

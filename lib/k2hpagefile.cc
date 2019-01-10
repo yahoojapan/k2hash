@@ -48,15 +48,20 @@ bool K2HPageFile::GetData(const K2HShm* pk2hshm, int fd, off_t offset, unsigned 
 	}
 	if(NULL == (*ppPageData = (unsigned char*)malloc(k2hpage_obj.DataLength))){
 		ERR_K2HPRN("Could not allocation memory.");
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress memleak
 		return false;
 	}
 	memcpy(*ppPageData, k2hpage_obj.pPageData, k2hpage_obj.DataLength);
 
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress memleak
 	return true;
 }
 
 bool K2HPageFile::FreeData(unsigned char* pPageData)
 {
+	// cppcheck-suppress uselessAssignmentPtrArg
 	K2H_Free(pPageData);
 	return true;
 }
@@ -80,7 +85,7 @@ K2HPageFile::K2HPageFile(const K2HShm* pk2hshm, int fd, off_t offset) : K2HPage(
 
 K2HPageFile::~K2HPageFile()
 {
-	Clean();
+	K2HPage::Clean();
 }
 
 //---------------------------------------------------------
@@ -195,6 +200,8 @@ bool K2HPageFile::LoadPageHead(void)
 	PPAGEWRAP	pPageWrap;
 	if(NULL == (pPageWrap = (PPAGEWRAP)malloc(sizeof(PAGEWRAP)))){
 		ERR_K2HPRN("Could not allocation memory.");
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress memleak
 		return false;
 	}
 
@@ -208,6 +215,8 @@ bool K2HPageFile::LoadPageHead(void)
 
 	isHeadLoaded = true;
 
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress memleak
 	return true;
 }
 

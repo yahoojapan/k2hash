@@ -88,6 +88,8 @@ bool k2h_trans(k2h_h handle, PBCOM pBinCom)
 		FILE*	fp;
 		if(NULL == (fp = fopen(szTFile, "a"))){
 			fprintf(stderr, "[ERR] Trans Function: Could not open file(%s), errno = %d.\n", szTFile, errno);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress resourceLeak
 			return false;
 		}
 		if(strTrans.length() != fwrite(strTrans.c_str(), sizeof(char), strTrans.length(), fp)){

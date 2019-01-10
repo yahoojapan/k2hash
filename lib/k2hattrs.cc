@@ -71,6 +71,7 @@ bool K2HAttrs::Serialize(unsigned char** ppattrs, size_t& attrslen) const
 
 	// total length
 	size_t	tlength = sizeof(size_t);	// for attrs count as first data.
+	// cppcheck-suppress postfixOperator
 	for(iter = Attrs.begin(); iter != Attrs.end(); iter++){
 		tlength += sizeof(size_t) * 2;
 		tlength += iter->keylength;
@@ -90,6 +91,7 @@ bool K2HAttrs::Serialize(unsigned char** ppattrs, size_t& attrslen) const
 
 	// set datas.
 	unsigned char*	pSetPos = pSerialize + sizeof(size_t);
+	// cppcheck-suppress postfixOperator
 	for(iter = Attrs.begin(); iter != Attrs.end(); iter++){
 		// set length
 		size_t*	pKeyLenPos	= reinterpret_cast<size_t*>(pSetPos);
@@ -166,6 +168,7 @@ bool K2HAttrs::Serialize(const unsigned char* pattrs, size_t attrslength)
 strarr_t::size_type K2HAttrs::KeyStringArray(strarr_t& strarr) const
 {
 	strarr.clear();
+	// cppcheck-suppress postfixOperator
 	for(k2hattrarr_t::const_iterator iter = Attrs.begin(); iter != Attrs.end(); iter++){
 		string	strtmp(reinterpret_cast<const char*>(iter->pkey), iter->keylength);
 		strtmp += '\0';
@@ -176,6 +179,7 @@ strarr_t::size_type K2HAttrs::KeyStringArray(strarr_t& strarr) const
 
 void K2HAttrs::clear(void)
 {
+	// cppcheck-suppress postfixOperator
 	for(k2hattrarr_t::iterator iter = Attrs.begin(); iter != Attrs.end(); iter++){
 		K2H_Free(iter->pkey);
 		K2H_Free(iter->pval);
@@ -193,14 +197,15 @@ size_t K2HAttrs::size(void) const
 	return Attrs.size();
 }
 
-bool K2HAttrs::operator=(const K2HAttrs& other)
+K2HAttrs& K2HAttrs::operator=(const K2HAttrs& other)
 {
 	clear();
 
+	// cppcheck-suppress postfixOperator
 	for(k2hattrarr_t::const_iterator iter = other.Attrs.begin(); iter != other.Attrs.end(); iter++){
 		insert(iter->pkey, iter->keylength, iter->pval, iter->vallength);
 	}
-	return true;
+	return *this;
 }
 
 K2HAttrs::iterator K2HAttrs::begin(void)
@@ -229,9 +234,10 @@ K2HAttrs::iterator K2HAttrs::find(const unsigned char* pkey, size_t keylength)
 	k2hattrarr_t::iterator	found_iter;
 	size_t					StartPos= 0;
 	size_t					EndPos	= Attrs.size();
-	size_t					MidPos;
 	int						nResult;
 	while(true){
+		size_t				MidPos;
+
 		MidPos		= (StartPos + EndPos) / 2;
 		found_iter	= Attrs.begin();
 		advance(found_iter, MidPos);
@@ -315,6 +321,8 @@ K2HAttrs::iterator K2HAttrs::insert(const unsigned char* pkey, size_t keylength,
 	attr.vallength = vallength;
 	if(NULL == (attr.pkey = (unsigned char*)malloc(attr.keylength))){
 		ERR_K2HPRN("Could not allocate memory.");
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress memleak
 		return K2HAttrIterator(this, Attrs.end());
 	}
 	memcpy(attr.pkey, pkey, attr.keylength);
@@ -323,6 +331,8 @@ K2HAttrs::iterator K2HAttrs::insert(const unsigned char* pkey, size_t keylength,
 		if(NULL == (attr.pval = (unsigned char*)malloc(attr.vallength))){
 			ERR_K2HPRN("Could not allocate memory.");
 			K2H_Free(attr.pkey);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress memleak
 			return K2HAttrIterator(this, Attrs.end());
 		}
 		memcpy(attr.pval, pval, attr.vallength);
@@ -332,9 +342,10 @@ K2HAttrs::iterator K2HAttrs::insert(const unsigned char* pkey, size_t keylength,
 	k2hattrarr_t::iterator	insert_iter;
 	size_t					StartPos= 0;
 	size_t					EndPos	= Attrs.size();
-	size_t					MidPos;
 	int						nResult;
 	while(true){
+		size_t				MidPos;
+
 		MidPos		= (StartPos + EndPos) / 2;
 		insert_iter	= Attrs.begin();
 		advance(insert_iter, MidPos);
@@ -396,10 +407,8 @@ K2HAttrIterator::K2HAttrIterator(const K2HAttrs* pK2HSKeys, k2hattrarr_t::iterat
 {
 }
 
-K2HAttrIterator::K2HAttrIterator(const K2HAttrIterator& iterator)
+K2HAttrIterator::K2HAttrIterator(const K2HAttrIterator& iterator) : pK2HAttrs(iterator.pK2HAttrs), iter_pos(iterator.iter_pos)
 {
-	pK2HAttrs	= iterator.pK2HAttrs;
-	iter_pos	= iterator.iter_pos;
 }
 
 K2HAttrIterator::~K2HAttrIterator()
@@ -413,6 +422,7 @@ bool K2HAttrIterator::Next(void)
 		return false;
 	}
 	if(iter_pos != pK2HAttrs->Attrs.end()){
+		// cppcheck-suppress postfixOperator
 		iter_pos++;
 	}
 	return true;

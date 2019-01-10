@@ -143,9 +143,10 @@ void* K2HTransManager::WorkerProc(void* param)
 
 	// Loop
 	struct timespec	timeout;
-	int				result;
 	K2HQueue		queue;
 	while(!ptrparam->is_exit){
+		int			result;
+
 		// reset timespec
 		timeout.tv_sec	= time(NULL) + K2HTransManager::DEFAULT_TREAD_COND_WAIT;
 		timeout.tv_nsec	= 0L;
@@ -547,6 +548,8 @@ bool K2HTransManager::CheckFile(const K2HShm* pk2hshm)
 	MSG_K2HPRN("Need to reopen file.");
 	K2H_CLOSE(pFileInfo->arfd);
 
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress redundantAssignment
 	if(-1 == (pFileInfo->arfd = open(pFileInfo->filepath.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))){
 		ERR_K2HPRN("Could not reopen/create file: errno(%d)", errno);
 		return false;
@@ -705,6 +708,9 @@ bool K2HTransManager::CreateThreads(const K2HShm* pk2hshm)
 		}
 		pthpool->trparammap[tid] = pparam;
 	}
+
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress stlSize
 	if(0 == pthpool->trparammap.size()){
 		ERR_K2HPRN("Could not create any thread.");
 		pthread_cond_destroy(&(pthpool->trcond));
@@ -754,7 +760,6 @@ bool K2HTransManager::ExitThreads(const K2HShm* pk2hshm)
 
 	// wait for all thread exit
 	for(std::map<pthread_t, bool>::iterator iter2 = threadstatus.begin(); iter2 != threadstatus.end(); ++iter2){
-		int	result;
 		if(0 != (result = pthread_join(iter2->first, NULL))){
 			ERR_K2HPRN("Failed to wait exiting thread(return code = %d), but continue...", result);
 			iter2->second = false;
@@ -811,6 +816,7 @@ bool K2HTransManager::ExitAllThreads(void)
 
 	// exit threads in thread pool
 	bool	bResult = true;
+	// cppcheck-suppress postfixOperator
 	for(std::map<const K2HShm*, bool>::const_iterator iter = k2htrmap.begin(); iter != k2htrmap.end(); iter++){
 		if(!ExitThreads(iter->first)){
 			ERR_K2HPRN("Could not exit thread for target, but continue...");
@@ -829,6 +835,8 @@ bool K2HTransManager::SetThreadPool(int count)
 	}
 	while(!fullock::flck_trylock_noshared_mutex(&LockPool));	// no call sched_yield()
 
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress stlSize
 	if(0 < trpoolmap.size()){
 		// Now thread running
 		ERR_K2HPRN("Could not set thread pool count, so MUST do after STOP all thread.");
@@ -865,10 +873,11 @@ bool K2HTransManager::WaitFinish(const K2HShm* pk2hshm, long ms)
 	}
 
 	K2HQueue	k2hq(const_cast<K2HShm*>(pk2hshm), true, pprefix, prefixlen, K2hAttrOpsMan::OPSMAN_MASK_TRANSQUEUEKEY);
-	long		waitms;
 	bool		blocking = (K2HTransManager::FINISH_WAIT_BLOCK == ms);
 	bool		result;
 	while(false == (result = k2hq.IsEmpty()) && (blocking || 0 < ms)){
+		long	waitms;
+
 		if(blocking){
 			ms = K2HTransManager::MINIMUM_WAIT_SEEP;
 		}

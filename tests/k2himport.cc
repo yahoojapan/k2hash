@@ -42,7 +42,7 @@ void usage()
 	exit(EXIT_FAILURE) ;
 }
 
-bool isExistOption(int argc, char **argv, string target) 
+bool isExistOption(int argc, char **argv, const string& target)
 {
 	bool answer = false ;
 	for (int i = 1 ; i < argc; i++)
@@ -63,7 +63,7 @@ int CheckParamater(int argc, char **argv)
 	int Answer = MODE_TSV ;
 	if (argc < MINPARAMATERS) usage() ;
 
-	if (isExistOption(argc , argv , "-mdbm"))	Answer = MODE_MDBM ;
+	if (isExistOption(argc , argv , string("-mdbm")))	Answer = MODE_MDBM ;
 	return Answer ;
 }
 
