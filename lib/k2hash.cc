@@ -95,7 +95,7 @@ bool k2h_load_debug_env(void)
 	return ::LoadK2hDbgEnv();
 }
 
-bool k2h_set_bumup_debug_signal_user1(void)
+bool k2h_set_bumpup_debug_signal_user1(void)
 {
 	return ::SetSignalUser1();
 }
@@ -787,7 +787,7 @@ PK2HKEYPCK k2h_get_direct_subkeys(k2h_h handle, const unsigned char* pkey, size_
 }
 
 // This function returns string array pointer which is null terminated.
-// So each subkey must be terminated null byte, if not maybe somthing error is occurred.
+// So each subkey must be terminated null byte, if not maybe something error is occurred.
 //
 int k2h_get_str_subkeys(k2h_h handle, const char* pkey, char*** ppskeyarray)
 {
@@ -927,7 +927,7 @@ PK2HKEYPCK k2h_get_direct_subkeys_np(k2h_h handle, const unsigned char* pkey, si
 }
 
 // This function returns string array pointer which is null terminated.
-// So each subkey must be terminated null byte, if not maybe somthing error is occurred.
+// So each subkey must be terminated null byte, if not maybe something error is occurred.
 //
 int k2h_get_str_subkeys_np(k2h_h handle, const char* pkey, char*** ppskeyarray)
 {
@@ -1776,7 +1776,7 @@ PK2HKEYPCK k2h_find_get_direct_subkeys(k2h_find_h findhandle, int* pskeypckcnt)
 }
 
 // This function returns string array pointer which is null terminated.
-// So each subkey must be terminated null byte, if not maybe somthing error is occurred.
+// So each subkey must be terminated null byte, if not maybe something error is occurred.
 //
 int k2h_find_get_str_subkeys(k2h_find_h findhandle, char*** ppskeyarray)
 {
@@ -1832,7 +1832,7 @@ int k2h_find_get_str_subkeys(k2h_find_h findhandle, char*** ppskeyarray)
 }
 
 // This function returns string array pointer which is null terminated.
-// So each subkey must be terminated null byte, if not maybe somthing error is occurred.
+// So each subkey must be terminated null byte, if not maybe something error is occurred.
 //
 char** k2h_find_get_str_direct_subkeys(k2h_find_h findhandle)
 {

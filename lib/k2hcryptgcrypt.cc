@@ -126,7 +126,7 @@ static unsigned char* k2h_pcks7_padding(const unsigned char* orgdata, size_t org
 	unsigned char	data	= static_cast<unsigned char>(padlen - orglen) & 0xff;
 	unsigned char*	paddata;
 	if(NULL == (paddata = reinterpret_cast<unsigned char*>(malloc(padlen)))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -184,7 +184,7 @@ bool create_pbkdf1_key_iv(const unsigned char* pSalt, const unsigned char* pPass
 	bool			result = false;
 	gcry_md_hd_t	md5ctx;
 	gcry_error_t	err;
-	unsigned char	md5buf[MD5_DIGEST_SIZE * 4];									// == 64(for mergin)
+	unsigned char	md5buf[MD5_DIGEST_SIZE * 4];									// == 64(for margin)
 	unsigned int	md5len = MD5_DIGEST_SIZE;										// == 16
 	bool			is_first_loop;
 	unsigned int	cnt;
@@ -275,13 +275,13 @@ unsigned char* k2h_encrypt_aes256_cbc(const char* pass, const unsigned char* org
 
 	// Do padding(PCKS#7)
 	if(NULL == (newdata = k2h_pcks7_padding(orgdata, orglen, encbodylen, cipherBlock))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
 	// allocated for encrypted data area(size is after padding)
 	if(NULL == (encryptdata = reinterpret_cast<unsigned char*>(malloc(encbodylen + K2H_ENCRYPTED_DATA_EX_LENGTH)))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		K2H_Free(newdata);
 		return NULL;
 	}
@@ -381,7 +381,7 @@ unsigned char* k2h_decrypt_aes256_cbc(const char* pass, const unsigned char* enc
 
 	// allocated for decrypted data area
 	if(NULL == (decryptdata = reinterpret_cast<unsigned char*>(malloc(decbodylen)))){	// decbodylen < encbodylen
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -489,13 +489,13 @@ unsigned char* k2h_encrypt_aes256_cbc_pbkdf2(const char* pass, int iter, const u
 
 	// Do padding(PCKS#7)
 	if(NULL == (newdata = k2h_pcks7_padding(orgdata, orglen, encbodylen, cipherBlock))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
 	// allocated for encrypted data area(size is after padding)
 	if(NULL == (encryptdata = reinterpret_cast<unsigned char*>(malloc(encbodylen + K2H_ENCRYPTED_DATA_EX2_LENGTH)))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		K2H_Free(newdata);
 		return NULL;
 	}
@@ -620,7 +620,7 @@ unsigned char* k2h_decrypt_aes256_cbc_pbkdf2(const char* pass, const unsigned ch
 
 	// allocated for decrypted data area
 	if(NULL == (decryptdata = reinterpret_cast<unsigned char*>(malloc(decbodylen)))){	// decbodylen < encbodylen
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 

@@ -57,7 +57,7 @@ bool K2HArchive::Initialize(const char* pFile, bool iserrskip)
 bool K2HArchive::Serialize(K2HShm* pShm, bool isLoad) const
 {
 	if(!pShm || !pShm->IsAttached()){
-		ERR_K2HPRN("Paramter is wrong.");
+		ERR_K2HPRN("Parameter is wrong.");
 		return false;
 	}
 
@@ -75,7 +75,7 @@ bool K2HArchive::Serialize(K2HShm* pShm, bool isLoad) const
 
 // [TODO]
 // This function does not care for output order by subkeys.
-// The best way to output is that parenet key puts after putting subkey elements.
+// The best way to output is that parent key puts after putting subkey elements.
 // But K2HShm::begin() and iterator returns keys by sequential now.
 // If do the best way, probably this function should memorize put subkeys.
 // Now the serializing is like snapshot, and if removing(changing/adding) subkeys
@@ -176,15 +176,15 @@ bool K2HArchive::Save(K2HShm* pShm) const
 		}
 		const BCOM*	pBinCom	= ArCom.Get();
 
-		// write to archve
+		// write to archive
 		size_t	write_length = scom_total_length(pBinCom->scom);
 		off_t	fendpos;
 		if(-1 == (fendpos = lseek(fd, 0, SEEK_END)) || -1 == k2h_pwrite(fd, pBinCom->byData, write_length, fendpos)){
 			if(isErrSkip){
-				MSG_K2HPRN("Failed to write command archive to fule, skipping.");
+				MSG_K2HPRN("Failed to write command archive to file, skipping.");
 				continue;
 			}else{
-				ERR_K2HPRN("Failed to write command archive to fule, so this is fatal error because of something wrong in logic.");
+				ERR_K2HPRN("Failed to write command archive to file, so this is fatal error because of something wrong in logic.");
 				result = false;
 				break;
 			}
@@ -220,7 +220,7 @@ bool K2HArchive::Save(K2HShm* pShm) const
 				}
 				const BCOM*	pBinCom2 = ArCom.Get();
 
-				// write to archve
+				// write to archive
 				write_length = scom_total_length(pBinCom2->scom);
 				if(-1 == (fendpos = lseek(fd, 0, SEEK_END)) || -1 == k2h_pwrite(fd, pBinCom2->byData, write_length, fendpos)){
 					looperr = true;
@@ -256,7 +256,7 @@ bool K2HArchive::Save(K2HShm* pShm) const
 
 // [TODO]
 // This function does not care for output order by subkeys.
-// The best way to output is that parenet key puts after putting subkey elements.
+// The best way to output is that parent key puts after putting subkey elements.
 // But K2HShm::begin() and iterator returns keys by sequential now.
 // If do the best way, probably this function should memorize put subkeys.
 // Now the serializing is like snapshot, and if removing(changing/adding) subkeys

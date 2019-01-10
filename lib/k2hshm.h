@@ -67,7 +67,7 @@ template<typename T> inline long INIT_CKINDEX_CNT(const T& maskbitcnt, const T& 
 		return ((((length) / (pagesize)) + (0 == (length) % (pagesize) ? 0 : 1)) * (pagesize));
 	}
 
-	// Addtional/Subtruction Pointer
+	// Additional/Subtraction Pointer
 	template <typename T> inline T* SUBPTR(T* pointer, off_t offset)
 	{
 		return reinterpret_cast<T*>(reinterpret_cast<off_t>(pointer) - offset);
@@ -132,7 +132,7 @@ class K2HShm
 		static const int	DEFAULT_MASK_BITCOUNT			= 8;	// default key mask bit count(0xFF)
 		static const int	DEFAULT_COLLISION_MASK_BITCOUNT	= 4;	// default Collision mask
 		static const int	DEFAULT_MAX_ELEMENT_CNT			= 32;	// default maximum element count by each collision key
-		static const int	ELEMENT_CNT_RATIO				= 4;	// initial elemnt coefficient by each collision key index
+		static const int	ELEMENT_CNT_RATIO				= 4;	// initial element coefficient by each collision key index
 		static const int	PAGE_CNT_RATIO					= 2;	// initial page coefficient by each element
 		static const int	MAX_EXPAND_ELEMENT_CNT			= (1024 * 1024);	// maximum element count for expanding
 		static const int	MAX_EXPAND_PAGE_CNT				= (1024 * 1024);	// maximum page count for expanding

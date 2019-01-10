@@ -81,7 +81,7 @@ typedef std::vector<K2HATTR>	k2hattrarr_t;
 // Class K2HAttrs
 //---------------------------------------------------------
 // [NOTE]
-// Serialize formated on unsigned char array.
+// Serialize formatted on unsigned char array.
 //
 //	size_t			<total serialize bytes>
 //	unsigned char[] <serialize data>

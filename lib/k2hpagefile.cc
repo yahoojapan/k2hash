@@ -121,7 +121,7 @@ bool K2HPageFile::DuplicateFd(int fd)
 {
 	int	NewFd;
 	if(-1 == (NewFd = dup(fd))){
-		ERR_K2HPRN("Could not duplicate file discriptor(%d), errno = %d", fd, errno);
+		ERR_K2HPRN("Could not duplicate file descriptor(%d), errno = %d", fd, errno);
 		return false;
 	}
 	off_t	offset	= FileOffset;	// backup
@@ -154,7 +154,7 @@ bool K2HPageFile::Initialize(const K2HShm* pk2hshm, int fd, off_t offset)
 		PageFd = fd;
 	}else{
 		if(-1 == (PageFd = dup(fd))){
-			ERR_K2HPRN("Could not duplicate file discriptor(%d), errno = %d", fd, errno);
+			ERR_K2HPRN("Could not duplicate file descriptor(%d), errno = %d", fd, errno);
 			return false;
 		}
 	}
@@ -187,7 +187,7 @@ bool K2HPageFile::LoadPageHead(void)
 		return true;
 	}
 	if(-1 == PageFd || 0UL == PageSize){
-		ERR_K2HPRN("There is no file discriptor, or pagesize is wrong.");
+		ERR_K2HPRN("There is no file descriptor, or pagesize is wrong.");
 		return false;
 	}
 
@@ -214,7 +214,7 @@ bool K2HPageFile::LoadPageHead(void)
 bool K2HPageFile::LoadData(bool isPageHead, bool isAllPage)
 {
 	if(-1 == PageFd || 0UL == PageSize){
-		ERR_K2HPRN("There is no file discriptor, or pagesize is wrong.");
+		ERR_K2HPRN("There is no file descriptor, or pagesize is wrong.");
 		return false;
 	}
 
@@ -277,7 +277,7 @@ bool K2HPageFile::LoadData(bool isPageHead, bool isAllPage)
 K2HPage* K2HPageFile::LoadData(off_t offset, size_t length, unsigned char** byData, size_t& datalength, off_t& next_read_pos)
 {
 	if(-1 == PageFd || 0UL == PageSize || !byData){
-		ERR_K2HPRN("There is no file discriptor, or pagesize is wrong, or parameter is wrong.");
+		ERR_K2HPRN("There is no file descriptor, or pagesize is wrong, or parameter is wrong.");
 		return NULL;
 	}
 
@@ -364,7 +364,7 @@ bool K2HPageFile::SetData(const unsigned char* byData, size_t length, bool isSet
 		return false;
 	}
 	if(!pK2HShm || -1 == PageFd || 0L == FileOffset){
-		ERR_K2HPRN("K2HShm or discriptor, or file offset is wrong.");
+		ERR_K2HPRN("K2HShm or descriptor, or file offset is wrong.");
 		return false;
 	}
 
@@ -440,7 +440,7 @@ K2HPage* K2HPageFile::SetData(const unsigned char* byData, size_t length, off_t 
 		return NULL;
 	}
 	if(!pK2HShm || -1 == PageFd || 0L == FileOffset){
-		ERR_K2HPRN("K2HShm or discriptor, or file offset is wrong.");
+		ERR_K2HPRN("K2HShm or descriptor, or file offset is wrong.");
 		return NULL;
 	}
 
@@ -533,7 +533,7 @@ K2HPage* K2HPageFile::SetData(const unsigned char* byData, size_t length, off_t 
 				}
 				return NULL;
 			}
-			// force reset page head poionter.
+			// force reset page head pointer.
 			pCurPageHead = pCurrentPage->pPageHead;
 			isChangeSize = true;
 		}
@@ -554,7 +554,7 @@ K2HPage* K2HPageFile::SetData(const unsigned char* byData, size_t length, off_t 
 	// if pCurrentPage is temporary object, so duplicate fd because return it
 	if(this != pCurrentPage){
 		if(!pCurrentPage->DuplicateFd(PageFd)){
-			ERR_K2HPRN("Could not duplicate file discriptor(%d), errno = %d", PageFd, errno);
+			ERR_K2HPRN("Could not duplicate file descriptor(%d), errno = %d", PageFd, errno);
 			K2H_Delete(pCurrentPage);
 			return NULL;
 		}
@@ -570,7 +570,7 @@ K2HPage* K2HPageFile::SetData(const unsigned char* byData, size_t length, off_t 
 bool K2HPageFile::Truncate(size_t length)
 {
 	if(-1 == PageFd || 0UL == PageSize || 0UL == length){
-		ERR_K2HPRN("There is no file discriptor, or pagesize is wrong, or parameter is wrong.");
+		ERR_K2HPRN("There is no file descriptor, or pagesize is wrong, or parameter is wrong.");
 		return false;
 	}
 
@@ -645,7 +645,7 @@ bool K2HPageFile::Truncate(size_t length)
 PPAGEHEAD K2HPageFile::GetPageHeadRelAddress(void) const
 {
 	if(-1 == PageFd){
-		ERR_K2HPRN("There is no file discriptor, so this object is not initialized.");
+		ERR_K2HPRN("There is no file descriptor, so this object is not initialized.");
 		return NULL;
 	}
 	return reinterpret_cast<PPAGEHEAD>(FileOffset);
@@ -654,7 +654,7 @@ PPAGEHEAD K2HPageFile::GetPageHeadRelAddress(void) const
 PPAGEHEAD K2HPageFile::GetLastPageHead(unsigned long* pagecount, bool isAllPage)
 {
 	if(!pK2HShm || -1 == PageFd || 0L == FileOffset){
-		ERR_K2HPRN("pK2HShm or file discriptor, or file offset is wrong.");
+		ERR_K2HPRN("pK2HShm or file descriptor, or file offset is wrong.");
 		return NULL;
 	}
 	// load page head
@@ -688,7 +688,7 @@ PPAGEHEAD K2HPageFile::GetLastPageHead(unsigned long* pagecount, bool isAllPage)
 bool K2HPageFile::Free(PPAGEHEAD* ppRelLastPageHead, unsigned long* pPageCount, bool isAllPage)
 {
 	if(!pK2HShm || -1 == PageFd || 0L == FileOffset){
-		WAN_K2HPRN("pK2HShm or file discriptor, or file offset is wrong.");
+		WAN_K2HPRN("pK2HShm or file descriptor, or file offset is wrong.");
 		return true;
 	}
 

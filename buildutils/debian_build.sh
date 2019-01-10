@@ -34,7 +34,7 @@ func_usage()
 	echo "        -rootdir                      layout \"debian\" directory for packaging under source top directory"
 	echo "        -product                      specify product name(use PACKAGE_NAME in Makefile s default)"
 	echo "        -class                        specify package class name(optional)"
-	echo "        -y                            runs no interacitive mode."
+	echo "        -y                            runs no interactive mode."
 	echo "        additional debuild options    this script run debuild with \"-uc -us\", can specify additional options."
 	echo "        -h                            print help"
 	echo ""
@@ -349,7 +349,7 @@ if [ ${IS_DEBUILD} -ne 1 ]; then
 	#
 	# Not run debuild (this means just stop preparing the file)
 	#
-	echo "MESSGAE: ${PRGNAME} exits immediately before debuild is executed,"
+	echo "MESSAGE: ${PRGNAME} exits immediately before debuild is executed,"
 	echo "         that is, it prepares only files and directories."
 	echo "         By running \"debuild -uc -us(-tc -b)\", you can create"
 	echo "         the debian package manually and find the created package"

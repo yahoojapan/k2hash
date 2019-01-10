@@ -110,7 +110,7 @@ bool K2HTransaction::IsEnable(void) const
 }
 
 //---------------------------------------------------------
-// K2HTransManager : Class valiables
+// K2HTransManager : Class variables
 //---------------------------------------------------------
 const int			K2HTransManager::NO_THREAD_POOL;
 const int			K2HTransManager::DEFAULT_THREAD_POOL;
@@ -183,7 +183,7 @@ void* K2HTransManager::WorkerProc(void* param)
 		// loop - pop queue
 		unsigned char*	pval	= NULL;
 		size_t			vallen	= 0;
-		K2HAttrs*		pAttrs	= NULL;								// for keep exipre time
+		K2HAttrs*		pAttrs	= NULL;								// for keep expire time
 		while(queue.Pop(&pval, vallen, &pAttrs) && pval){
 			// call handler
 			PBCOM	pBinCom = reinterpret_cast<PBCOM>(pval);
@@ -532,7 +532,7 @@ bool K2HTransManager::CheckFile(const K2HShm* pk2hshm)
 	}
 
 	if(-1 == pFileInfo->arfd && pFileInfo->filepath.empty()){
-		// This file infomation means that transaction loadable module does not use a file.
+		// This file information means that transaction loadable module does not use a file.
 		return true;
 	}
 
@@ -561,7 +561,7 @@ bool K2HTransManager::CheckFile(const K2HShm* pk2hshm)
 
 //
 // [NOTICE]
-// The archive file discripter(arfd) is not locked as value.
+// The archive file descriptor(arfd) is not locked as value.
 // So when using arfd, it has already been closed.
 // Thus the process which calls this method and uses arfd will
 // get some error for reading/writing to it.
@@ -590,7 +590,7 @@ int K2HTransManager::GetArchiveFd(const K2HShm* pk2hshm)
 	}
 
 	if(-1 == pFileInfo->arfd && pFileInfo->filepath.empty()){
-		// This file infomation means that transaction loadable module does not use a file.
+		// This file information means that transaction loadable module does not use a file.
 		WAN_K2HPRN("Transaction is enabled without transaction file path, so this case is for custom loadable module. WHY come here?");
 	}
 	fullock::flck_unlock_noshared_mutex(&LockVal);

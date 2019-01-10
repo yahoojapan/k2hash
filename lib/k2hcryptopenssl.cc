@@ -154,7 +154,7 @@ unsigned char* k2h_encrypt_aes256_cbc(const char* pass, const unsigned char* org
 
 	// allocated for encrypted data area
 	if(NULL == (encryptdata = reinterpret_cast<unsigned char*>(malloc(orglen + K2H_ENCRYPTED_DATA_EX_LENGTH)))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -237,7 +237,7 @@ unsigned char* k2h_decrypt_aes256_cbc(const char* pass, const unsigned char* enc
 
 	// allocated for decrypted data area
 	if(NULL == (decryptdata = reinterpret_cast<unsigned char*>(malloc(enclen)))){	// declen < enclen
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -328,7 +328,7 @@ unsigned char* k2h_encrypt_aes256_cbc_pbkdf2(const char* pass, int iter, const u
 
 	// allocated for encrypted data area
 	if(NULL == (encryptdata = reinterpret_cast<unsigned char*>(malloc(orglen + K2H_ENCRYPTED_DATA_EX2_LENGTH)))){
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -363,7 +363,7 @@ unsigned char* k2h_encrypt_aes256_cbc_pbkdf2(const char* pass, int iter, const u
 
 	// allocated for key
 	if(NULL == (key = reinterpret_cast<unsigned char*>(malloc(EVP_CIPHER_key_length(cipher))))){	// <= EVP_MAX_KEY_LENGTH
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		K2H_Free(encryptdata);
 		return NULL;
 	}
@@ -446,7 +446,7 @@ unsigned char* k2h_decrypt_aes256_cbc_pbkdf2(const char* pass, const unsigned ch
 
 	// allocated for decrypted data area
 	if(NULL == (decryptdata = reinterpret_cast<unsigned char*>(malloc(enclen)))){	// declen < enclen
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		return NULL;
 	}
 
@@ -459,7 +459,7 @@ unsigned char* k2h_decrypt_aes256_cbc_pbkdf2(const char* pass, const unsigned ch
 
 	// allocated for key
 	if(NULL == (key = reinterpret_cast<unsigned char*>(malloc(EVP_CIPHER_key_length(cipher))))){	// <= EVP_MAX_KEY_LENGTH
-		ERR_K2HPRN("Could not allcation memory.");
+		ERR_K2HPRN("Could not allocation memory.");
 		K2H_Free(decryptdata);
 		return NULL;
 	}

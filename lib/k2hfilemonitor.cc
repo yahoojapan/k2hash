@@ -51,7 +51,7 @@ using namespace std;
 #define	WAIT_INITOPEN_CNT		(WAIT_INITOPEN_MAXTIME / WAIT_INITOPEN_TIME)
 
 //---------------------------------------------------------
-// Class valiable
+// Class variable
 //---------------------------------------------------------
 const char		K2HFileMonitor::base_prefix[]	= MONITORFILE_BASE;
 mode_t			K2HFileMonitor::file_umask		= 0;
@@ -92,7 +92,7 @@ bool K2HFileMonitor::CloseOnlyFile(void)
 	if(-1 != fmfd){
 		if(WriteLock(OPEN_LOCK_POS, false)){
 			// succeed write lock on open_lock_pos, this means this process is last process.
-			// then chould remove monitor file.
+			// then should remove monitor file.
 			unlink(bup_monfile.c_str());
 			MSG_K2HPRN("Remove monitor file.");
 		}else{
@@ -148,7 +148,7 @@ bool K2HFileMonitor::Open(const char* shmfile, bool noupdate)
 
 	// first check inode value
 	if(!noupdate){
-		// if noupdate is ture, inode area is locked writing in InitializeFileMonitor().
+		// if noupdate is true, inode area is locked writing in InitializeFileMonitor().
 		// And call UpdateInode() and UpdateArea() methods by client function after calling this method.
 		//
 		bool	is_change = false;
@@ -190,7 +190,7 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 			//
 			// write lock(blocking)
 			if(!WriteLock(OPEN_LOCK_POS)){
-				WAN_K2HPRN("Coud not get lock for writing monitor file(%s) after creating it, probabry conflict initializing by other processes, do retry...", bup_monfile.c_str());
+				WAN_K2HPRN("Could not get lock for writing monitor file(%s) after creating it, probably conflict initializing by other processes, do retry...", bup_monfile.c_str());
 				unlink(bup_monfile.c_str());
 				CloseOnlyFile();
 				continue;
@@ -277,7 +277,7 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 					if(WriteLock(OPEN_LOCK_POS, false)){
 						// [NOTE]
 						// This case which is opened file(exists) -> got read lock -> got file stat -> BUT file size is wrong & GOT write lock.
-						// It means probabry the proress which initialize the file exited during initializing it.
+						// It means probably the process which initialize the file exited during initializing it.
 						// So the file is wrong, we need to remove it for no dead locking.
 						//
 						WAN_K2HPRN("Got lock for writing monitor file(%s) after (opening -> get read lock -> file size is wrong), it means no write/read process to it, and is needed to initialize.", bup_monfile.c_str());
@@ -569,7 +569,7 @@ bool K2HFileMonitor::RawLock(short type, off_t offset, bool block) const
 				MSG_K2HPRN("Could not %slock because something unnormal wrong occured. errno=%d", (F_UNLCK == type ? "un" : ""), errno);
 				break;
 			}else{
-				MSG_K2HPRN("Signal occurred durling %slocking.", F_UNLCK == type ? "un" : "");
+				MSG_K2HPRN("Signal occurred during %slocking.", F_UNLCK == type ? "un" : "");
 			}
 		}
 	}

@@ -82,7 +82,7 @@ bool usage()
 string argFilename, argKey, argSubkey, argValue , argQueprefix , argConffile ;
 bool isFIFO ;
 
-// minimum paramaters
+// minimum parameters
 #define MINPARAMATERS		2
 
 // command mode
@@ -305,7 +305,7 @@ bool AttachK2FileMini(K2HShm* k2hash)
 
 	if(!k2hash->Attach(argFilename.c_str(), ISREADONLY, ISCREATE, ISTEMPFILE, ISFULLMAPPING ,
 	 SMALL_MASK_BITCNT, SMALL_CMASK_BITCNT, SMALL_MAX_ELEMENT_CNT, PAGESIZE)) {
-		cerr << "Attach Failed. k2file is maybe readonly or have not permmison." << endl ;
+		cerr << "Attach Failed. k2file is maybe readonly or have not permission." << endl ;
 		answer = false ;
 	}
 
@@ -319,7 +319,7 @@ bool AttachK2File(K2HShm* k2hash)
 	bool answer = true ;
 	if(!k2hash->Attach(argFilename.c_str(), ISREADONLY, ISCREATE, ISTEMPFILE, ISFULLMAPPING ,
 	 MASK_BITCNT, CMASK_BITCNT, MAX_ELEMENT_CNT, PAGESIZE)) {
-		cerr << "Attach Failed. k2file is maybe readonly or have not permmison." << endl ;
+		cerr << "Attach Failed. k2file is maybe readonly or have not permission." << endl ;
 		exit(EXIT_FAILURE);
 	}
 	// read attr setting and set attr

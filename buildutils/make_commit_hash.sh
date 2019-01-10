@@ -32,7 +32,7 @@ func_usage()
 	echo "        -o organization   specify organazation name if .git directory is not existed"
 	echo "        -r repository     specify repository name if .git directory is not existed"
 	echo "        -ep endpoint      if not github.com, specify endpoint for api"
-	echo "        -t tag            if counld not found release version tag, use this"
+	echo "        -t tag            if not find release version tag, use this"
 	echo "        -short            get short commit hash(sha1)"
 	echo "        -h                print help"
 	echo ""
@@ -170,7 +170,7 @@ else
 			TAGNAME=`cat ${SRCTOP}/RELEASE_VERSION`
 		else
 			#
-			# release tag from srource top directory name(expects source files from tar.gz file on github)
+			# release tag from source top directory name(expects source files from tar.gz file on github)
 			#
 			SRCTOPNAME=`basename $SRCTOP`
 			TAGNAME=`echo ${SRCTOPNAME} | sed 's/-/ /g' | awk '{print $NF}'`

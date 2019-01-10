@@ -288,7 +288,7 @@ if [ "X${USE_PC_REPO}" = "Xtrue" -o "X${USE_PC_REPO}" = "XTRUE" ]; then
 	fi
 
 	#
-	# Download and set pckagecloud.io repository
+	# Download and set packagecloud.io repository
 	#
 	if [ ${IS_CENTOS} -eq 1 -o ${IS_FEDORA} -eq 1 ]; then
 		PC_REPO_ADD_SH="script.rpm.sh"
@@ -328,7 +328,7 @@ else
 fi
 
 #
-# Start bulding ( build under /tmp )
+# Start building ( build under /tmp )
 #
 run_cmd cp -rp ${SRCTOP} /tmp
 TMPSRCTOP=`basename ${SRCTOP}`

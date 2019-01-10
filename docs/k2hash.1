@@ -23,7 +23,7 @@ K2HASH is NoSQL(key value store) library and tools for this library by Yahoo! JA
 .br
 \- Expands data area.
 .br
-\- Switchs accessing only memory and data file directly.
+\- Switches accessing only memory and data file directly.
 .br
 \- Puts transaction.
 .br
@@ -36,7 +36,7 @@ K2HASH is NoSQL(key value store) library and tools for this library by Yahoo! JA
 K2HASH tools can create/store(write)/read a file or memory which is made(allocated) by K2HASH library for testing.
 .TP 2
 K2HASH library has following three way for KVS storage.
-\- Use storage on memory only, this type of strage can be used by only multi-thread process. And on this type, the deta on strage is not permanent.
+\- Use storage on memory only, this type of storage can be used by only multi-thread process. And on this type, the data on storage is not permanent.
 .br
 \- Use fully mapping file, this type can be used by multi-thread and multi-process. All of data in the file is mmapping fully, then the limit of the file and data size depends on the memory.
 .br
@@ -45,7 +45,7 @@ K2HASH library has following three way for KVS storage.
 K2HASH maps only hash table and etc from the file, and reads/writes the file for datas directly.
 This way is expanding upper limit, but less performance because directly accessing.
 .TP
-In cases of using mapping file, you can use the data(file) as permanently or tempolarily.
+In cases of using mapping file, you can use the data(file) as permanently or temporary.
 .TP 2
 K2HASH uses FNV-1a hashing function in it. If you replace this hash function, you can do by two way.
 \- One way is that your process defines same prototype of hash function.
@@ -54,7 +54,7 @@ K2HASH uses FNV-1a hashing function in it. If you replace this hash function, yo
 .PP
 You can know how to implement replacing hash function, please see k2hashfunc.h file.
 .TP 2
-K2HASH can put transaction and archive all of data in file. If you need to make your original formated transaction outputs, you can do by two way like replacing hash function.
+K2HASH can put transaction and archive all of data in file. If you need to make your original formatted transaction outputs, you can do by two way like replacing hash function.
 \- One way is that your process defines same prototype of hash function.
 .br
 \- The other is that you can load your original DSO library which includes same prototype of hash function.
@@ -87,7 +87,7 @@ bool k2h_unset_debug_file(...)
 .br
 bool k2h_load_debug_env(...)
 .br
-bool k2h_set_bumup_debug_signal_user1(...)
+bool k2h_set_bumpup_debug_signal_user1(...)
 .TP 2
 .BR
 bool k2h_load_hash_library(...)
@@ -515,7 +515,7 @@ void k2h_print_version(...)
 .PP
 .SH ENVIRONMENT
 .TP 2
-K2HASH use some environments automatically, plese take care these environments.
+K2HASH use some environments automatically, please take care these environments.
 K2HDBGMODE \- specifies debugging level: INFO/WAN/ERR/SILENT
 .br
 K2HDBGFILE \- output file path for message(default: stderr)
@@ -539,4 +539,4 @@ k2hlinetool(1), k2hreplace(1), k2hcompress(1), k2htouch(1), k2hedit(1)
 .TP
 Please report owner and committers.
 .SH AUTHOR
-k2hash has been written by Takeshi Nakatani <ggtakec@gmail.com>.
+k2hash has been written by Takeshi Nakatani <nakatani@yahoo-corp.jp>.

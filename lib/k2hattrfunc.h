@@ -43,7 +43,7 @@
 //	3) k2hattr_get_key_name
 //		returns the key name of attribute for plugin. The key
 //		name must not be changed on one plugin, k2hash calls 
-//		this function just onece.
+//		this function just once.
 //
 //	4) k2hattr_update
 //		returns the value and value length of attribute when 

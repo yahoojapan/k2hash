@@ -128,7 +128,7 @@ bool K2HSubKeys::Serialize(const unsigned char* pSubkeys, size_t length)
 	const unsigned char*	byReadPos	= reinterpret_cast<const unsigned char*>(reinterpret_cast<size_t>(pSubkeys) + sizeof(size_t));
 
 	for(size_t cnt = 0; cnt < TotalCount; cnt++){
-		// earch length
+		// each length
 		if(rest_length < sizeof(size_t)){
 			ERR_K2HPRN("Not enough length for loading.");
 			return false;

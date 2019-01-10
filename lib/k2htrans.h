@@ -124,7 +124,7 @@ typedef struct transaction_thread_param{
 typedef std::map<pthread_t, PTRTHPARAM>		trparammap_t;
 
 //
-// Thread pool for each k2hahdle
+// Thread pool for each k2handle
 //
 typedef struct transaction_thread_pool{
 	trparammap_t	trparammap;
@@ -151,7 +151,7 @@ class K2HTransManager
 		static const unsigned char	default_prefix[];				// default transaction key prefix
 		static const time_t			DEFAULT_INTERVAL	= 10;		// 10s
 
-		volatile int				LockVal;						// like mutex for valiables(transaction file etc)
+		volatile int				LockVal;						// like mutex for variables(transaction file etc)
 		volatile int				LockPool;						// like mutex for thread and thread pool
 		trfilemap_t					trfilemap;						// for output file :			K2HShm object <-> PTRFILEINFO
 		trprefmap_t					trprefmap;						// for transaction key prefix :	K2HShm object <-> PTRK2HPREF

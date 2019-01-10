@@ -109,13 +109,13 @@ static void Help(char* progname)
 	PRN("       -ext <library path>  extension library for hash function");
 	PRN("       -g <debug level>     debugging mode: ERR(default) / WAN / INFO(*2)");
 	PRN(NULL);
-	PRN("(*1)These option(value) is for debugging about extending hash erea.");
+	PRN("(*1)These option(value) is for debugging about extending hash area.");
 	PRN("    Usually, you don\'t need to specify these.");
 	PRN("(*2)You can set debug level by another way which is setting environment as \"K2HDBGMODE\".");
-	PRN("    \"K2HDBGMODE\" enviroment is took as \"SILENT\", \"ERR\", \"WAN\" or \"INFO\" value.");
-	PRN("    When this process gets SIGUSER1 signal, the debug level is bumpup.");
+	PRN("    \"K2HDBGMODE\" environment is took as \"SILENT\", \"ERR\", \"WAN\" or \"INFO\" value.");
+	PRN("    When this process gets SIGUSR1 signal, the debug level is bumpup.");
 	PRN("    The debug level is changed as \"SILENT\"->\"ERR\"->\"WAN\"->\"INFO\"->...");
-	PRN("(*3)You can set debugging message log file by the envirnment. \"K2HDBGFILE\".");
+	PRN("(*3)You can set debugging message log file by the environment. \"K2HDBGFILE\".");
 	PRN("");
 }
 
@@ -302,7 +302,7 @@ int main(int argc, char** argv)
 
 	}else if(isDirect){
 		PRN("");
-		PRN("[NOTICE] \"-direct\" is unsuported mode,");
+		PRN("[NOTICE] \"-direct\" is unsupported mode,");
 		PRN("         SHOULD MAKE BACKUP FILE or ARCHIVE.");
 		PRN("         This processing probably takes many time.");
 		PRN("         If you stop this processing, maybe k2hash file is broken.");

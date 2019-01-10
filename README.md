@@ -17,7 +17,7 @@ Yahoo! JAPAN. K2HASH is following specifications.
 ### Feature
   - Supports multi-threading and multi-processing program.
   - Expands data area.
-  - Switchs accessing only memory and data file directly.
+  - Switches accessing only memory and data file directly.
   - Puts transaction.
   - Archiving.
   - Replaces hash function like plugin.
