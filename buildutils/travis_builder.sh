@@ -39,7 +39,7 @@ func_usage()
 	echo "        -h                 print help"
 	echo "Environments"
 	echo "        BUILD_NUMBER       specify build number for packaging(default 1)"
-	echo "        TRAVIS_TAG         if the current build is for a git tag, this variable is set to the tag’s name"
+	echo "        TRAVIS_TAG         if the current build is for a git tag, this variable is set to the tag's name"
 	echo "        FORCE_BUILD_PKG    if this env is 'true', force packaging anytime"
 	echo "        USE_PC_REPO        if this env is 'true', use packagecloud.io repository"
 	echo "        CONFIGUREOPT       specify extra configure option."
