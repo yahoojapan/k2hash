@@ -1,3 +1,12 @@
+k2hash (1.0.69) trusty; urgency=low
+
+  * Fixed incorporation of multibyte characters - #25
+  * Added check using cppcheck - #24
+  * Reflected the spelling check result for all sources - #23
+  * Remove dead code - #21
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Thu, 17 Jan 2019 09:15:44 +0900
+
 k2hash (1.0.68) trusty; urgency=low
 
   * Updated common build tool files
