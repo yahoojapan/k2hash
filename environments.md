@@ -14,7 +14,7 @@ next_string: Tools
 ---
 
 # Environments
-The K2HASH library uses following envirnment variables.
+The K2HASH library uses following environment variables.
 - K2HDBGMODE  
   Specify the level of output message.  
   The level value is silent, err, wan or info.

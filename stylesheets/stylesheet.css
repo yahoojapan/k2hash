@@ -141,6 +141,11 @@ a {
 .content-main-title {
   color: #ff7700; }
 
+.sns-buttons {
+  margin-top: 0;
+  margin-bottom: 0;
+  text-align: right; }
+
 @media screen and (min-width: 64em) {
   .page-header {
     padding: 5rem 6rem; } }

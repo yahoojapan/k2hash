@@ -87,9 +87,9 @@ The K2HASH transaction plugin is interface by shared library, this runs in proce
 The K2HASH transaction plugin can work as synchronous or asynchronous.
 
 K2HASH has a built-in transaction processing and can work this processing if there is not additional plugins.  
-You can use this buil-in transaction processing for the function of archiving data.
+You can use this built-in transaction processing for the function of archiving data.
 
-In addition, K2HASH produsts provides [K2HTPDTOR](https://k2htpdtor.antpick.ax/) which is one of standard K2HASH transaction plugin.  
+In addition, K2HASH products provide [K2HTPDTOR](https://k2htpdtor.antpick.ax/) which is one of standard K2HASH transaction plugin.  
 K2HTPDTOR is primarily used to transfer transaction data to other servers by [CHMPX](https://chmpx.antpick.ax/) and make copies of K2HASH data on the other server.
 
 ## Archive
@@ -103,4 +103,4 @@ You can push value(or key-value) as a element to Queue, and pop it by FILE or LI
 
 ## Tools
 K2HASH provides some command line tools for utility and debugging.  
-You can use these tools for oprating and debugging datas in K2HASH.
+You can use these tools for operating and debugging datas in K2HASH.
