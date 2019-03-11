@@ -75,7 +75,7 @@ $ ./k2hlinetool -m
  K2HASH TOOL
 -------------------------------------------------------
 On memory mode
-Attached paraemters:
+Attached parameters:
     Full are mapping:                   true
     Key Index mask count:               8
     Collision Key Index mask count:     4

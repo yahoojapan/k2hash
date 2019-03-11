@@ -19,7 +19,7 @@ K2HASH provides following command line tools.
   The interactive tool for operating data in K2HASH container, and for testing all API.
   This tool can load interactive command from file, and run it automatically.
 - k2hcompress  
-  Compress the K2HASH file container if it has many flagments.
+  Compress the K2HASH file container if it has many fragments.
 - k2hreplace  
   This tool can rename the the K2HASH file container even during it is accessed by another program.
 - k2hbench  

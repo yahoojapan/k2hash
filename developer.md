@@ -24,7 +24,7 @@ next_string: Environments
 [Attribute family(C I / F)](#ATTR)  
 [GET family(C I/F)](#GET)  
 [SET family(C I/F)](#SET)  
-[Renemae family(C I/F)](#RENAME)  
+[Rename family(C I/F)](#RENAME)  
 [Direct binary data acquisition / setting family(C I/F)](#DIRECTBINARY)   
 [Delete family(C I/F)](#DELETE)  
 [Search family(C I/F)](#FIND)  
@@ -78,7 +78,7 @@ This function group is a group of functions for controlling message output
 - bool k2h_set_debug_file(const char* filepath)
 - bool k2h_unset_debug_file(void)
 - bool k2h_load_debug_env(void)
-- bool k2h_set_bumup_debug_signal_user1(void)
+- bool k2h_set_bumpup_debug_signal_user1(void)
 
 #### Description
 - k2h_bump_debug_level  
@@ -97,18 +97,18 @@ This function group is a group of functions for controlling message output
   Unset to output messages to stderr.
 - k2h_load_debug_env  
   Read the environment variables K2HDBGMODE, K2HDBGFILE and set the message output and output destination according to the value.
-- k2h_set_bumup_debug_signal_user1  
+- k2h_set_bumpup_debug_signal_user1  
   Set the signal handler SIGUSR1. When it is set up, it will bump up the message output level each time it receives SIGUSR1.
 
 #### Return Values
-K2h_set_debug_file, k2h_unset_debug_file, k2h_load_debug_env, k2h_set_bumup_debug_signal_user1 will return true on success. If it fails, it returns false.
+K2h_set_debug_file, k2h_unset_debug_file, k2h_load_debug_env, k2h_set_bumpup_debug_signal_user1 will return true on success. If it fails, it returns false.
 
 #### Note
 For the environment variables K2HDBGMODE and K2HDBGFILE, see the [Environments](environments.html) in the manual.
 
 #### Examples
  ```
-k2h_set_bumup_debug_signal_user1();
+k2h_set_bumpup_debug_signal_user1();
 k2h_set_debug_file("/var/log/k2hash/error.log");
 k2h_set_debug_level_message();
  ```
@@ -148,7 +148,7 @@ When loading the DSO module with this function group, it takes precedence over t
 if(!k2h_load_hash_library("/usr/lib64/myhashfunc.so")){
     return false;
 }
-if(!k2h_load_transaction_library("/usr/lib64/mytrunsfunc.so")){
+if(!k2h_load_transaction_library("/usr/lib64/mytransfunc.so")){
     return false;
 }
     //...
@@ -192,7 +192,7 @@ It is a group of functions that initialize, open (attach), close (detach) K2HASH
 - k2h_close_wait  
   Close the K2HASH handle. You can specify milliseconds as an argument and wait for transaction processing to complete. You can specify whether the transaction completes completely, waits for specified ms, or exits immediately (equivalent to k2h_close).
 
-#### Paramaters
+#### Parameters
 - filepath  
   Specify the path of the K2HASH file.
 - maskbitcnt  
@@ -206,7 +206,7 @@ It is a group of functions that initialize, open (attach), close (detach) K2HASH
 - readonly  
   Attach the file with only the read attribute.
 - removefile  
- K2h_close is called, and the file is deleted when the file is completely detached (including other processes). Specify this when you want to use the file as temporary temporary (eg: I want to use it as cache KVS shared by multiprocess).
+ K2h_close is called, and the file is deleted when the file is completely detached (including other processes). Specify this when you want to use the file as temporary temporary (ex: I want to use it as cache KVS shared by multiprocess).
 - fullmap  
   Specify true for memory mapping of the whole area of the attached file. If false, only the management area of K2HASH is memory mapped, and areas such as data are not memory mapped.
    For on-memory type, fullmap = true is always the same state, even if false is specified for this value, it is ignored.
@@ -301,7 +301,7 @@ Functions related to transaction processing provided by the K2HASH library.
 - k2h_put_archive  
   Archive (serialize) all data of the K2HASH file (or on memory) and output it to a file.
 
-#### Paramaters
+#### Parameters
 - handle  
   Specify the K2HASH handle returned from the k2h_open family of functions.
 - enable  
@@ -391,7 +391,7 @@ A set of functions related to attributes (Attribute) provided by the K2HASH libr
 - k2h_print_attr_information  
   It displays (get) the information of Builtin attribute and Plugin attribute.
 
-#### Paramaters
+#### Parameters
 - handle  
   Specify the K2HASH handle returned from the k2h_open family of functions.
 - is_mtime  
@@ -581,7 +581,7 @@ This is a function group that reads data from K2HASH file (or on memory).
 - k2h_free_attrpack
   Free up the area indicated by K2HATTRPCK pointer returned by k2h_get_direct_attrs etc.
 
-#### Paramaters
+#### Parameters
 - k2h_get_value
  - handle  
    Specify the K2HASH handle returned from the k2h_open family of functions.
@@ -643,7 +643,7 @@ This is a function group that reads data from K2HASH file (or on memory).
    Specify the K2HASH handle returned from the k2h_open family of functions.
  - pkey  
    Specify a pointer to the binary string of the key .
- - keylengt  
+ - keylength  
    Specify the length of the key .
  - pvallength  
    Specify a pointer that returns the length of the binary string of the retrieved value .
@@ -941,7 +941,7 @@ This is a group of functions to write data to K2HASH file (or on memory).
 - k2h_add_str_attr  
   Add attributes (attribute name, attribute value) to key . It is assumed that all of the key, attribute name, and attribute value are character strings. Please do not use it except for character strings.
   
-#### Paramaters
+#### Parameters
 - k2h_set_all
  - handle  
    Specify the K2HASH handle returned from the k2h_open family of functions.
@@ -1111,7 +1111,7 @@ This is a function group that changes the key name of data of K2HASH file (or on
 - k2h_rename_str  
   It is equivalent to k2h_rename. It is assumed that the key is a character string. Please do not use it except for character strings.
 
-#### Paramaters
+#### Parameters
 - k2h_rename
  - handle  
    Specify the K2HASH handle returned from the k2h_open family of functions.
@@ -1164,7 +1164,7 @@ This function group is a special group of functions used for copying (backup and
 - free_k2hbins  
   Release the K2HBIN structure array.
 
-#### Paramaters
+#### Parameters
 - k2h_get_elements_by_hash
  - handle  
    Specify the K2HASH handle returned from the k2h_open family of functions.
@@ -1264,7 +1264,7 @@ This is a function group for deleting data from K2HASH file (or on memory).
 - k2h_remove_str_subkey  
   Delete the subkey registered in the key from the subkey list and delete the subkey itself. It is assumed that both keys and subkeys are character strings. Please do not use it except for character strings.
   
-#### Paramaters 
+#### Parameters
 - k2h_remove_all
  - handle  
    Specify the K2HASH handle returned from the k2h_open family of functions.
@@ -1370,7 +1370,7 @@ This is a group of functions to search for data from K2HASH file (or on memory).
 - k2h_find_get_str_direct_subkeys  
   Get the subkey list of K2HASH data indicated by the search handle. Please do not use when the subkey is not a character string. Please release the acquired subkey list with the k2h_free_keyarray() function.
  
-#### Paramaters
+#### Parameters
 - k2h_find_first
  - handle  
    Specify the K2HASH handle returned from the k2h_open family of functions.
@@ -1456,7 +1456,7 @@ In particular, you should avoid caching the search handle and keep it for long p
 #### Examples
  ```
 // Full dump
-for(k2h_find_h fhandle = k2h_find_first(k2handle); K2H_INIVALID_HANDLE != fhandle; fhandle = k2h_find_next(fhandle)){
+for(k2h_find_h fhandle = k2h_find_first(k2handle); K2H_INVALID_HANDLE != fhandle; fhandle = k2h_find_next(fhandle)){
     char*    pkey = k2h_find_get_str_key(fhandle);
     char*    pval = k2h_find_get_direct_value(fhandle);
     printf("KEY=%s  --> VAL=%s\n", pkey ? pkey : "null", pval ? pval : "null");
@@ -1573,7 +1573,7 @@ It is mainly used for reading and writing to data with a large size value. Parts
   Write a character string value from the set offset.
   
 
-#### Paramaters
+#### Parameters
 - k2h_da_handle
  - handle  
    Specify k2h_h handle.
@@ -1769,7 +1769,7 @@ It is mainly used for reading and writing to data with a large size value. Parts
  ```
 // get handle
 k2h_da_h    dahandle;
-if(K2H_INIVALID_HANDLE == (dahandle = k2h_da_str_handle_write(k2handle, "mykey"))){
+if(K2H_INVALID_HANDLE == (dahandle = k2h_da_str_handle_write(k2handle, "mykey"))){
     fprintf(stderr, "Could not get k2h_da_h handle.");
     return false;
 }
@@ -1879,7 +1879,7 @@ This function group is a function group related to the queue.
 - k2h_q_dump  
   It is a function for queue debugging and dumps inside the queue.
 
-#### Paramaters
+#### Parameters
 - k2h_q_handle	
  - handle  
    Specify K2HASH handle.
@@ -1962,7 +1962,7 @@ This function group is a function group related to the queue.
  - qhandle	
    Specify the handle of the queue.
  - ppval	
-   Specify a pointer to the buffer that stores the poped value from the queue (binary string). Please release the returned pointer.
+   Specify a pointer to the buffer that stores the popped value from the queue (binary string). Please release the returned pointer.
  - pvallen	
    The buffer length of *pval is returned.
  - ppattrspck	
@@ -2232,7 +2232,7 @@ This function group is a group of functions related to this key and value queue.
 - k2h_keyq_dump  
   It is a function for queue debugging and dumps inside the queue.
 
-#### Paramaters
+#### Parameters
 - k2h_keyq_handle	
  - handle  
    Specify K2HASH handle.
@@ -2359,7 +2359,7 @@ This function group is a group of functions related to this key and value queue.
  - keyqhandle  
    Specify the handle of the queue (for key & value).
  - ppval  
-   Specify a pointer to receive the value (binary string) associated with the key popoed from the queue. Please release the pointer.
+   Specify a pointer to receive the value (binary string) associated with the key popped from the queue. Please release the pointer.
  - pvallen  
    Returns the buffer length of ppval.
  - encpass  
@@ -2529,7 +2529,7 @@ This is a set of debugging functions for dumping K2HASH data.
 - k2h_get_state  
   Returns the structure K2HSTATE that summarizes the header information and status (usage status) of K2HASH data.
   
-#### Paramaters 
+#### Parameters
 - handle  
    Specify the K2HASH handle returned from the k2h_open family function.
 - stream  
@@ -2602,7 +2602,7 @@ This function group is a group of functions for controlling message output.
 - SetSignalUser1  
   By setting SIGUSR1 signal, set the signal handler so that you can bump up the message output level for debugging.
 
-#### Paramaters
+#### Parameters
 - mode  
   Set the value of K2hDbgMode that specifies the message output level. The currently settable values are the following four types.
   - Non-output  
@@ -2848,7 +2848,7 @@ k2hshm*    pk2hash;
  
 // attach write object
 K2HDAccess*    pAccess;
-if(NULL == (pAccess = pk2hash->GetDAccessObj("meykey", K2HDAccess::WRITE_ACCESS, 0))){
+if(NULL == (pAccess = pk2hash->GetDAccessObj("mykey", K2HDAccess::WRITE_ACCESS, 0))){
     return false
 }
  
@@ -2860,7 +2860,7 @@ if(!pAccess->Write("my test data")){
 delete pAccess;
  
 // attach read object
-if(NULL == (pAccess = pk2hash->GetDAccessObj("meykey", K2HDAccess::READ_ACCESS, 0))){
+if(NULL == (pAccess = pk2hash->GetDAccessObj("mykey", K2HDAccess::READ_ACCESS, 0))){
     return false
 }
  
@@ -2985,7 +2985,7 @@ if(!archiveobj.Serialize(&k2hash, false)){
 The K2HASH library provides functions as a queue (FIFO / LIFO).  
 The queue can push and pop values as FIFO / LIFO.  
 This class is a class for manipulating queues.  
-With this class you can manipulate pushing, poping, and deleting data into the queue.  
+With this class you can manipulate pushing, popping, and deleting data into the queue.  
 <br />
 The queue provided by the K2HASH library is implemented with keys and values, so a specific prefix is given to the internal key names stored in the queue.
 If prefix is not specified, "\0K2HQUEUE_PREFIX_" (note that the first byte is '\0'(0x00)) is used as the default.
@@ -3011,7 +3011,7 @@ You can use the Builtin attribute to specify queue encryption and valid(Expire) 
 - K2HQueue::K2HQueue  
   Create a queue object by specifying the K2HShm object, FIFO / LIFO. At the time of generation, operation (writing etc.) to K2HASH data is not performed. You can specify the mask of the Builtin attribute as an argument (usually this argument is never used).
 - K2HQueue::Init  
-  nitialize the queue object by specifying the K2HShm object. Operation (writing etc.) to K2HASH data is not performed at the time of initialization. You can specify the mask of the Builtin attribute as an argument (usually this argument is never used).
+  initialize the queue object by specifying the K2HShm object. Operation (writing etc.) to K2HASH data is not performed at the time of initialization. You can specify the mask of the Builtin attribute as an argument (usually this argument is never used).
 - K2HQueue::Init  
   Initialize the queue object with a prefix. Operation (writing etc.) to K2HASH data is not performed at the time of initialization. You can specify the mask of the Builtin attribute as an argument (usually this argument is never used).
 - K2HQueue::IsEmpty  
@@ -3078,7 +3078,7 @@ if(!myqueue.Remove(1)){
 
 #### Description
 The K2HASH library provides functions as a queue (FIFO / LIFO).
-Queues provided by this function group can be pushed and poped with FIFO / LIFO with a key and values as one pair.
+Queues provided by this function group can be pushed and popped with FIFO / LIFO with a key and values as one pair.
 This class is a derived class of K2HQueue, it will be a class supporting this key and value queue.
 The key name associated with the queue has a specific prefix and is the same as K2HQueue.
 <br />

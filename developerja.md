@@ -77,7 +77,7 @@ K2HASHライブラリは、内部動作およびAPIの動作の確認をする�
 - bool k2h_set_debug_file(const char\* filepath)
 - bool k2h_unset_debug_file(void)
 - bool k2h_load_debug_env(void)
-- bool k2h_set_bumup_debug_signal_user1(void)
+- bool k2h_set_bumpup_debug_signal_user1(void)
 
 #### 説明
 - k2h_bump_debug_level  
@@ -96,18 +96,18 @@ K2HASHライブラリは、内部動作およびAPIの動作の確認をする�
   メッセージを stderr に出力するように戻します。
 - k2h_load_debug_env  
   環境変数 K2HDBGMODE、K2HDBGFILE を読み込み、その値にしたがってメッセージ出力、出力先を設定します。
-- k2h_set_bumup_debug_signal_user1  
+- k2h_set_bumpup_debug_signal_user1  
   SIGUSR1 シグナルハンドラを設定します。設定された場合には SIGUSR1 を受ける毎にメッセージ出力レベルを Bump upします。
 
 #### 返り値
-k2h_set_debug_file、 k2h_unset_debug_file、k2h_load_debug_env、k2h_set_bumup_debug_signal_user1 は成功した場合には、true を返します。失敗した場合には false を返します。
+k2h_set_debug_file、 k2h_unset_debug_file、k2h_load_debug_env、k2h_set_bumpup_debug_signal_user1 は成功した場合には、true を返します。失敗した場合には false を返します。
 
 #### 注意
 環境変数 K2HDBGMODE、K2HDBGFILEについては、[環境変数](environmentsja.html)を参照してください。
 
 #### サンプル
  ```
-k2h_set_bumup_debug_signal_user1();
+k2h_set_bumpup_debug_signal_user1();
 k2h_set_debug_file("/var/log/k2hash/error.log");
 k2h_set_debug_level_message();
  ```
@@ -147,7 +147,7 @@ K2HASHは予めHASH関数（FNV-1A）、単純な処理を行うトランザク�
 if(!k2h_load_hash_library("/usr/lib64/myhashfunc.so")){
     return false;
 }
-if(!k2h_load_transaction_library("/usr/lib64/mytrunsfunc.so")){
+if(!k2h_load_transaction_library("/usr/lib64/mytransfunc.so")){
     return false;
 }
     //...
@@ -1470,9 +1470,9 @@ K2HASHファイル（もしくはオンメモリ）からデータを探索す�
 - k2h_find_get_direct_subkeys  
   成功した場合は、サブキー（Subkey）リストの K2HKEYPCK構造体配列へのポインタを返します。 失敗した場合は NULL を返します。返されたポインタは k2h_free_keypack()関数で開放してください。
 - k2h_find_get_str_subkeys  
-  成功した場合は、サブキー（Sunkey）リストのポインタ ppskeyarray の示す配列個数を返します。 失敗した場合には、-1を返します。
+  成功した場合は、サブキー（Subkey）リストのポインタ ppskeyarray の示す配列個数を返します。 失敗した場合には、-1を返します。
 - k2h_find_get_str_direct_subkeys  
-  成功した場合は、サブキー（Sunkey）リストのK2HKEYPCK構造体配列のポインタを返します。失敗した場合にはNULLを返します。返されたポインタは k2h_free_keyarray()関数で開放してください。
+  成功した場合は、サブキー（Subkey）リストのK2HKEYPCK構造体配列のポインタを返します。失敗した場合にはNULLを返します。返されたポインタは k2h_free_keyarray()関数で開放してください。
 
 #### 注意
 有効な探索ハンドル（k2h_find_h）を保持している期間（k2h_find_free により開放されるまでの期間）は、探索ハンドルが指し示しているK2HASHデータに対して読み取りのためのロックが設定されています。
@@ -1483,7 +1483,7 @@ K2HASHファイル（もしくはオンメモリ）からデータを探索す�
 #### サンプル
  ```
 // Full dump
-for(k2h_find_h fhandle = k2h_find_first(k2handle); K2H_INIVALID_HANDLE != fhandle; fhandle = k2h_find_next(fhandle)){
+for(k2h_find_h fhandle = k2h_find_first(k2handle); K2H_INVALID_HANDLE != fhandle; fhandle = k2h_find_next(fhandle)){
     char*    pkey = k2h_find_get_str_key(fhandle);
     char*    pval = k2h_find_get_direct_value(fhandle);
     printf("KEY=%s  --> VAL=%s\n", pkey ? pkey : "null", pval ? pval : "null");
@@ -1833,7 +1833,7 @@ K2HASHファイル（もしくはオンメモリ）のデータへ直接アク�
  ```
 // get handle
 k2h_da_h    dahandle;
-if(K2H_INIVALID_HANDLE == (dahandle = k2h_da_str_handle_write(k2handle, "mykey"))){
+if(K2H_INVALID_HANDLE == (dahandle = k2h_da_str_handle_write(k2handle, "mykey"))){
     fprintf(stderr, "Could not get k2h_da_h handle.");
     return false;
 }
@@ -2924,7 +2924,7 @@ k2hshm*    pk2hash;
  
 // attach write object
 K2HDAccess*    pAccess;
-if(NULL == (pAccess = pk2hash->GetDAccessObj("meykey", K2HDAccess::WRITE_ACCESS, 0))){
+if(NULL == (pAccess = pk2hash->GetDAccessObj("mykey", K2HDAccess::WRITE_ACCESS, 0))){
     return false
 }
  
@@ -2936,7 +2936,7 @@ if(!pAccess->Write("my test data")){
 delete pAccess;
  
 // attach read object
-if(NULL == (pAccess = pk2hash->GetDAccessObj("meykey", K2HDAccess::READ_ACCESS, 0))){
+if(NULL == (pAccess = pk2hash->GetDAccessObj("mykey", K2HDAccess::READ_ACCESS, 0))){
     return false
 }
  
