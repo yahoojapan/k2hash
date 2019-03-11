@@ -17,7 +17,9 @@ arrow_link_tools: <a href="tools.html" class="link-title"><span class="arrow-bas
 # **K2HASH**
 **K2HASH** (NoSQL Key Value Store(KVS) library) is a key-value store(NoSQL) with original featured function.  
 **K2HASH** creates a database as NoSQL. **K2HASH** uses it for storing and getting a value for a key by the hash which is built from the key.  
-**K2HASH** is one of [AntPickax](https://antpick.ax/)'s open source product by Yahoo! JAPAN.
+**K2HASH** is one of [AntPickax](https://antpick.ax/)'s open source product by Yahoo! JAPAN.  
+
+![K2HASH](images/top_fullock.png)
 
 ## {{ page.arrow_link_overview }}
 [Overview](home.html) about **K2HASH** library.
