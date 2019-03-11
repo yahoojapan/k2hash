@@ -19,7 +19,7 @@ arrow_link_tools: <a href="toolsja.html" class="link-title"><span class="arrow-b
 **K2HASH** は、キー（Key）に対して、一意のHash値を割り当て（計算）、そのHash値に対応したデータ格納場所へ、値（Value）を保存、読み出し、削除を行うライブラリです。  
 **K2HASH** は、Yahoo! JAPANがオープンソースとして公開するプロダクト [AntPickax](https://antpick.ax/indexja.html) のひとつです。  
 
-![K2HASH](images/top_fullock.png)
+![K2HASH](images/top_k2hash.png)
 
 ## {{ page.arrow_link_overview }}
 **K2HASH** の[概要](homeja.html)について説明します。  
