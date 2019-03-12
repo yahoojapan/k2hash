@@ -567,12 +567,12 @@ bool K2HShm::DumpPageData(FILE* stream, int nest, PPAGEHEAD pRelPageHead, const 
 			return false;
 		}
 
-		size_t		read_length;
-		size_t		total_length;
 		K2HPage*	pNextPage;
 		off_t		next_offset;
 		off_t		offset;
-		for(offset = 0L, total_length = 0UL; pPage; pPage = pNextPage, offset = next_offset, total_length += read_length){
+		for(offset = 0L; pPage; pPage = pNextPage, offset = next_offset){
+			size_t	read_length;
+
 			// read data
 			read_length	= 0UL;
 			next_offset	= 0L;
@@ -611,7 +611,6 @@ bool K2HShm::DumpPageData(FILE* stream, int nest, PPAGEHEAD pRelPageHead, const 
 			}
 			// next
 			if(pPage == pNextPage && read_length < one_length){
-				total_length += read_length;
 				break;
 			}
 			K2H_Delete(pPage);

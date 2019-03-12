@@ -3131,9 +3131,11 @@ static bool QueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t& pa
 	}
 	string	strvalue = params[2];
 
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
+	time_t		expire	= 0;
 	string		pass;
 	const char*	ppass	= NULL;
-	time_t		expire	= 0;
 	time_t*		pexpire	= NULL;
 	for(size_t pos = 3; pos < params.size(); ++pos){
 		if(0 == strncasecmp(params[pos].c_str(), "pass=", 5)){
@@ -3839,9 +3841,11 @@ static bool KeyQueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t&
 	string	strkey	= params[2];
 	string	strvalue= params[3];
 
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
+	time_t		expire	= 0;
 	string		pass;
 	const char*	ppass	= NULL;
-	time_t		expire	= 0;
 	time_t*		pexpire	= NULL;
 	for(size_t pos = 4; pos < params.size(); ++pos){
 		if(0 == strncasecmp(params[pos].c_str(), "pass=", 5)){
@@ -4265,6 +4269,9 @@ static bool BultinAttrCommand(K2HShm& k2hash, params_t& params)
 	bool		is_defenc	= true;
 	string		passfile;
 	bool		is_history	= true;
+
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	time_t		expire		= 0;
 
 	for(params_t::iterator iter = params.begin(); iter != params.end(); ++iter){

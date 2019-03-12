@@ -12,7 +12,9 @@ K2HASH - NoSQL Key Value Store(KVS) library
 
 ### Overview
 K2HASH is NoSQL(key value store) library and tools for this library by
-Yahoo! JAPAN. K2HASH is following specifications.
+Yahoo! JAPAN. K2HASH is following specifications.  
+
+![K2HASH](https://k2hash.antpick.ax/images/top_k2hash.png)
 
 ### Feature
   - Supports multi-threading and multi-processing program.

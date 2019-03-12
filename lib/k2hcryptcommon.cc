@@ -128,7 +128,7 @@ bool k2h_pkcs5_salt(unsigned char* salt, size_t length)
 		}
 		init = true;
 	}
-	if(!salt || length <= 0){
+	if(!salt || 0 == length){
 		ERR_K2HPRN("parameters are wrong.");
 		return false;
 	}
@@ -167,7 +167,7 @@ bool k2h_generate_iv(unsigned char* iv, size_t length)
 		seed = ((seed << 8) | (static_cast<unsigned int>(tid) & 0xff));	// merge
 		init = true;
 	}
-	if(!iv || length <= 0){
+	if(!iv || 0 == length){
 		ERR_K2HPRN("parameters are wrong.");
 		return false;
 	}
