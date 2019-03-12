@@ -665,7 +665,12 @@ bool K2HShm::ReplacePageHead(PPAGEHEAD pLastRelPage, PPAGEHEAD pRelPtr, bool isS
 
 	PAGEWRAP	PageWrap;
 	{
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		PageWrap.pagehead.prev		= isSetPrevPtr ? pRelPtr : NULL;
+
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		PageWrap.pagehead.next		= isSetPrevPtr ? NULL : pRelPtr;
 	}
 	unsigned char*	pbyData	= &(PageWrap.barray[isSetPrevPtr ? PAGEHEAD_PREV_OFFSET : PAGEHEAD_NEXT_OFFSET]);

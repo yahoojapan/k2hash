@@ -189,7 +189,7 @@ bool create_pbkdf1_key_iv(const unsigned char* pSalt, const unsigned char* pPass
 	bool			is_first_loop;
 	unsigned int	cnt;
 
-	if(!pSalt || !pPass || lenPass <= 0 || !pKey || lenCipherKey == 0 || !pIV || lenIV <= 0){
+	if(!pSalt || !pPass || 0 == lenPass || !pKey || 0 == lenCipherKey || !pIV || lenIV <= 0){
 		ERR_K2HPRN("parameters are wrong.");
 		return result;
 	}
