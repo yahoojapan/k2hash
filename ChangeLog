@@ -1,3 +1,9 @@
+k2hash (1.0.70) trusty; urgency=low
+
+  * Fixed codes for cppcheck 1.87 - #28
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 12 Mar 2019 12:53:26 +0900
+
 k2hash (1.0.69) trusty; urgency=low
 
   * Fixed incorporation of multibyte characters - #25
