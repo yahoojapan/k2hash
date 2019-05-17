@@ -316,7 +316,20 @@ fi
 # For packagecloud.io CLI tool(package_cloud)
 #
 if [ ${IS_CENTOS} -ne 1 ]; then
-	run_cmd ${GEM_BIN} install rake rubocop package_cloud
+	# [NOTE][FIXME] THIS SPECIAL TREATMENT SHOULD BE UNDONE IMMEDIATELY
+	# There was an event that failed to install rubocop. (17 May 2019)
+	# This is a temporary issue until the following patch is applied.
+	#	https://github.com/rubocop-hq/rubocop/pull/7047
+	# We need to create the package now, so if we encounter an error, install 0.65.0.
+	# 
+	run_cmd ${GEM_BIN} install rake
+	prn_cmd ${GEM_BIN} install rubocop
+	${GEM_BIN} install rubocop
+	if [ $? -ne 0 ]; then
+		echo "[ERROR] ${PRGNAME} : failed install rubocop, but retry to install rubocop 0.65.0." 1>&2
+		run_cmd ${GEM_BIN} install rubocop -v "0.65.0"
+	fi
+	run_cmd ${GEM_BIN} install package_cloud
 else
 	#
 	# Using RHSCL because centos has older ruby
@@ -324,7 +337,21 @@ else
 	run_cmd ${INSTALLER_BIN} install -y -qq centos-release-scl
 	run_cmd ${INSTALLER_BIN} install -y -qq rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem-rake
 	source /opt/rh/rh-ruby23/enable
-	run_cmd ${GEM_BIN} install rubocop package_cloud
+
+	# [NOTE][FIXME] THIS SPECIAL TREATMENT SHOULD BE UNDONE IMMEDIATELY
+	# There was an event that failed to install rubocop. (17 May 2019)
+	# This is a temporary issue until the following patch is applied.
+	#	https://github.com/rubocop-hq/rubocop/pull/7047
+	# We need to create the package now, so if we encounter an error, install 0.65.0.
+	# 
+	run_cmd ${GEM_BIN} install rake
+	prn_cmd ${GEM_BIN} install rubocop
+	${GEM_BIN} install rubocop
+	if [ $? -ne 0 ]; then
+		echo "[ERROR] ${PRGNAME} : failed install rubocop, but retry to install rubocop 0.65.0." 1>&2
+		run_cmd ${GEM_BIN} install rubocop -v "0.65.0"
+	fi
+	run_cmd ${GEM_BIN} install package_cloud
 fi
 
 #

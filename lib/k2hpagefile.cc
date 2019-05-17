@@ -85,7 +85,7 @@ K2HPageFile::K2HPageFile(const K2HShm* pk2hshm, int fd, off_t offset) : K2HPage(
 
 K2HPageFile::~K2HPageFile()
 {
-	K2HPage::Clean();
+	K2HPageFile::Clean();
 }
 
 //---------------------------------------------------------
