@@ -1,3 +1,9 @@
+k2hash (1.0.71) trusty; urgency=low
+
+  * Fixed a bug that leaked file descriptor - #31
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 17 May 2019 11:16:56 +0900
+
 k2hash (1.0.70) trusty; urgency=low
 
   * Fixed codes for cppcheck 1.87 - #28
