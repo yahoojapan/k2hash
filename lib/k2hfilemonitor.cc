@@ -50,6 +50,9 @@ using namespace std;
 #define	WAIT_INITOPEN_MAXTIME	(30 * 1000)		// 30s
 #define	WAIT_INITOPEN_CNT		(WAIT_INITOPEN_MAXTIME / WAIT_INITOPEN_TIME)
 
+#define	ARR_INODECNT_VALPOS		1
+#define	ARR_AREACNT_VALPOS		1
+
 //---------------------------------------------------------
 // Class variable
 //---------------------------------------------------------
@@ -152,16 +155,18 @@ bool K2HFileMonitor::Open(const char* shmfile, bool noupdate)
 		// And call UpdateInode() and UpdateArea() methods by client function after calling this method.
 		//
 		bool	is_change = false;
-		if(!UpdateInode(is_change)){
-			ERR_K2HPRN("Something error occurred in first updating inode.");
+		if(!CheckInode(is_change)){
+			ERR_K2HPRN("Something error occurred in first checking inode.");
 			Close();
 			return false;
 		}
 		if(is_change){
-			// re-set all value
-			bup_inode_cnt	= psfmon->inode_cnt[0];
-			bup_area_cnt	= psfmon->area_cnt[0];
-			bup_inode_val	= psfmon->inode_val;
+			// update inode
+			if(!UpdateInode(is_change)){
+				ERR_K2HPRN("Something error occurred in first updating inode.");
+				Close();
+				return false;
+			}
 		}
 	}else{
 		MSG_K2HPRN("Open with noupdate flag, so do not update values if monitor file exists.");
@@ -331,8 +336,14 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 		MSG_K2HPRN("InitializeFileMonitor with noupdate flag, so lock writing inode if monitor file exists.");
 	}
 
-	// init value and counters(about inode are already update in UpdateInode)
-	bup_area_cnt = psfmon->area_cnt[0];
+	// update area count value
+	if(!ReadLock(AREA_LOCK_POS)){
+		ERR_K2HPRN("Could not lock for area check.");
+		Close();
+		return false;
+	}
+	bup_area_cnt = psfmon->area_cnt[ARR_AREACNT_VALPOS];
+	Unlock(AREA_LOCK_POS);
 
 	return true;
 }
@@ -345,17 +356,21 @@ bool K2HFileMonitor::CheckInode(bool& is_change, bool valupdate)
 	}
 
 	is_change = false;
-	if(bup_inode_cnt != psfmon->inode_cnt[0]){
+	if(	bup_inode_cnt != psfmon->inode_cnt[ARR_INODECNT_VALPOS]	||
+		bup_inode_val != psfmon->inode_val						)
+	{
 		if(!ReadLock(INODE_LOCK_POS)){
 			ERR_K2HPRN("Could not lock for inode check.");
 			return false;
 		}
-		if(bup_inode_val != psfmon->inode_val){
+		if(	bup_inode_cnt != psfmon->inode_cnt[ARR_INODECNT_VALPOS]	||
+			bup_inode_val != psfmon->inode_val						)
+		{
 			MSG_K2HPRN("k2hash file inode is not same, it means file is updated!");
 			is_change = true;
 
 			if(valupdate){
-				bup_inode_cnt	= psfmon->inode_cnt[0];
+				bup_inode_cnt	= psfmon->inode_cnt[ARR_INODECNT_VALPOS];
 				bup_inode_val	= psfmon->inode_val;
 			}
 		}else{
@@ -373,7 +388,7 @@ bool K2HFileMonitor::CheckArea(bool& is_change, bool valupdate)
 		return false;
 	}
 
-	if(bup_area_cnt != psfmon->area_cnt[0]){
+	if(bup_area_cnt != psfmon->area_cnt[ARR_AREACNT_VALPOS]){
 		MSG_K2HPRN("k2hash area counter is not same, it means the area is updated!");
 		is_change = true;
 
@@ -382,7 +397,7 @@ bool K2HFileMonitor::CheckArea(bool& is_change, bool valupdate)
 				ERR_K2HPRN("Could not lock for area check.");
 				return false;
 			}
-			bup_area_cnt = psfmon->area_cnt[0];
+			bup_area_cnt = psfmon->area_cnt[ARR_AREACNT_VALPOS];
 			Unlock(AREA_LOCK_POS);
 		}
 	}else{
@@ -416,7 +431,7 @@ bool K2HFileMonitor::UpdateInode(bool& is_change)
 	// check inode
 	if(inode == psfmon->inode_val){
 		//MSG_K2HPRN("inode is same, so nothing to do.");
-		bup_inode_cnt = psfmon->inode_cnt[0];
+		bup_inode_cnt = psfmon->inode_cnt[ARR_INODECNT_VALPOS];
 		bup_inode_val = psfmon->inode_val;
 		Unlock(INODE_LOCK_POS);
 		return true;
@@ -424,7 +439,7 @@ bool K2HFileMonitor::UpdateInode(bool& is_change)
 	MSG_K2HPRN("k2hash file inode is not same, update inode values in monitor file.");
 
 	// inode is changed, so update
-	++(psfmon->inode_cnt[0]);
+	++(psfmon->inode_cnt[ARR_INODECNT_VALPOS]);
 	psfmon->inode_val = inode;
 	if(-1 == msync(psfmon, sizeof(SFMONWRAP), MS_SYNC)){
 		WAN_K2HPRN("Failed msync.");
@@ -432,7 +447,7 @@ bool K2HFileMonitor::UpdateInode(bool& is_change)
 	}
 
 	// update backup values
-	bup_inode_cnt = psfmon->inode_cnt[0];
+	bup_inode_cnt = psfmon->inode_cnt[ARR_INODECNT_VALPOS];
 	bup_inode_val = psfmon->inode_val;
 
 	// Unlock
@@ -463,19 +478,19 @@ bool K2HFileMonitor::UpdateArea(bool& is_need_check)
 	}
 	MSG_K2HPRN("update k2hash area counter in monitor file.");
 
-	if(bup_area_cnt != psfmon->area_cnt[0]){
+	if(bup_area_cnt != psfmon->area_cnt[ARR_AREACNT_VALPOS]){
 		is_need_check = true;
 	}
 
 	// update
-	++(psfmon->area_cnt[0]);
+	++(psfmon->area_cnt[ARR_AREACNT_VALPOS]);
 	if(-1 == msync(psfmon, sizeof(SFMONWRAP), MS_SYNC)){
 		WAN_K2HPRN("Failed msync.");
 		// continue...
 	}
 
 	// update backup values
-	bup_area_cnt = psfmon->area_cnt[0];
+	bup_area_cnt = psfmon->area_cnt[ARR_AREACNT_VALPOS];
 
 	// Unlock
 	Unlock(AREA_LOCK_POS);
