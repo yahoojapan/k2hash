@@ -1,3 +1,9 @@
+k2hash (1.0.72) trusty; urgency=low
+
+  * Enhanced lock of monitor file parts - #34
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 18 Feb 2020 10:10:31 +0900
+
 k2hash (1.0.71) trusty; urgency=low
 
   * Fixed a bug that leaked file descriptor - #31
