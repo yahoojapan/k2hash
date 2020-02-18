@@ -31,8 +31,8 @@
 // is number of 64bit hex string which is made from hashed k2hash file 
 // full path.
 // 
-// So the temporary file has three bytes arrays, those arrays is 8 bytes 
-// and this class uses first one byte. This class locks only first byte
+// So the temporary file has three arrays, those arrays is 8 bytes and 
+// this class uses first one byte. This class locks only first byte
 // (one byte). One of arrays is for checking whichever this temporary 
 // file is opened, it is "open_lock" member in structure. So the temporary 
 // file should be removed when all process detach the k2hash file, this 
@@ -58,9 +58,9 @@
 // Structures
 //---------------------------------------------------------
 typedef struct share_file_monitor{
-	unsigned char	open_lock[sizeof(long)];	// Use only first byte
-	unsigned char	inode_cnt[sizeof(long)];	// Use only first byte
-	unsigned char	area_cnt[sizeof(long)];		// Use only first byte
+	unsigned char	open_lock[sizeof(long)];	// Use only first byte for locking
+	unsigned char	inode_cnt[sizeof(long)];	// Use first byte for locking, and 2'nd byte for inode update count
+	unsigned char	area_cnt[sizeof(long)];		// Use first byte for locking, and 2'nd byte for area update count
 	ino_t			inode_val;
 }K2HASH_ATTR_PACKED SFMON, *PSFMON;
 
