@@ -207,7 +207,7 @@ int main(int argc, char** argv)
 		if(pValue){
 			printf("Read data\n");
 			printf("    Key string:                         %s\n", params["KEY"].c_str());
-			printf("    Value string:                       %s\n", pValue ? pValue : "(null)");
+			printf("    Value string:                       %s\n", pValue);
 			printf("\n");
 		}else{
 			printf("Read data --> Not found\n");

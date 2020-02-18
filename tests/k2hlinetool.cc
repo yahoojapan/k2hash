@@ -1736,7 +1736,7 @@ static bool PrintKeys(K2HShm& k2hash, const char* pKey, const string& spacer, bo
 		pValue = k2hash.Get(pKey, is_check_attr, pass);
 	}
 	if(pValue){
-		PRN("%s+\"%s\" => \"%s\"", myspacer.c_str(), pKey, pValue ? pValue : "(null)");
+		PRN("%s+\"%s\" => \"%s\"", myspacer.c_str(), pKey, pValue);
 	}else{
 		PRN("%s+\"%s\" => value is not found", myspacer.c_str(), pKey ? pKey : "(null)");
 	}
@@ -2553,7 +2553,7 @@ static bool StreamCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool HistoryCommand(ConsoleInput& InputIF)
+static bool HistoryCommand(const ConsoleInput& InputIF)
 {
 	const strarr_t&	history = InputIF.GetAllHistory();
 
@@ -2565,7 +2565,7 @@ static bool HistoryCommand(ConsoleInput& InputIF)
 	return true;
 }
 
-static bool SaveCommand(ConsoleInput& InputIF, params_t& params)
+static bool SaveCommand(const ConsoleInput& InputIF, params_t& params)
 {
 	int	fd;
 	if(-1 == (fd = open(params[0].c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644))){

@@ -64,12 +64,12 @@ string k2h_get_uniqid_for_history(const struct timespec& rtime)
 	static bool			init = false;
 	if(!init){
 		// seed for rand()
-		struct timespec	rtime = {0, 0};
-		if(-1 == clock_gettime(CLOCK_REALTIME_COARSE, &rtime)){
+		struct timespec	tmprtime = {0, 0};
+		if(-1 == clock_gettime(CLOCK_REALTIME_COARSE, &tmprtime)){
 			WAN_K2HPRN("could not get clock time by errno(%d), so unix time is instead of it.", errno);
 			seed = static_cast<unsigned int>(time(NULL));			// base is sec
 		}else{
-			seed = static_cast<unsigned int>(rtime.tv_nsec / 1000);	// base is us
+			seed = static_cast<unsigned int>(tmprtime.tv_nsec / 1000);	// base is us
 		}
 
 		// local hostname

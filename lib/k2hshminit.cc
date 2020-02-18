@@ -273,7 +273,7 @@ bool K2HShm::InitializeFile(const char* file, bool isfullmapping, int mask_bitcn
 		ERR_K2HPRN("Maximum element count(%d) must be over 1.", max_element_cnt);
 		return false;
 	}
-	if(mask_bitcnt < K2HShm::MIN_MASK_BITCOUNT && K2HShm::MAX_MASK_BITCOUNT < mask_bitcnt){
+	if(mask_bitcnt < K2HShm::MIN_MASK_BITCOUNT || K2HShm::MAX_MASK_BITCOUNT < mask_bitcnt){
 		// Warning
 		WAN_K2HPRN("Mask bit count(%d) for hash should be from %d to %d.", mask_bitcnt, K2HShm::MIN_MASK_BITCOUNT, K2HShm::MAX_MASK_BITCOUNT);
 	}
@@ -447,19 +447,19 @@ bool K2HShm::InitializeFile(const char* file, bool isfullmapping, int mask_bitcn
 	{
 		PKINDEX		pKeyIndex	= static_cast<PKINDEX>(area_mmap[INITAREAMMAP_POS_KINDEX].pmmap);
 		PCKINDEX	pCKIndex	= static_cast<PCKINDEX>(area_mmap[INITAREAMMAP_POS_CKINDEX].pmmap);
-		int			cmask_bitcnt= K2HShm::GetMaskBitCount(pHead->collision_mask);
+		int			cmask_tmp	= K2HShm::GetMaskBitCount(pHead->collision_mask);
 		k2h_hash_t	cur_hash	= 0UL;
 		int			kindex_pos	= 0;
 		int			ckindex_pos	= 0;
 		for(int bitcnt = 0; bitcnt <= mask_bitcnt; bitcnt++){
 			int	kindex_count = 1 << (0 < bitcnt ? bitcnt - 1 : bitcnt);			// notice: if mask_bitcnt is 0 or 1, kindex_count is 1, but it is OK!
-			if(!K2HShm::InitializeKeyIndexArray(pShmBase, &pKeyIndex[kindex_pos], cur_hash, pHead->cur_mask, cmask_bitcnt, &pCKIndex[ckindex_pos], kindex_count, KINDEX_ASSIGNED)){
+			if(!K2HShm::InitializeKeyIndexArray(pShmBase, &pKeyIndex[kindex_pos], cur_hash, pHead->cur_mask, cmask_tmp, &pCKIndex[ckindex_pos], kindex_count, KINDEX_ASSIGNED)){
 				ERR_K2HPRN("Failed to initialize Key Index Area.");
 				Clean(true);
 				return false;
 			}
 			pHead->key_index_area[bitcnt] = CVT_REL(pShmBase, &pKeyIndex[kindex_pos], PKINDEX);
-			ckindex_pos += kindex_count * CKINDEX_BYKINDEX_CNT(cmask_bitcnt);
+			ckindex_pos += kindex_count * CKINDEX_BYKINDEX_CNT(cmask_tmp);
 			kindex_pos  += kindex_count;
 		}
 	}

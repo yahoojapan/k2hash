@@ -229,10 +229,11 @@ K2hAttrOpsMan::~K2hAttrOpsMan(void)
 
 bool K2hAttrOpsMan::Clean(void)
 {
-	for(k2hattroplist_t::iterator iter = attroplist.begin(); iter != attroplist.end(); iter = attroplist.erase(iter)){
+	for(k2hattroplist_t::iterator iter = attroplist.begin(); iter != attroplist.end(); ++iter){
 		K2hAttrOpsBase*	pAttrOp = *iter;
 		K2H_Delete(pAttrOp);
 	}
+	attroplist.clear();
 	return true;
 }
 
