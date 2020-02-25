@@ -1,3 +1,9 @@
+k2hash (1.0.73) trusty; urgency=low
+
+  * Stopped deleting monitor files of the last process - #36
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 25 Feb 2020 17:21:28 +0900
+
 k2hash (1.0.72) trusty; urgency=low
 
   * Enhanced lock of monitor file parts - #34
