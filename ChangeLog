@@ -1,3 +1,9 @@
+k2hash (1.0.74) trusty; urgency=low
+
+  * Allow 0 sec for expire when setting directly as placeholder - #38
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 03 Apr 2020 09:38:17 +0900
+
 k2hash (1.0.73) trusty; urgency=low
 
   * Stopped deleting monitor files of the last process - #36
