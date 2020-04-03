@@ -518,10 +518,19 @@ bool K2hAttrBuiltin::Set(const K2HShm* pshm, const char* encpass, const time_t* 
 		EncPass = encpass;
 	}
 	if(expire){
-		if(*expire <= 0){
-			ERR_K2HPRN("expire(%zd) must be over 0.", *expire);
+		// [NOTE]
+		// It is allowed to set the expire value directly to 0.
+		// This is useful if you want to create keys as placeholders and so on.
+		// However, the expire value can be set 0 only when this method is
+		// called directly.
+		//
+		if(*expire < 0){
+			ERR_K2HPRN("expire(%zd) must be 0 or over 0.", *expire);
 			Clear();
 			return false;
+		}
+		if(*expire == 0){
+			MSG_K2HPRN("expire(%zd) is allowed, it means placeholder.", *expire);
 		}
 		ExpireSec = *expire;
 	}

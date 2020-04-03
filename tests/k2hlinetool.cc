@@ -1342,6 +1342,16 @@ static bool SetCommand(K2HShm& k2hash, params_t& params)
 		}
 	}
 
+	// [NOTE]
+	// It is allowed to set the expire value directly to 0.
+	// This is useful if you want to create keys as placeholders and so on.
+	// However, the expire value can be set 0 only when this method is
+	// called directly.
+	//
+	if(0 == expire_time){
+		PRN("[MSG] The expire value is 0. This means that this key is specifically allowed as a placeholder.");
+	}
+
 	if(isModeCAPI){
 		if(isRemoveSubkeyAll){
 			if(!k2h_set_str_all_wa(reinterpret_cast<k2h_h>(&k2hash), params[0].c_str(), pValue, NULL, (PassPhrase.empty() ? NULL : PassPhrase.c_str()), (expire_time <= 0 ? NULL : &expire_time))){
