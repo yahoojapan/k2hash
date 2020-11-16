@@ -1,0 +1,147 @@
+#
+# Utility helper tools for Github Actions by AntPickax
+#
+# Copyright 2020 Yahoo Japan Corporation.
+#
+# AntPickax provides utility tools for supporting autotools
+# builds.
+#
+# These tools retrieve the necessary information from the
+# repository and appropriately set the setting values of
+# configure, Makefile, spec,etc file and so on.
+# These tools were recreated to reduce the number of fixes and
+# reduce the workload of developers when there is a change in
+# the project configuration.
+# 
+# For the full copyright and license information, please view
+# the license file that was distributed with this source code.
+#
+# AUTHOR:   Takeshi Nakatani
+# CREATE:   Fri, Nov 13 2020
+# REVISION: 1.0
+#
+
+#------------------------------------------------------------------------------------
+# Github Actions
+#------------------------------------------------------------------------------------
+name: C/C++ AntPickax CI
+
+#
+# Events
+#
+on:
+  push:
+  pull_request:
+  #
+  # CRON event is fire on every sunday(UTC).
+  #
+  schedule:
+    - cron: '0 15 * * 0'
+
+#
+# Jobs
+#
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    #
+    # build matrix for containers
+    #
+    strategy:
+      #
+      # do not stop jobs automatically if any of the jobs fail
+      #
+      fail-fast: false
+
+      #
+      # matrix for containers
+      #
+      matrix:
+        container:
+          - ubuntu:20.04
+          - ubuntu:18.04
+          - ubuntu:16.04
+          - debian:buster
+          - debian:stretch
+          - centos:centos8
+          - centos:centos7
+          - centos:centos6
+          - fedora:32
+          - fedora:31
+          - fedora:30
+
+    container:
+      image: ${{ matrix.container }}
+
+    steps:
+      #
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      #
+      # [NOTE] using checkout@v1 instead of @v2
+      # We need to run on centos6, it fails checkout@v2 because checkout@v2 uses nodejs12
+      # and nodejs12 cannot run old os(like centos6).
+      # However checkout@v1 does not use nodejs, then it can run on old os(like centos6)
+      # see: https://github.com/actions/runner/issues/337
+      #
+      - name: Checkout sources
+        uses: actions/checkout@v1
+
+      #
+      # Run building and packaging helper
+      #
+      # [NOTE] Secrets and Environments
+      # When passing parameters to build_helper.sh in build and packaging,
+      # use Secret of organization or repository.
+      # 
+      # By setting the correct values for the following variable names,
+      # they will be passed as parameters in build_helper.sh.
+      #    OSTYPE_VARS_FILE           : specify custom variables file
+      #    BUILD_NUMBER               : buld number for packaging
+      #    DEVELOPER_FULLNAME         : developer name for package
+      #    DEVELOPER_EMAIL            : developer e-mail for package
+      #    FORCE_PUBLISH              : true means force to publish packages, false means never publish
+      #    USE_PACKAGECLOUD_REPO      : true means using pacakgecloud.io repo, false is not using
+      #  * PACKAGECLOUD_TOKEN         : The token for publishing to packagcloud.io
+      #    PACKAGECLOUD_OWNER         : owner name as a pat of path to packagcloud.io for publishing/downloading
+      #    PACKAGECLOUD_PUBLISH_REPO  : repo name as a pat of path to packagcloud.io for publishing
+      #    PACKAGECLOUD_DOWNLOAD_REPO : repo name as a pat of path to packagcloud.io for downloading
+      #
+      # [REQUIRED]
+      # PACKAGECLOUD_TOKEN is required to publish(upload) the package!!!
+      # For yahoojapan organization repositories, always set PACKAGECLOUD_TOKEN!!!
+      #
+      - name: Run building and packaging
+        env:
+          TMP_CI_OSTYPE_VARS_FILE:           ${{ secrets.OSTYPE_VARS_FILE }}
+          TMP_CI_BUILD_NUMBER:               ${{ secrets.BUILD_NUMBER }}
+          TMP_CI_DEVELOPER_FULLNAME:         ${{ secrets.DEVELOPER_FULLNAME }}
+          TMP_CI_DEVELOPER_EMAIL:            ${{ secrets.DEVELOPER_EMAIL }}
+          TMP_CI_FORCE_PUBLISH:              ${{ secrets.FORCE_PUBLISH }}
+          TMP_CI_USE_PACKAGECLOUD_REPO:      ${{ secrets.USE_PACKAGECLOUD_REPO }}
+          TMP_CI_PACKAGECLOUD_TOKEN:         ${{ secrets.PACKAGECLOUD_TOKEN }}
+          TMP_CI_PACKAGECLOUD_OWNER:         ${{ secrets.PACKAGECLOUD_OWNER }}
+          TMP_CI_PACKAGECLOUD_PUBLISH_REPO:  ${{ secrets.PACKAGECLOUD_PUBLISH_REPO }}
+          TMP_CI_PACKAGECLOUD_DOWNLOAD_REPO: ${{ secrets.PACKAGECLOUD_DOWNLOAD_REPO }}
+
+        run: |
+          if [ "X${TMP_CI_OSTYPE_VARS_FILE}" != "X" ]; then           OPT_CI_OSTYPE_VARS_FILE="-f ${TMP_CI_OSTYPE_VARS_FILE}";                            fi
+          if [ "X${TMP_CI_BUILD_NUMBER}" != "X" ]; then               OPT_CI_BUILD_NUMBER="-num ${TMP_CI_BUILD_NUMBER}";                                  fi
+          if [ "X${TMP_CI_DEVELOPER_FULLNAME}" != "X" ]; then         OPT_CI_DEVELOPER_FULLNAME="-devname ${TMP_CI_DEVELOPER_FULLNAME}";                  fi
+          if [ "X${TMP_CI_DEVELOPER_EMAIL}" != "X" ]; then            OPT_CI_DEVELOPER_EMAIL="-devmail ${TMP_CI_DEVELOPER_EMAIL}";                        fi
+          if [ "X${TMP_CI_FORCE_PUBLISH}" = "Xtrue" ]; then           OPT_CI_FORCE_PUBLISH="-p";                                                          elif [ "X${TMP_CI_FORCE_PUBLISH}" = "Xfalse" ]; then         OPT_CI_FORCE_PUBLISH="-np";            fi
+          if [ "X${TMP_CI_USE_PACKAGECLOUD_REPO}" = "Xtrue" ]; then   OPT_CI_USE_PACKAGECLOUD_REPO="-usepc";                                              elif [ "X${TMP_CI_USE_PACKAGECLOUD_REPO}" = "Xfalse" ]; then OPT_CI_USE_PACKAGECLOUD_REPO="-notpc"; fi
+          if [ "X${TMP_CI_PACKAGECLOUD_TOKEN}" != "X" ]; then         OPT_CI_PACKAGECLOUD_TOKEN="-pctoken ${TMP_CI_PACKAGECLOUD_TOKEN}";                  fi
+          if [ "X${TMP_CI_PACKAGECLOUD_OWNER}" != "X" ]; then         OPT_CI_PACKAGECLOUD_OWNER="-pcowner ${TMP_CI_PACKAGECLOUD_OWNER}";                  fi
+          if [ "X${TMP_CI_PACKAGECLOUD_PUBLISH_REPO}" != "X" ]; then  OPT_CI_PACKAGECLOUD_PUBLISH_REPO="-pcprepo ${TMP_CI_PACKAGECLOUD_PUBLISH_REPO}";    fi
+          if [ "X${TMP_CI_PACKAGECLOUD_DOWNLOAD_REPO}" != "X" ]; then OPT_CI_PACKAGECLOUD_DOWNLOAD_REPO="-pcdlrepo ${TMP_CI_PACKAGECLOUD_DOWNLOAD_REPO}"; fi
+          /bin/sh -c "$GITHUB_WORKSPACE/.github/workflows/build_helper.sh -os ${{ matrix.container }} $OPT_CI_OSTYPE_VARS_FILE $OPT_CI_BUILD_NUMBER $OPT_CI_DEVELOPER_FULLNAME $OPT_CI_DEVELOPER_EMAIL $OPT_CI_FORCE_PUBLISH $OPT_CI_USE_PACKAGECLOUD_REPO $OPT_CI_PACKAGECLOUD_TOKEN $OPT_CI_PACKAGECLOUD_OWNER $OPT_CI_PACKAGECLOUD_PUBLISH_REPO $OPT_CI_PACKAGECLOUD_DOWNLOAD_REPO"
+
+#
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: expandtab sw=4 ts=4 fdm=marker
+# vim<600: expandtab sw=4 ts=4
+#
