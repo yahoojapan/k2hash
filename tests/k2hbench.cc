@@ -785,7 +785,7 @@ static void* MmapBenchFile(bool is_create, int proccnt, int threadcnt, string& f
 	return pShm;
 }
 
-static void PrintResult(const PEXECCNTL pexeccntl, const PCHLDCNTL pchldcntl, struct timespec& realtime)
+static void PrintResult(const PEXECCNTL pexeccntl, const PCHLDCNTL pchldcntl, const struct timespec& realtime)
 {
 	if(!pexeccntl || !pchldcntl){
 		ERR("Parameters are wrong.");
