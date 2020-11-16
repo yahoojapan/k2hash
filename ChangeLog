@@ -1,3 +1,9 @@
+k2hash (1.0.76) trusty; urgency=low
+
+  * Updated README.md for Github Actions status - #43
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 16 Nov 2020 16:33:30 +0900
+
 k2hash (1.0.75) trusty; urgency=low
 
   * Switched Travis CI to Github actions and extended supported OS - #41
