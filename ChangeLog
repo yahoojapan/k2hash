@@ -1,3 +1,10 @@
+k2hash (1.0.75) trusty; urgency=low
+
+  * Switched Travis CI to Github actions and extended supported OS - #41
+  * Fixed bugs detected by cppcheck - #40
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 16 Nov 2020 15:13:40 +0900
+
 k2hash (1.0.74) trusty; urgency=low
 
   * Allow 0 sec for expire when setting directly as placeholder - #38
