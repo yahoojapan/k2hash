@@ -228,7 +228,7 @@ K2HPage* K2HPageMem::LoadData(off_t offset, size_t length, unsigned char** byDat
 	K2HPageMem*		pPageAfter	= NULL;
 	off_t			next_offset;
 
-	for(PPAGEHEAD pTarget = pPageHead; pTarget; pTarget = pPageAfter->pPageHead, offset = next_offset){
+	for(PPAGEHEAD pTarget = pPageHead; pTarget; offset = next_offset){
 		if(pTarget->length <= static_cast<size_t>(offset)){
 			// skip to next
 			next_offset		= offset - pTarget->length;
@@ -271,6 +271,7 @@ K2HPage* K2HPageMem::LoadData(off_t offset, size_t length, unsigned char** byDat
 			}
 			return NULL;
 		}
+		pTarget = pPageAfter->pPageHead;
 	}
 
 	if(!pPageAfter){

@@ -188,6 +188,9 @@ void* K2HTransManager::WorkerProc(void* param)
 		while(queue.Pop(&pval, vallen, &pAttrs) && pval){
 			// call handler
 			PBCOM	pBinCom = reinterpret_cast<PBCOM>(pval);
+
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress internalAstError
 			if(!K2H_TRANS_FUNC(ptrparam->handle, pBinCom)){
 				ERR_K2HPRN("Something error occurred in transaction function(handler), try to recover(repush the data to queue)");
 
@@ -816,6 +819,7 @@ bool K2HTransManager::ExitAllThreads(void)
 
 	// exit threads in thread pool
 	bool	bResult = true;
+	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress postfixOperator
 	for(std::map<const K2HShm*, bool>::const_iterator iter = k2htrmap.begin(); iter != k2htrmap.end(); iter++){
 		if(!ExitThreads(iter->first)){

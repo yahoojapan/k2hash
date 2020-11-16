@@ -1226,6 +1226,8 @@ PELEMENT K2HShm::GetElement(const unsigned char* byKey, size_t length, K2HLock& 
 		ERR_K2HPRN("Parameters is wrong.");
 		return NULL;
 	}
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress internalAstError
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byKey), length);
 	k2h_hash_t	subhash	= K2H_2ND_HASH_FUNC(reinterpret_cast<const void*>(byKey), length);
 

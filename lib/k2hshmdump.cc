@@ -640,6 +640,8 @@ bool K2HShm::DumpQueue(FILE* stream, const unsigned char* byMark, size_t marklen
 	K2HFILE_UPDATE_CHECK(this);
 
 	// Lock cindex for writing marker.
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress internalAstError
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
 
 	K2HLock		ALObjCKI(K2HLock::RWLOCK);			// LOCK

@@ -191,6 +191,8 @@ PBK2HMARKER K2HShm::GetMarker(const unsigned char* byMark, size_t marklength, K2
 	}
 
 	// make hash and lock cindex
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress internalAstError
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byMark), marklength);
 	if(NULL == GetCKIndex(hash, *pALObjCKI)){
 		ERR_K2HPRN("Something error occurred, pCKIndex must not be NULL.");
