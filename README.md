@@ -1,6 +1,6 @@
 k2hash
 ------
-[![Build Status](https://travis-ci.org/yahoojapan/k2hash.svg?branch=master)](https://travis-ci.org/yahoojapan/k2hash)
+[![C/C++ AntPickax CI](https://github.com/yahoojapan/k2hash/workflows/C/C++%20AntPickax%20CI/badge.svg)](https://github.com/yahoojapan/k2hash/actions)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/yahoojapan/k2hash/master/COPYING)
 [![GitHub forks](https://img.shields.io/github/forks/yahoojapan/k2hash.svg)](https://github.com/yahoojapan/k2hash/network)
 [![GitHub stars](https://img.shields.io/github/stars/yahoojapan/k2hash.svg)](https://github.com/yahoojapan/k2hash/stargazers)
