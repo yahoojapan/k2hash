@@ -28,12 +28,13 @@
 func_usage()
 {
 	echo ""
-	echo "Usage:  $1 [-buildnum <build number>] [-nodebuild] [-rootdir] [-product <product name>] [-class <class name>] [-y] [additional debuild options]"
+	echo "Usage:  $1 [-buildnum <build number>] [-nodebuild] [-rootdir] [-product <product name>] [-class <class name>] [-disttype <os/version>] [-y] [additional debuild options]"
 	echo "        -buildnum                     specify build number for packaging(default 1)"
 	echo "        -nodebuild                    stops before do debuild command."
 	echo "        -rootdir                      layout \"debian\" directory for packaging under source top directory"
 	echo "        -product                      specify product name(use PACKAGE_NAME in Makefile s default)"
 	echo "        -class                        specify package class name(optional)"
+	echo "        -disttype                     specify \"OS/version name\", ex: ubuntu/trusty"
 	echo "        -y                            runs no interactive mode."
 	echo "        additional debuild options    this script run debuild with \"-uc -us\", can specify additional options."
 	echo "        -h                            print help"
@@ -64,6 +65,8 @@ IS_INTERACTIVE=1
 IS_ROOTDIR=0
 DH_MAKE_AUTORUN_OPTION=""
 BUILD_NUMBER=1
+IS_OS_UBUNTU=0
+OS_VERSION_NAME=
 DEBUILD_OPT=""
 PKGCLASSNAME=`func_get_default_class`
 while [ $# -ne 0 ]; do
@@ -104,6 +107,28 @@ while [ $# -ne 0 ]; do
 			exit 1
 		fi
 		PKGCLASSNAME=$1
+
+	elif [ "X$1" = "X-disttype" ]; then
+		shift
+		if [ $# -eq 0 ]; then
+			echo "ERROR: -disttype option needs parameter." 1>&2
+			exit 1
+		fi
+		OS_VERSION_NAME=$1
+		echo ${OS_VERSION_NAME} | grep -i 'ubuntu' >/dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			IS_OS_UBUNTU=1
+			OS_VERSION_NAME=`echo ${OS_VERSION_NAME} | sed 's#[Uu][Bb][Uu][Nn][Tt][Uu]/##g'`
+
+		else
+			echo ${OS_VERSION_NAME} | grep -i 'debian' >/dev/null 2>&1
+			if [ $? -ne 0 ]; then
+				echo "ERROR: -disttype option parameter must be ubuntu or debian." 1>&2
+				exit 1
+			fi
+			IS_OS_UBUNTU=0
+			OS_VERSION_NAME=`echo ${OS_VERSION_NAME} | sed 's#[Dd][Ee][Bb][Ii][Aa][Nn]/##g'`
+	fi
 
 	elif [ "X$1" = "X-y" ]; then
 		IS_INTERACTIVE=0
@@ -198,6 +223,14 @@ cd ${EXPANDDIR} || exit 1
 #
 # initialize debian directory
 #
+if [ "X${LOGNAME}" = "X" -a "X${USER}" = "X" ]; then
+	# [NOTE]
+	# if run in docker container, Neither LOGNAME nor USER may be set in the environment variables.
+	# dh_make needs one of these environments.
+	#
+	export USER="root"
+	export LOGNAME="root"
+fi
 dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig --${PKGCLASSNAME} ${DH_MAKE_AUTORUN_OPTION} || exit 1
 
 #
@@ -256,27 +289,23 @@ cp ${MYSCRIPTDIR}/control ${EXPANDDIR}/debian/control || exit 1
 #
 # copy changelog with converting build number
 #
-IS_OS_UBUNTU=0
-if [ -f /etc/lsb-release ]; then
-	grep [Uu]buntu /etc/lsb-release >/dev/null 2>&1
-	if [ $? -eq 0 ]; then
-		IS_OS_UBUNTU=1
-	fi
-fi
 CHLOG_ORG_MENT=`cat ChangeLog | grep "^ --" | head -1`
 CHLOG_NEW_MENT=`cat ${EXPANDDIR}/debian/changelog | grep "^ --" | head -1`
 if [ "X${BUILD_NUMBER}" = "X" ]; then
 	if [ ${IS_OS_UBUNTU} -eq 1 ]; then
-		cat ChangeLog | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" > ${EXPANDDIR}/debian/changelog || exit 1
+		cat ChangeLog | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" | sed "s/ trusty;/ ${OS_VERSION_NAME};/g" > ${EXPANDDIR}/debian/changelog || exit 1
 	else
 		cat ChangeLog | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" | sed 's/ trusty;/ unstable;/g' > ${EXPANDDIR}/debian/changelog || exit 1
 	fi
 else
 	if [ ${IS_OS_UBUNTU} -eq 1 ]; then
-		cat ChangeLog | sed "s/${PACKAGE_VERSION}/${PACKAGE_VERSION}-${BUILD_NUMBER}/g" | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" > ${EXPANDDIR}/debian/changelog || exit 1
+		cat ChangeLog | sed "s/${PACKAGE_VERSION}/${PACKAGE_VERSION}-${BUILD_NUMBER}/g" | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" | sed "s/ trusty;/ ${OS_VERSION_NAME};/g" > ${EXPANDDIR}/debian/changelog || exit 1
 	else
 		cat ChangeLog | sed "s/${PACKAGE_VERSION}/${PACKAGE_VERSION}-${BUILD_NUMBER}/g" | sed "s/${CHLOG_ORG_MENT}/${CHLOG_NEW_MENT}/g" | sed 's/ trusty;/ unstable;/g' > ${EXPANDDIR}/debian/changelog || exit 1
 	fi
+fi
+if [ ! -f ${EXPANDDIR}/debian/compat ]; then
+	echo "9" > ${EXPANDDIR}/debian/compat
 fi
 
 #
@@ -396,7 +425,10 @@ echo ""
 exit 0
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: expandtab sw=4 ts=4 fdm=marker
+# vim<600: expandtab sw=4 ts=4
 #
