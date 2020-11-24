@@ -64,6 +64,8 @@ typedef struct k2h_mmap_info{
 inline void k2h_mmap_info_list_add(PK2HMMAPINFO* ptop, PK2HMMAPINFO addinfo)
 {
 	PK2HMMAPINFO	parent = NULL;
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress nullPointerRedundantCheck
 	for(PK2HMMAPINFO base = *ptop; base; parent = base, base = base->next){
 		if(addinfo->file_offset < base->file_offset){
 			addinfo->next = base;
