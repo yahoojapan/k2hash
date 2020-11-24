@@ -1,3 +1,9 @@
+k2hash (1.0.77) trusty; urgency=low
+
+  * Fixed a error by cppcheck 2.2 - #45
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 24 Nov 2020 09:26:12 +0900
+
 k2hash (1.0.76) trusty; urgency=low
 
   * Updated README.md for Github Actions status - #43
