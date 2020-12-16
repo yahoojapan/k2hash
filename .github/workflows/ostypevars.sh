@@ -172,20 +172,6 @@ elif [ "X${CI_OSTYPE}" = "Xcentos:7" -o "X${CI_OSTYPE}" = "Xcentos:centos7" ]; t
 	# special variables
 	export K2HATTR_ENC_TYPE=AES256_PBKDF2
 
-elif [ "X${CI_OSTYPE}" = "Xcentos:6" -o "X${CI_OSTYPE}" = "Xcentos:centos6" ]; then
-	DIST_TAG="el/6"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	CONFIGURE_EXT_OPT="--with-nss"
-	INSTALLER_BIN="yum"
-	INSTALL_QUIET_ARG=""
-	PKG_TYPE_DEB=0
-	PKG_TYPE_RPM=1
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_CENTOS=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF1
-
 elif [ "X${CI_OSTYPE}" = "Xfedora:32" ]; then
 	DIST_TAG="fedora/32"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
