@@ -1,3 +1,9 @@
+k2hash (1.0.78) trusty; urgency=low
+
+  * Fixed centos8 build and removed centos6 build - #47
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 16 Dec 2020 11:43:31 +0900
+
 k2hash (1.0.77) trusty; urgency=low
 
   * Fixed a error by cppcheck 2.2 - #45
