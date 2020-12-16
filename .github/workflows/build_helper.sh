@@ -522,9 +522,9 @@ if [ ${IS_OS_CENTOS} -eq 1 ]; then
 		run_cmd ${INSTALLER_BIN} --enablerepo=epel install -y ${INSTALL_QUIET_ARG} cppcheck
 	else
 		#
-		# For CentOS8, it is installed from PowerTools
+		# For CentOS8, it is installed from PowerTools( PwoerTools -> powertools at 2020/12 )
 		#
-		run_cmd ${INSTALLER_BIN} --enablerepo=PowerTools install -y ${INSTALL_QUIET_ARG} cppcheck
+		run_cmd ${INSTALLER_BIN} --enablerepo=powertools install -y ${INSTALL_QUIET_ARG} cppcheck
 	fi
 else
 	#
