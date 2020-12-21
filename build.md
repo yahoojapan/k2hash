@@ -51,7 +51,7 @@ Table1. Development packages to build the [K2HASH](https://k2hash.antpick.ax/):
 | [GnuTLS](https://gnutls.org/) (nettle) | nettle-dev(deb) |
 | [Mozilla NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) | nss-devel(rpm) |
 
-For DebianStretch or Ubuntu(Bionic Beaver) users, follow the steps below. You can replace `libgcrypt11-dev` with the other SSL/TLS package your application requires:
+For recent Debian-based Linux distributions users, follow the steps below: You can replace `libgcrypt11-dev` with the other SSL/TLS package your application requires:
 ```bash
 $ sudo apt-get update -y
 $ sudo apt-get install curl -y
@@ -62,7 +62,18 @@ $ sudo apt-get install autoconf autotools-dev gcc g++ make gdb libtool pkg-confi
 $ sudo apt-get install git -y
 ```
 
-For Fedora28 or CentOS7.x(6.x) users, follow the steps below. You can replace `nss-devel` with the other SSL/TLS package your application requires:
+For users who use supported Fedora other than latest version, follow the steps below: You can replace `nss-devel` with the other SSL/TLS package your application requires:
+```bash
+$ sudo dnf makecache
+$ sudo dnf install curl -y
+$ curl -s https://packagecloud.io/install/repositories/antpickax/stable/script.rpm.sh \
+    | sudo bash
+$ sudo dnf install autoconf automake gcc gcc-c++ gdb make libtool pkgconfig \
+    libyaml-devel libfullock-devel nss-devel -y
+$ sudo dnf install git -y
+```
+
+For other recent RPM-based Linux distributions users, follow the steps below: You can replace `nss-devel` with the other SSL/TLS package your application requires:
 ```bash
 $ sudo yum makecache
 $ sudo yum install curl -y
@@ -95,7 +106,7 @@ Table1. possible configure option:
 | [GnuTLS](https://gnutls.org/) (nettle) | ./configure \-\-prefix=/usr \-\-with-nettle | ./configure \-\-prefix=/usr \-\-with-gnutls |
 | [Mozilla NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) | ./configure \-\-prefix=/usr \-\-with-nss | ./configure \-\-prefix=/usr \-\-with-nss |
 
-For DebianStretch or Ubuntu(Bionic Beaver) users, follow the steps below:
+For recent Debian-based Linux distributions users, follow the steps below:
 ```bash
 $ cd k2hash
 $ sh autogen.sh
@@ -104,7 +115,7 @@ $ make
 $ sudo make install
 ```
 
-For Fedora28 or CentOS7.x(6.x) users, follow the steps below:
+For other recent RPM-based Linux distributions users, follow the steps below:
 ```bash
 $ cd k2hash
 $ sh autogen.sh
