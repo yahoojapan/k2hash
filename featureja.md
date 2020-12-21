@@ -15,6 +15,9 @@ next_string: Usage
 
 # 特徴
 
+## 柔軟なインストール
+K2HASHは、あなたのOSに応じて、柔軟にインストールが可能です。あなたのOSが、Ubuntu、CentOS、Fedora、Debianなら、[packagecloud.io](https://packagecloud.io/antpickax/stable)からソースコードをビルドすることなく、簡単にインストールできます。それ以外のOSであっても、自身で[ビルド](https://k2hash.antpick.ax/buildja.html)して使うことができます。
+
 ## キーとサブキー
 K2HASHの一番の特徴は、キーに対して値を保持するKVSの機能に、キーに対してサブキーを紐付けることができます。  
 つまり、キーとキーに相関関係（親子関係）を持つことができ、この相関関係をライブラリレベルでサポートします。  
