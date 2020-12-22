@@ -16,7 +16,7 @@ next_string: Usage
 # Feature
 
 ## Flexible installation
-We provide suitable K2HASH installation for your OS. If you use Ubuntu, CentOS, Fedora or Debian, you can easily install it from [packagecloud.io] (https://packagecloud.io/antpickax/stable). Even if you use none of them, you can use it by [Build] (https://k2hash.antpick.ax/build.html) by yourself.
+We provide suitable K2HASH installation for your OS. If you use Ubuntu, CentOS, Fedora or Debian, you can easily install it from [packagecloud.io](https://packagecloud.io/antpickax/stable). Even if you use none of them, you can use it by [Build](https://k2hash.antpick.ax/build.html) by yourself.
 
 ## Sub Key
 The most characteristic of K2HASH is Sub-Key, K2HASH can not only store a value corresponding to a key, but also link another key as a child to the key.  
