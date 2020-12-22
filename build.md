@@ -47,18 +47,18 @@ Table1. Development packages to build the [K2HASH](https://k2hash.antpick.ax/):
 | SSL/TLS library | pkg |
 |:--|:--|
 | [OpenSSL](https://www.openssl.org/) | libssl-dev(deb) / openssl-devel(rpm) |
-| [GnuTLS](https://gnutls.org/) (gcrypt) | libgcrypt11-dev(deb) |
+| [GnuTLS](https://gnutls.org/) (gcrypt) | libgcrypt20-dev(deb) |
 | [GnuTLS](https://gnutls.org/) (nettle) | nettle-dev(deb) |
 | [Mozilla NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) | nss-devel(rpm) |
 
-For recent Debian-based Linux distributions users, follow the steps below: You can replace `libgcrypt11-dev` with the other SSL/TLS package your application requires:
+For recent Debian-based Linux distributions users, follow the steps below: You can replace `libgcrypt20-dev` with the other SSL/TLS package your application requires:
 ```bash
 $ sudo apt-get update -y
 $ sudo apt-get install curl -y
 $ curl -s https://packagecloud.io/install/repositories/antpickax/stable/script.deb.sh \
     | sudo bash
 $ sudo apt-get install autoconf autotools-dev gcc g++ make gdb libtool pkg-config \
-    libyaml-dev libfullock-dev libgcrypt11-dev -y
+    libyaml-dev libfullock-dev libgcrypt20-dev -y
 $ sudo apt-get install git -y
 ```
 
