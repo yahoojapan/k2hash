@@ -77,17 +77,17 @@ When k2hlinetool is called with a tty with stdio, it prompts for commands. Use t
 | queue(que) [prefix] empty | Check if a K2HASH queue is empty |
 | queue(que) [prefix] count | Print the number of K2HASH queue |
 | queue(que) [prefix] read <fifo | lifo> <pos> [pass=...] | Print data with prefix in queue in *fifo* or *lifo* order. *read* doesn't remove data. Use *pass* to decrypt data |
-| queue(que) [prefix] push <fifo | lifo> <value> [pass=....] [expire=sec] | Add *value* to *prefix-ed* queue in *fifo* or *lifo*. Use *pass* to encrypt data. Set *expire* to set expiration duration in units of seconds |
+| queue(que) [prefix] push <fifo | lifo> <value> [pass=....] [expire=sec] | Add *value* to queue in *fifo* or *lifo*. Use *pass* to encrypt data. Set *expire* to set expiration duration in units of seconds |
 | queue(que) [prefix] pop <fifo | lifo> [pass=...] | Print data with *prefix* in queue in *fifo* or *lifo* order. *pop* removes data. Use *pass* to decrypt data |
 | queue(que) [prefix] dump <fifo | lifo> | Print data with *prefix* in queue in *fifo* or *lifo* order |
 | queue(que) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...] | Remove data of *count* in queue in *fifo* or *lifo* order. Use *prefix* to set a queue name with a certain prefix. Use *c* to prompt before every removal. Answer "y(yes)", "n(no)" and "b(break)". Use *pass* to decrypt data. |
-| keyqueue(kque) [prefix] empty | K2HASHでサポートするキューが空であるか確認します。|
-| keyqueue(kque) [prefix] count | K2HASHでサポートするキューに蓄積されているデータ数を返します。|
-| keyqueue(kque) [prefix] read <fifo | lifo> <pos> [pass=...] | K2HASHでサポートするキューからデータ（keyとvalue）をコピーます。prefixはキューにて使用されるキー名のプレフィック スです。FIFO/LIFOを指定してください。キューが暗号化されている場合にはパスフレーズを指定してください。|
-| keyqueue(kque) [prefix] push <fifo | lifo> <key> <value> [pass=....] [expire=sec] | K2HASHでサポートするキューへデータ（key/value）を蓄積（プッシュ）します。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。指定されたkey/valueはキューだけではなく、K2HASHファイルにkey/valueとして書き込まれます。キューを暗号化する場合はパスフレーズを指定してください。またExpire時間を指定する場合には、expireを秒で指定してください。|
-| keyqueue(kque) [prefix] pop <fifo | lifo> [pass=...] | K2HASHでサポートするキューからデータ（keyとvalue）を取り出し（ポップ）ます。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。取り出されたkey/valueはK2HASHファイルからも削除されます。キューが暗号化されている場合にはパスフレーズを指定してください。|
-| keyqueue(kque) [prefix] dump <fifo | lifo> | K2HASHでサポートするキューをダンプします。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。|
-| keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...] | K2HASHでサポートするキューから指定数（count）分のデータを削除ます。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。削除されたデータは表示されません。キューから削除されるkey/valueはK2HASHファイルからも削除されます。最後のパラメータ"c（confirm）"をつけた場合には、削除する前に対話形式で、確認がなされます。対話形式には"y(yes)"、"n(no)"、"b(break)"で回答してください。キューが暗号化されている場合にはパスフレーズを指定してください。|
+| keyqueue(kque) [prefix] empty | Check if a K2HASH keyqueue is empty |
+| keyqueue(kque) [prefix] count | Print the number of K2HASH keyqueue |
+| keyqueue(kque) [prefix] read <fifo | lifo> <pos> [pass=...] | Print data with *prefix* in keyequeue in *fifo* or *lifo* order. This command doesn't remove data in keyqueue. Use *pass* to decrypt data |
+| keyqueue(kque) [prefix] push <fifo | lifo> <key> <value> [pass=....] [expire=sec] | Add *key* and *value* to queue in *fifo* or *lifo*. Use *prefix* to set a queue name with a certain prefix. Use *pass* to encrypt data. Set *expire* to set expiration duration in units of seconds |
+| keyqueue(kque) [prefix] pop <fifo | lifo> [pass=...] | Print data with *prefix* in queue in *fifo* or *lifo* order. This command removes data in keyqueue. Use *pass* to decrypt data |
+| keyqueue(kque) [prefix] dump <fifo | lifo> | Print data with *prefix* in queue in *fifo* or *lifo* order |
+| keyqueue(kque) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...] | Remove data of *count* in queue in *fifo* or *lifo* order. Use *prefix* to set a queue name with a certain prefix. Use *c* to prompt before every removal. Answer "y(yes)", "n(no)" and "b(break)". Use *pass* to decrypt data.|
 | builtinattr(ba) [mtime] [history] [expire=second] [enc] [pass=file path] | Set K2hash builtin attributes. Set *expire* to set duration in units of seconds to be deleted the value. Set *pass* to a file stores a pass phrase. Set *enc* to enable encryption |
 | loadpluginattr(lpa) filepath | Load a *filepath* runtime library that handle attributes |
 | -ext <library filename> | Load the *library filename* runtime library that defines external HASH functions to be invoked by K2HASH. |
