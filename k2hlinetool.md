@@ -100,3 +100,52 @@ When k2hlinetool is called with a tty with stdio, it prompts for commands. Use t
 | sleep \<second\> | Sleep in *second* seconds. |
 
 
+## ”stream" command usage
+
+In this example, "key" is a key to access to a value. The data followed by the "key" is a value that can contains multiple LF code by using "endl". Use "." to quit.
+
+```
+     K2HTOOL> stream key output
+      
+     *** Output stream test : "key" key *********************
+      You can specify any string for writing value to stream.
+      The string does not terminate null charactor.
+      If you need to terminate it, specify "ends".
+      If you specify "endl", puts 0x0a.
+      Specify "." only to exit this interactive mode.
+     ********************************************************
+      
+     << 1234567890
+     << endl
+     << string1
+     << endl
+     << string2
+     << .
+      
+     Lap time: 0h 0m 27s 245ms 722us(27s 245722us)
+      
+     K2HTOOL>
+```
+
+Now you allocate variables by usingthe data you defined above. You need to declare data type of each variables. You can choose one out of "string/char/int/long". k2hlinetool reads data until it encounters end-of-file. Use "." to quit. 
+
+```
+     K2HTOOL> stream key input
+      
+     *** Input stream test : "key" key *********************
+      You can specify below value types for reading value from stream.
+        - "string", "char", "int", "long"
+      Specify "." only to exit this interactive mode.
+     ********************************************************
+      
+     >> int
+      int = "1234567890(499602d2)"
+     >> string
+      string = "string1"
+     >> string
+      string = "string2"
+      
+     K2HTOOL>
+```
+
+
