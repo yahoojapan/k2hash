@@ -103,4 +103,51 @@ cleanallattr(caa) | 全ての属性（Attribute）設定を破棄し、初期状
 | echo \<string\>... | UNIXのechoコマンドと同じ動作をします。指定されたパラメータを表示します。|
 | sleep \<second\> | UNIXのsleepコマンドと同じ動作をします。指定された秒数のsleepを行い、コマンドを一時停止させます。|
 
+## stream サンプル
+
+数値、文字列をstreamとして、"key"に設定しています。ends/endlが利用でき、終了する場合には、"."を指定してください。
+
+```
+     K2HTOOL> stream key output
+      
+     *** Output stream test : "key" key *********************
+      You can specify any string for writing value to stream.
+      The string does not terminate null charactor.
+      If you need to terminate it, specify "ends".
+      If you specify "endl", puts 0x0a.
+      Specify "." only to exit this interactive mode.
+     ********************************************************
+      
+     << 1234567890
+     << endl
+     << string1
+     << endl
+     << string2
+     << .
+      
+     Lap time: 0h 0m 27s 245ms 722us(27s 245722us)
+      
+     K2HTOOL>
+```
+
+続いて、数値、文字列をstreamとして、"key"から順番に取り出しています。利用できる型は、string/char/int/longとなっています。終了する場合には、"."を指定してください。値（Value）の終端まで読み出した場合には自動的に終了します。
+
+```
+     K2HTOOL> stream key input
+      
+     *** Input stream test : "key" key *********************
+      You can specify below value types for reading value from stream.
+        - "string", "char", "int", "long"
+      Specify "." only to exit this interactive mode.
+     ********************************************************
+      
+     >> int
+      int = "1234567890(499602d2)"
+     >> string
+      string = "string1"
+     >> string
+      string = "string2"
+      
+     K2HTOOL>
+```
 
