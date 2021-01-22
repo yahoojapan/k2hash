@@ -52,6 +52,38 @@ k2hlinetoolの起動オプションを説明します。本ツールは、対話
 
 k2hlinetoolのインタプリタ機能を説明します。本ツールは、対話形式のツールであり、起動後はコマンド入力を行うプロンプトが表示されます。このプロンプトにて、ヘルプ（help）を入力することで、コマンドのヘルプを表示することができます。使い方などは、ヘルプを参照してください。コマンドのオプションは以下にまとめておきます。
 
+| help(h) | コマンドのヘルプを表示します。 |
+| quit(q)/exit |  ツールを終了します。|
+| info(i) [state] | K2HASHデータの情報を表示します。stateオプションを指定した場合には、利用率も一緒に表示します。 |
+| dump(d) <parameter> | K2HASHデータのダンプを行います。ダンプにはレベルがあり、head(デフォルト) / kindex / ckindex / element / fullを指定できます。 |
+| set(s) <key> <value> [rmsub] [pass=....] [expire=sec] | キー（Key）と値（Value）を設定します。rmsubを付けた場合には、キーにサブキーが設定されている場合には、そのサブキーをすべて削除します。rmsubを付けた場合には、もしキー（Key）が既に存在しており、サブキーリストを持っている場合には、そのサブキーリストおよび全サブキーを削除します。 passパラメータにパスフレーズを指定して暗号化することができます。またexpireに秒数を指定してExpire時刻の指定ができます。|
+| settrial(st) <key> [pass=....] | キー（Key）を読み出し、既存であれば値（Value)を表示します。未設定であればキー（Key）のみを表示します。その後、対話形式にて値（Value）を更新するか否かを問い合わせします。対話形式にて"n（no）"と入力した場合には何もしません。それ以外の文字列を入力した場合には、その入力された内容で値（Value）を更新します。passパラメータにパスフレーズを指定して暗号化することができます。 |
+| setsub <parent key> <key> <value> | キー（Key）にサブキー（Subkey）とその値（Value）を作成し、紐付けます。 |
+| directset(dset) <key> <value> <offset>  | キー （Key）に値（Value）を設定します。値はオフセット<offset>バイトを開始位置として書き込みされます。書き込む前にオフセッ ト位置よりも値の長さが小さい場合には、オフセット位置まで値の長さが拡張されます。拡張された部分の値は不定です。 |
+| setf(sf) <key> <offset> <file> | キー（Key）に値（Value）を設定します。値はファイル<file>から読み取られます。オフセットについては、directsetと同じです。 |
+| fill(f) <prefix> <value> <count> | "prefix"を持つキー（Key）と値（Value）を設定します。キーはcount分作成されます。例えば、prefixが"key"でcountが10の場合には、"key-0"～"key-9"までの10個のキーが作成され、すべて値（value）で設定されます。 |
+| fillsub <parent> <prefix> <val> <cnt> | fillとほぼ同じですが、parentで示されるキーに、prefixから開始されるサブキーをcnt個作成します。|
+| rm <key> [all] | キー（Key）を削除します。allを付けた場合には、キーの持つサブキーリストの全サブキーも削除します。|
+| rmsub <parent key> <key> | キー（parent key）のサブキーリストにあるサブキー（key）を削除します。サブキー自体も削除されます。|
+| print(p) <key> [all] [noattrcheck] [pass=....] | キー（Key）の内容を表示します。allを指定した場合には、サブキーリストにあるサブキーの値（value）までネストして表示します。暗号化されたキーの場合には、パスフレーズを指定して読み出すことができます。またnoattrcheckを指定した場合には、復号化を行わず、Expire時刻もチェックされず値を読み出します。 |
+| printattr(pa) <key> | キー（Key）に設定されている属性（Attribute）を表示します。 |
+| addattr(aa) <key> <attr name> <attr value> | キー（Key）に属性（Attribute）を追加します。属性は、属性名、属性値で指定してください。 | 
+| directprint(dp) <key> <length> <offset> | キー（Key）の内容をオフセット<offset>位置から長さ<length>バイト読み出します。|
+| directsave(dsave) <start hash> <file path> | 指定HASH値を検索し、検出した値をバイナリデータとしてファイルに出力します。（検出は、MASKされた値で実行され、複数の値が同一のHASH値に存在する場合には、それら全てがファイルに出力されます） |
+| directload(dload) <file path> [unixtime] | directsaveで保存したファイルからデータを設定します。unixtimeが指定されている場合には、unixtime以降に設定されている既存の同一のキーが存在した場合には、上書きされません。 |
+| copyfile(cf) <key> <offset> <file> | キー（Key）の内容をオフセット<offset>位置から読み出し、ファイルに出力します。 |
+| list(l) <key> | すべてのキー（Key）のリストアップをします。keyを指定した場合には、printコマンドのallとほぼ同じ表示になります。 |
+| stream(str) <key> < input | output> | キー（Key）に対してstreamとして値を操作します。<input>と<output>にて出力の方向を指定します。（iostramクラスと同等です）このコマンドは、対話形式で値の読み書きを行います。（サンプルを参考にしてください。） |
+| history(his) | コマンドの履歴を表示します。 |
+| save <file path> | コマンド履歴をファイルに保存します。 |
+| load <file path> | コマンド履歴のファイルをロードし、実行します。 |
+| trans(tr) <on [filename [prefix [param]]] | off> [expire=sec] | トランザクションを有効/無効にします。expireを指定した場合にはトランザクションの有効期限時間を秒で指定できます。 |
+| archive(ar) <put | load> <filename> | K2HASH全体をアーカイブファイルとして出力します。または、アーカイブファイル（トランザクションログ含む）をロードします。 |
+| queue(que) [prefix] empty | K2HASHでサポートするキューが空であるか確認します。|
+| queue(que) [prefix] count | K2HASHでサポートするキューに蓄積されているデータ数を返します。|
+| queue(que) [prefix] read <fifo | lifo> <pos> [pass=...] | K2HASHでサポートするキューからデータをコピーます。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。キューが暗号化されている場合にはパスフレーズを指定してください。|
+| queue(que) [prefix] push <fifo | lifo> <value> [pass=....] [expire=sec] | K2HASHでサポートするキューへデータ（value）を蓄積（プッシュ）します。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。キューを暗号化する場合はパスフレーズを指定してください。またExpire時間を指定する場合には、expireを秒で指定してください。|
+| queue(que) [prefix] pop <fifo | lifo> [pass=...] | K2HASHでサポートするキューからデータを取り出し（ポップ）ます。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。キューが暗号化されている場合にはパスフレーズを指定してください。|
 | queue(que) [prefix] dump <fifo | lifo> | K2HASHでサポートするキューをダンプします。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。|
 | queue(que) [prefix] remove(rm) <fifo | lifo> <count> [c] [pass=...] | K2HASHでサポートするキューから指定数（count）分のデータを削除ます。prefixはキューにて使用されるキー名のプレフィックスです。FIFO/LIFOを指定してください。削除されたデータは表示されません。最後のパラメータ"c（confirm）"をつけた場合には、削除する前に対話形式で、確認がなされます。対話形式には"y(yes)"、"n(no)"、"b(break)"で回答してください。キューが暗号化されている場合にはパスフレーズを指定してください。| 
 | keyqueue(kque) [prefix] empty | K2HASHでサポートするキューが空であるか確認します。|
