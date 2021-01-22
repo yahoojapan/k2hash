@@ -9,8 +9,8 @@ prev_url: environmentsja.html
 prev_string: Environments
 top_url: indexja.html
 top_string: TOP
-next_url: 
-next_string: 
+next_url: k2hlinetoolja.html
+next_string: k2hlinetool
 ---
 
 # ツール
