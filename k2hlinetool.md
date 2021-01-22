@@ -35,7 +35,7 @@ When invoking k2hlinetool, you may specify any of these options:
 | -ext \<filename\> | Load *filename* runtime library that defines external hash functions to be invoked by K2HASH. |
 | -ro | Open a K2HASH file for read-only access |
 | -init | Create a new K2HASH file |
-| -lap | Print durations of each command execution |
+| -lap | Print duration of each command execution |
 | -capi | Use K2HASH C API instead of the C++ API | 
 | -g \<loglevel\> | Set *loglevel* that k2hlinetool logs. Choose one out of ERR, WAN and INFO. Sending *SIGUSR1* to k2hlinetool rotates the levels. This option overrides the functionality of *K2HDBGMODE* environment variable. |
 | -glog \<filepath\> | Set *filepath* to which k2hlinetool logs messages. By default, the file is stderr. This option overrides the functionality of *K2HDBGFILE* environment variable. |
@@ -51,10 +51,10 @@ When k2hlinetool is called with a tty with stdio, it prompts for commands. Use t
 | --- | --- |
 | help(h) | Print a description of all other commands. |
 | quit(q)/exit | Exit. |
-| info(i) [state] | Print the information on the K2HASH file. Use *state* to show the usage raito. |
-| dump(d) \<parameter\> | Print the specific information on the K2HASH file. Use "head" as *parameter* to show the header information. Use "kindex" as *parameter* to show the key index informaton. Use "ckindex" as *parameter* o show the collision key index information. Use "element" as *parameter* to show the element information. Use "full" as *parameter* to show the all information. |
+| info(i) [state] | Print the information on the K2HASH file. Use *state* to show the usage ratio. |
+| dump(d) \<parameter\> | Print the specific information on the K2HASH file. Use "head" as *parameter* to show the header information. Use "kindex" as *parameter* to show the key index information. Use "ckindex" as *parameter* o show the collision key index information. Use "element" as *parameter* to show the element information. Use "full" as *parameter* to show the all information. |
 | set(s) \<key\> \<value\> [rmsub] [pass=....] [expire=sec]| Set *key* with *value*. Use *rmsub* to remove all the subkeys with the key. With *rmsub*, K2HASH recursively removes the subkeys of the keys. Use *pass* to encrypt the value. Use *expire* to set expiration duration in units of seconds. |
-| settrial(st) \<key\> [pass=....] | Print *key* with value if exists. You can update it. Otherwise, answer "n" alternatively. Use *pass* to encrpyt the value. |
+| settrial(st) \<key\> [pass=....] | Print *key* with value if exists. You can update it. Otherwise, answer "n" alternatively. Use *pass* to encrypt the value. |
 | setsub \<parentkey\> \<key\> \<value\> | Set *key* with *value* as a subkey of *parentkey*. |
 | directset(dset) \<key\> \<value\> \<offset\>   | Set a subkey of *key* with *value*. Use *offset* where the *value* starts. The value will be filled with paddings by undefined data if *offset* position is larger than the value. |
 | setf(sf) \<key\> \<offset\> \<file\> | Set *key* with values that are read from a file. Use *offset* where the value starts.  |
@@ -62,7 +62,7 @@ When k2hlinetool is called with a tty with stdio, it prompts for commands. Use t
 | fillsub \<parentkey\> \<prefix\> \<val\> \<cnt\> | Create *parentkey*'s subkeys that starts from *prefix* with *value*. Use *count* to the number of keys. The value is same among all keys. |
 | rm \<key\> [all] | Remove *key*. Use *all* to remove all the subkeys with the key. With *all*, K2HASH recursively removes the subkeys of the keys. |
 | rmsub \<parentkey\> \<key\> | Remove *key* from *parentkey*. K2HASH recursively removes the subkeys of the *key*. |
-| print(p) \<key\> [all] [noattrcheck] [pass=....] | Print the value of *key*. Use *all* to print value of subkeys. K2HASH recursively prints the subkeys of the keys. Use *noattrcheck* to skip decrypiton and to skip checking data expiration. Use *pass* to decrpyt the value. |
+| print(p) \<key\> [all] [noattrcheck] [pass=....] | Print the value of *key*. Use *all* to print value of subkeys. K2HASH recursively prints the subkeys of the keys. Use *noattrcheck* to skip decryption and to skip checking data expiration. Use *pass* to decrypt the value. |
 | printattr(pa) \<key\> | Print the attribute information of *key*. |
 | addattr(aa) \<key\> \<attrname\> \<attrvalue\> | Add an attribute of *attrname* with *attvalue* to *key*. |
 | directprint(dp) \<key\> \<length\> \<offset\> | Print the *key* with value where starts from *offset* with *length*. |
