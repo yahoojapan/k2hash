@@ -348,7 +348,7 @@ int K2HQueue::Remove(int count, k2h_q_remove_trial_callback fp, void* pExtData, 
 		ERR_K2HPRN("This object is not safe.");
 		return false;
 	}
-	return pK2HShm->RemoveQueue(marker, marker_len, count, false, fp, pExtData, encpass);
+	return pK2HShm->RemoveQueue(marker, marker_len, count, true, fp, pExtData, encpass);
 }
 
 bool K2HQueue::Dump(FILE* stream)

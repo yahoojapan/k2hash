@@ -1445,7 +1445,7 @@ static bool SetTrialCommand(K2HShm& k2hash, params_t& params)
 		if(2 < params.size()){
 			ERR("Unknown parameter(%s) for queue push command.", params[2].c_str());
 		}else{
-			ERR("queue push command needs more parameter.");
+			ERR("settrial command needs more parameter.");
 		}
 		return true;	// for continue.
 	}
@@ -3220,7 +3220,7 @@ static bool QueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& par
 	}else if(0 == strcasecmp(params[1].c_str(), "lifo")){
 		is_fifo = false;
 	}else{
-		ERR("queue push command has unknown parameter: %s", params[1].c_str());
+		ERR("queue pop command has unknown parameter: %s", params[1].c_str());
 	}
 
 	string		strpass;
@@ -3321,7 +3321,7 @@ static bool QueueDumpSubCommand(K2HShm& k2hash, const char* prefix, params_t& pa
 	}else if(0 == strcasecmp(params[1].c_str(), "lifo")){
 		is_fifo = false;
 	}else{
-		ERR("queue push command has unknown parameter: %s", params[1].c_str());
+		ERR("queue dump command has unknown parameter: %s", params[1].c_str());
 	}
 
 	// Queue DUMP
@@ -3435,11 +3435,11 @@ static K2HQRMCBRES QueueRemoveCallback(const unsigned char* bydata, size_t datal
 
 static bool QueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
 {
-	if(4 != params.size() && 5 != params.size()){
+	if(3 > params.size() && 5 < params.size()){
 		if(5 < params.size()){
-			ERR("Unknown parameter(%s) for queue pop command.", params[5].c_str());
+			ERR("Unknown parameter(%s) for queue remove command.", params[5].c_str());
 		}else{
-			ERR("queue pop command needs more parameter.");
+			ERR("queue remove command needs more parameter.");
 		}
 		return true;	// for continue.
 	}
@@ -3450,7 +3450,7 @@ static bool QueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, params_t& 
 	}else if(0 == strcasecmp(params[1].c_str(), "lifo")){
 		is_fifo = false;
 	}else{
-		ERR("queue push command has unknown parameter: %s", params[1].c_str());
+		ERR("queue remove command has unknown parameter: %s", params[1].c_str());
 	}
 
 	int	count = atoi(params[2].c_str());
@@ -3930,7 +3930,7 @@ static bool KeyQueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& 
 	}else if(0 == strcasecmp(params[1].c_str(), "lifo")){
 		is_fifo = false;
 	}else{
-		ERR("queue push command has unknown parameter: %s", params[1].c_str());
+		ERR("queue pop command has unknown parameter: %s", params[1].c_str());
 	}
 
 	string		strpass;
@@ -4069,7 +4069,7 @@ static bool KeyQueueDumpSubCommand(K2HShm& k2hash, const char* prefix, params_t&
 	}else if(0 == strcasecmp(params[1].c_str(), "lifo")){
 		is_fifo = false;
 	}else{
-		ERR("queue push command has unknown parameter: %s", params[1].c_str());
+		ERR("queue dump command has unknown parameter: %s", params[1].c_str());
 	}
 
 	// Queue DUMP
@@ -4114,9 +4114,9 @@ static bool KeyQueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, params_
 {
 	if(4 != params.size() && 5 != params.size()){
 		if(5 < params.size()){
-			ERR("Unknown parameter(%s) for queue pop command.", params[5].c_str());
+			ERR("Unknown parameter(%s) for queue remove command.", params[5].c_str());
 		}else{
-			ERR("queue pop command needs more parameter.");
+			ERR("keyqueue remove command needs more parameter.");
 		}
 		return true;	// for continue.
 	}
@@ -4127,7 +4127,7 @@ static bool KeyQueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, params_
 	}else if(0 == strcasecmp(params[1].c_str(), "lifo")){
 		is_fifo = false;
 	}else{
-		ERR("queue push command has unknown parameter: %s", params[1].c_str());
+		ERR("keyqueue remove command has unknown parameter: %s", params[1].c_str());
 	}
 
 	int	count = atoi(params[2].c_str());
@@ -4257,11 +4257,11 @@ static bool KeyQueueCommand(K2HShm& k2hash, params_t& params)
 			bResult = KeyQueueRemoveSubCommand(k2hash, strprefix.c_str(), params);
 
 		}else{
-			ERR("queue command needs sub command parameter.");
+			ERR("keyqueue command needs sub command parameter.");
 			bResult = true;
 		}
 	}else{
-		ERR("queue command needs sub command parameter.");
+		ERR("keyqueue command needs sub command parameter.");
 		bResult = true;
 	}
 	return bResult;
