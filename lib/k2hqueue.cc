@@ -588,8 +588,12 @@ unsigned char* K2HLowOpsQueue::GetPlannedPopQueueKey(size_t& keylen) const
 	return pkey;
 }
 
-/*
- * VIM modelines
- *
- * vim:set ts=4 fenc=utf-8:
- */
+//
+// Local variables:
+// coding: utf-8
+// tab-width: 4
+// c-basic-offset: 4
+// indent-tabs-mode: t
+// End:
+// vim600: ts=4 fdm=marker fenc=utf-8
+// vim<600: ts=4 fenc=utf-8

@@ -62,7 +62,7 @@ static inline void PRN(const char* format, ...)
 	if(format){
 		va_list ap;
 		va_start(ap, format);
-		vfprintf(stdout, format, ap); 
+		vfprintf(stdout, format, ap);
 		va_end(ap);
 	}
 	fprintf(stdout, "\n");
@@ -75,7 +75,7 @@ static inline void ERR(const char* format, ...)
 	if(format){
 		va_list ap;
 		va_start(ap, format);
-		vfprintf(stderr, format, ap); 
+		vfprintf(stderr, format, ap);
 		va_end(ap);
 	}
 	fprintf(stderr, "\n");
@@ -324,7 +324,7 @@ void ConsoleInput::ClearLine(void)
 	fflush(stdout);
 }
 
-// 
+//
 // [Input key value]
 //	0x1b 0x5b 0x41			Up
 //	0x1b 0x5b 0x42			Down
@@ -336,7 +336,7 @@ void ConsoleInput::ClearLine(void)
 //	0x05					CTRL-E
 //	0x1b 0x5b 0x31 0x7e		HOME
 //	0x1b 0x5b 0x34 0x7e		END
-// 
+//
 bool ConsoleInput::GetCommand(void)
 {
 	ClearInput();
@@ -574,7 +574,7 @@ bool ConsoleInput::RemoveLastHistory(void)
 //---------------------------------------------------------
 // Help
 //---------------------------------------------------------
-// 
+//
 // -h                   help display
 // -f <filename>        mode by filename for permanent hash file
 // -t <filename>        mode by filename for temporary hash file
@@ -594,7 +594,7 @@ bool ConsoleInput::RemoveLastHistory(void)
 // -his <count>         set history count(default 500)
 // -libversion          display k2hash library version
 // -run <file path>     run command(history) file.
-// 
+//
 static void Help(const char* progname)
 {
 	PRN(NULL);
@@ -633,9 +633,9 @@ static void Help(const char* progname)
 	PRN(NULL);
 }
 
-// 
+//
 // Command: [command] [parameters...]
-// 
+//
 // help(h)                                  					print help
 // quit(q)/exit                             					quit
 // info(i) [state]                          					print k2hash file/memory information and with state
@@ -689,7 +689,7 @@ static void Help(const char* progname)
 // shell														exit shell(same as "!" command).
 // echo <string>...												echo string
 // sleep <second>												sleep seconds
-// 
+//
 static void LineHelp(void)
 {
 	PRN(NULL);
@@ -2300,7 +2300,7 @@ static bool ListCommand(K2HShm& k2hash, params_t& params)
 			for(k2h_find_h k2hfhandle = k2h_find_first_str_subkey(reinterpret_cast<k2h_h>(&k2hash), params[0].c_str()); K2H_INVALID_HANDLE != k2hfhandle; k2hfhandle = k2h_find_next(k2hfhandle)){
 				// [TODO]
 				// Subkey should be unsigned char type, but params is based on string now.
-				// 
+				//
 				char*	pKey = k2h_find_get_str_key(k2hfhandle);
 				if(pKey){
 					// reentrant
@@ -2317,7 +2317,7 @@ static bool ListCommand(K2HShm& k2hash, params_t& params)
 			for(K2HShm::iterator iter = k2hash.begin(params[0].c_str()); iter != k2hash.end(true); iter++){
 				// [TODO]
 				// Subkey should be unsigned char type, but params is based on string now.
-				// 
+				//
 				char*	pKey = k2hash.Get(*iter, K2HShm::PAGEOBJ_KEY);
 				if(pKey){
 					// reentrant
@@ -3435,7 +3435,7 @@ static K2HQRMCBRES QueueRemoveCallback(const unsigned char* bydata, size_t datal
 
 static bool QueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
 {
-	if(3 > params.size() && 5 < params.size()){
+	if(3 != params.size() && 4 != params.size() && 5 != params.size()){
 		if(5 < params.size()){
 			ERR("Unknown parameter(%s) for queue remove command.", params[5].c_str());
 		}else{
@@ -5098,8 +5098,12 @@ int main(int argc, char** argv)
 	exit(EXIT_SUCCESS);
 }
 
-/*
- * VIM modelines
- *
- * vim:set ts=4 fenc=utf-8:
- */
+//
+// Local variables:
+// coding: utf-8
+// tab-width: 4
+// c-basic-offset: 4
+// indent-tabs-mode: t
+// End:
+// vim600: ts=4 fdm=marker fenc=utf-8
+// vim<600: ts=4 fenc=utf-8
