@@ -1,3 +1,11 @@
+k2hash (1.0.79) trusty; urgency=low
+
+  * Fixes the cppcheck error - #54
+  * Updates editor setting variables - #54
+  * Fixes a queue remove command bug in k2hlinetool - #54
+
+ -- Hirotaka Wakabayashi <hiwakaba@yahoo-corp.jp> Wed, 27 Jan 2021 09:52:49 +0900
+
 k2hash (1.0.78) trusty; urgency=low
 
   * Fixed centos8 build and removed centos6 build - #47
