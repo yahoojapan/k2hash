@@ -9,13 +9,13 @@ prev_url: environmentsja.html
 prev_string: Environments
 top_url: indexja.html
 top_string: TOP
-next_url: k2hlinetoolja.html
-next_string: k2hlinetool
+next_url:
+next_string:
 ---
 
 # ツール
 K2HASHにはK2HASHライブラリをサポートする以下にリストするツールが付属しています。
-- k2hlinetool  
+- [k2hlinetool](tools_k2hlinetoolja.html)  
   K2HASHのオンメモリ/ファイルの作成、K2HASHライブラリのほぼ全ての機能を対話形式でテスト実行できるツールです。 コマンドファイルをロードして自動実行もできます。
 - k2hcompress  
   K2HASHのファイルがフラグメントが大きい場合に圧縮（縮小）させることのできるツールです。
