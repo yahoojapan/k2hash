@@ -5,10 +5,10 @@ title: Tools
 short_desc: K2HASH - NoSQL Key Value Store(KVS) library
 lang_opp_file: toolsja.html
 lang_opp_word: To Japanese
-prev_url: tools.html
-prev_string: Tools
-top_url: index.html
-top_string: TOP
+prev_url:
+prev_string:
+top_url: tools.html
+top_string: Tools
 next_url: 
 next_string: 
 ---

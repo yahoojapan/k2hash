@@ -9,13 +9,14 @@ prev_url: environments.html
 prev_string: Environments
 top_url: index.html
 top_string: TOP
-next_url: k2hlinetool.html
-next_string: k2hlinetool
+next_url:
+next_string:
 ---
 
 # Tools
 K2HASH provides following command line tools.
-- k2hlinetool  
+
+- [k2hlinetool](tools_k2hlinetool.html)  
   The interactive tool for operating data in K2HASH container, and for testing all API.
   This tool can load interactive command from file, and run it automatically.
 - k2hcompress  
