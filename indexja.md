@@ -12,7 +12,6 @@ arrow_link_build: <a href="buildja.html" class="link-title"><span class="arrow-b
 arrow_link_developer: <a href="developerja.html" class="link-title"><span class="arrow-base link-arrow-right"></span>開発者</a>
 arrow_link_environments: <a href="environmentsja.html" class="link-title"><span class="arrow-base link-arrow-right"></span>環境変数</a>
 arrow_link_tools: <a href="toolsja.html" class="link-title"><span class="arrow-base link-arrow-right"></span>ツール</a>
-arrow_link_k2hlinetool: <a href="k2hlinetoolja.html" class="link-title"><span class="arrow-base link-arrow-right"></span>k2hlinetool</a>
 ---
 
 # **K2HASH**
@@ -42,9 +41,6 @@ arrow_link_k2hlinetool: <a href="k2hlinetoolja.html" class="link-title"><span cl
 
 ## {{ page.arrow_link_tools }}
 **K2HASH** が提供する[ツール](toolsja.html)の一覧およびそれらを説明します。
-
-## {{ page.arrow_link_k2hlinetool }}
-**K2HASH** が提供する[ツール - k2hlinetool](k2hlinetoolja.html)の使い方を説明します。
 
 # **AntPickaxについて**
 [AntPickax](https://antpick.ax/indexja.html)は、Yahoo! JAPANがオープンソースとして公開する一連のプロダクト群です。  
