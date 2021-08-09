@@ -4416,7 +4416,7 @@ static bool ShellCommand(void)
 	return true;
 }
 
-static bool EchoCommand(params_t& params)
+static bool EchoCommand(const params_t& params)
 {
 	string	strDisp("");
 	for(size_t cnt = 0; cnt < params.size(); ++cnt){

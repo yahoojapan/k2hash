@@ -294,7 +294,7 @@ bool K2HArchive::Load(K2HShm* pShm) const
 	unsigned char*	bySKey;
 	unsigned char*	byAttrs;
 	unsigned char*	byExdata;
-	for(offset = 0L, byKey = NULL, byVal = NULL, bySKey = NULL, byAttrs = NULL; NULL != (pBinCom = static_cast<PBCOM>(ReadFile(fd, sizeof(BCOM), offset))); offset += scom_total_length(pBinCom->scom), k2harchive_load_init_vals(pBinCom, byKey, byVal, bySKey, byAttrs, byExdata)){
+	for(offset = 0L, byKey = NULL, byVal = NULL, bySKey = NULL, byAttrs = NULL, byExdata = NULL; NULL != (pBinCom = static_cast<PBCOM>(ReadFile(fd, sizeof(BCOM), offset))); offset += scom_total_length(pBinCom->scom), k2harchive_load_init_vals(pBinCom, byKey, byVal, bySKey, byAttrs, byExdata)){
 		// check type
 		if(pBinCom->scom.type < SCOM_TYPE_MIN || SCOM_TYPE_MAX < pBinCom->scom.type){
 			if(isErrSkip){
@@ -348,6 +348,7 @@ bool K2HArchive::Load(K2HShm* pShm) const
 				K2HDAccess		daccess(pShm, K2HDAccess::WRITE_ACCESS);
 				OWVAL_EXDATA	exdata;
 
+				exdata.valoffset = 0;
 				memcpy(exdata.byData, byExdata, pBinCom->scom.exdata_length);
 				if(	!daccess.Open(byKey, pBinCom->scom.key_length) ||
 					!daccess.SetWriteOffset(exdata.valoffset) ||
