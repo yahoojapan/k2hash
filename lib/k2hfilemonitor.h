@@ -27,7 +27,7 @@
 // This class is for checking k2hash file replaced and mmap area expanded.
 // The logic for these is check one byte data in temporary file for each 
 // k2hash file. The temporary file makes this class from k2hash file path 
-// which has prefix ".k2_" in "/tmp" directory. After prefix for the file 
+// which has prefix ".k2_" in "/var/lib" directory. After prefix for the file 
 // is number of 64bit hex string which is made from hashed k2hash file 
 // full path.
 // 
@@ -75,7 +75,7 @@ typedef union share_file_monitor_wrap{
 class K2HFileMonitor
 {
 	private:
-		static const char	base_prefix[];
+		static const char*	base_prefix;
 		static mode_t		file_umask;								// umask for monitor file
 
 		std::string			bup_shmfile;

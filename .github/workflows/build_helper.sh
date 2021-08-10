@@ -331,12 +331,15 @@ elif [ "X${OPT_IS_FORCE_PUBLISH}" = "Xtrue" ]; then
 	# FORCE PUBLISH
 	#
 	if [ ${IN_SCHEDULE_PROCESS} -ne 1 ]; then
-		if [ "X${PUBLISH_TAG_NAME}" ! "X" ]; then
-			echo "[INFO] ${PRGNAME} : specified \"--use-packagecloudio-repo(-usepc)\" option, then forcibly publish"
+		if [ "X${PUBLISH_TAG_NAME}" != "X" ]; then
+			echo "[INFO] ${PRGNAME} : specified \"--force-publish(-p)\" option, then forcibly publish"
+			IS_PUBLISH=1
+		else
+			echo "[WARNING] ${PRGNAME} : specified \"--force-publish(-p)\" option, but not find relase tag."
+			IS_PUBLISH=0
 		fi
-		IS_PUBLISH=1
 	else
-		echo "[WARNING] ${PRGNAME} : specified \"--use-packagecloudio-repo(-usepc)\" option, but not publish because this process is kicked by scheduler."
+		echo "[WARNING] ${PRGNAME} : specified \"--force-publish(-p)\" option, but not publish because this process is kicked by scheduler."
 		IS_PUBLISH=0
 	fi
 else

@@ -241,6 +241,7 @@ int CheckParameter(int argc, char **argv)
 #define CMASK_BITCNT	8
 #define MAX_ELEMENT_CNT	512
 #define PAGESIZE	128
+#define _K2H_PAGESIZE	128
 
 // minisize attach parameter
 #define SMALL_MASK_BITCNT	2
@@ -304,7 +305,7 @@ bool AttachK2FileMini(K2HShm* k2hash)
 	bool answer = true ;
 
 	if(!k2hash->Attach(argFilename.c_str(), ISREADONLY, ISCREATE, ISTEMPFILE, ISFULLMAPPING ,
-	 SMALL_MASK_BITCNT, SMALL_CMASK_BITCNT, SMALL_MAX_ELEMENT_CNT, PAGESIZE)) {
+	 SMALL_MASK_BITCNT, SMALL_CMASK_BITCNT, SMALL_MAX_ELEMENT_CNT, _K2H_PAGESIZE)) {
 		cerr << "Attach Failed. k2file is maybe readonly or have not permission." << endl ;
 		answer = false ;
 	}
@@ -318,7 +319,7 @@ bool AttachK2File(K2HShm* k2hash)
 	// Attach
 	bool answer = true ;
 	if(!k2hash->Attach(argFilename.c_str(), ISREADONLY, ISCREATE, ISTEMPFILE, ISFULLMAPPING ,
-	 MASK_BITCNT, CMASK_BITCNT, MAX_ELEMENT_CNT, PAGESIZE)) {
+	 MASK_BITCNT, CMASK_BITCNT, MAX_ELEMENT_CNT, _K2H_PAGESIZE)) {
 		cerr << "Attach Failed. k2file is maybe readonly or have not permission." << endl ;
 		exit(EXIT_FAILURE);
 	}

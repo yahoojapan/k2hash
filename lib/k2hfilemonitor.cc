@@ -40,7 +40,9 @@ using namespace std;
 //---------------------------------------------------------
 // Symbols & macros
 //---------------------------------------------------------
-#define	MONITORFILE_BASE		"/tmp/.k2h_"
+#define	MONITORFILE_DIRPATH		"/var/lib/antpickax"
+#define	MONITORFILE_DIRPATH_SUB	"/tmp"
+#define	MONITORFILE_BASE_NAME	".k2h_"
 
 #define	OPEN_LOCK_POS			0L
 #define	INODE_LOCK_POS			static_cast<off_t>(sizeof(unsigned char) * sizeof(long))
@@ -54,9 +56,15 @@ using namespace std;
 #define	ARR_AREACNT_VALPOS		1
 
 //---------------------------------------------------------
+// const variables in local
+//---------------------------------------------------------
+const char		_base_prefix[]		= MONITORFILE_DIRPATH "/" MONITORFILE_BASE_NAME;
+const char		_base_prefix_sub[]	= MONITORFILE_DIRPATH_SUB "/" MONITORFILE_BASE_NAME;
+
+//---------------------------------------------------------
 // Class variable
 //---------------------------------------------------------
-const char		K2HFileMonitor::base_prefix[]	= MONITORFILE_BASE;
+const char*		K2HFileMonitor::base_prefix		= NULL;
 mode_t			K2HFileMonitor::file_umask		= 0;
 
 //---------------------------------------------------------
@@ -64,6 +72,20 @@ mode_t			K2HFileMonitor::file_umask		= 0;
 //---------------------------------------------------------
 K2HFileMonitor::K2HFileMonitor() : bup_shmfile(""), bup_monfile(""), psfmon(NULL), fmfd(-1), bup_inode_cnt(0), bup_area_cnt(0), bup_inode_val(0)
 {
+	if(!K2HFileMonitor::base_prefix){
+		struct stat	st;
+		if(0 != stat(MONITORFILE_DIRPATH, &st)){
+			WAN_K2HPRN("%s directory is not existed, then use %s", MONITORFILE_DIRPATH, MONITORFILE_DIRPATH_SUB);
+			K2HFileMonitor::base_prefix = _base_prefix_sub;
+		}else{
+			if(0 == (st.st_mode & S_IFDIR)){
+				WAN_K2HPRN("%s is not directory, then use %s", MONITORFILE_DIRPATH, MONITORFILE_DIRPATH_SUB);
+				K2HFileMonitor::base_prefix = _base_prefix_sub;
+			}else{
+				K2HFileMonitor::base_prefix = _base_prefix;
+			}
+		}
+	}
 }
 
 K2HFileMonitor::~K2HFileMonitor()
@@ -204,7 +226,7 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 		need_init_size	= false;
 
 		// open or create file
-		if(-1 != (fmfd = open(bup_monfile.c_str(), O_RDWR | O_CREAT | O_EXCL | O_FSYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))){
+		if(-1 != (fmfd = open(bup_monfile.c_str(), O_RDWR | O_CREAT | O_EXCL | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))){
 			// created new file
 
 			// [NOTE]

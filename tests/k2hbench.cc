@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <pthread.h>
+#include <libgen.h>
 
 #include <map>
 #include <string>
