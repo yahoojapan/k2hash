@@ -136,6 +136,93 @@ jobs:
           if [ "X${TMP_CI_PACKAGECLOUD_DOWNLOAD_REPO}" != "X" ]; then OPT_CI_PACKAGECLOUD_DOWNLOAD_REPO="-pcdlrepo ${TMP_CI_PACKAGECLOUD_DOWNLOAD_REPO}"; fi
           /bin/sh -c "$GITHUB_WORKSPACE/.github/workflows/build_helper.sh -os ${{ matrix.container }} $OPT_CI_OSTYPE_VARS_FILE $OPT_CI_BUILD_NUMBER $OPT_CI_DEVELOPER_FULLNAME $OPT_CI_DEVELOPER_EMAIL $OPT_CI_FORCE_PUBLISH $OPT_CI_USE_PACKAGECLOUD_REPO $OPT_CI_PACKAGECLOUD_TOKEN $OPT_CI_PACKAGECLOUD_OWNER $OPT_CI_PACKAGECLOUD_PUBLISH_REPO $OPT_CI_PACKAGECLOUD_DOWNLOAD_REPO"
 
+  dockerimage:
+    runs-on: ubuntu-latest
+
+    #
+    # build matrix for containers
+    #
+    strategy:
+      #
+      # do not stop jobs automatically if any of the jobs fail
+      #
+      fail-fast: false
+
+      #
+      # matrix for containers
+      #
+      matrix:
+        #
+        # Specify the "baseimage" in the following format:
+        #    <base image tag>,<base dev image tag>,<OS tag name>(,<default tag flag>)
+        #
+        # <base image tag>:     specify the Docker image name(ex. "libfullock:latest")
+        # <base dev image tag>: specify the Docker image name(ex. "libfullock-dev:latest")
+        # <OS tag name>:        OS tag attached to the created Docker image
+        # <default tag flag>:   If you want to use the created Docker image as the default image, specify "default".
+        #
+        imageinfo:
+          - antpickax/libfullock:latest,antpickax/libfullock-dev:latest,alpine,default
+          - antpickax/libfullock:latest-ubuntu,antpickax/libfullock-dev:latest-ubuntu,ubuntu
+
+    #
+    # Run building and pushing helper
+    #
+    # [NOTE] Secrets and Environments
+    # When passing parameters to docker_helper.sh in build and pusing,
+    # use Secret of organization or repository.
+    # 
+    # By setting the correct values for the following variable names,
+    # they will be passed as parameters in docker_helper.sh.
+    #  * DOCKER_HUB_USERNAME        : Docker Hub username to read/push the docker images
+    #  * DOCKER_HUB_ACCESSTOKEN     : Docker Hub user's Access Token
+    #    DOCKER_HUB_ORG             : Docker Hub organization to push(ex. "antpickax")
+    #    IMAGETYPE_VARS_FILE        : specify custom variables file
+    #    FORCE_DOCKER_PUSH          : specify force push(true) or not push(false)
+    #
+    # [REQUIRED]
+    # DOCKER_HUB_USERNAME and DOCKER_HUB_ACCESSTOKEN is required to read and push docker images!
+    #
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      #
+      # Login to avoid the Docker Hub rate limit
+      #
+      # Github Secret cannot be read in the case of Pull Request, so that process
+      # here will fail, so we need to skip it. Even if we skip this process, if we
+      # are using the official Runner of Github Actions, the IP address rate will
+      # not be limited and we will not get an error.
+      # However, this restriction release is based on the contract between Github
+      # and DockerHub, so if we skip this process, we may get an error.
+      #
+      - name: Login to DockerHub
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESSTOKEN }}
+
+      - name: Build and Push to Docker Hub
+        env:
+          TMP_CI_DOCKER_IMAGE_INFO:     ${{ matrix.imageinfo }}
+          TMP_CI_DOCKER_IMAGE_NAMES:    "k2hash,k2hash-dev"
+          TMP_CI_IMAGETYPE_VARS_FILE:   ${{ secrets.IMAGETYPE_VARS_FILE }}
+          TMP_CI_DOCKER_HUB_ORG:        ${{ secrets.DOCKER_HUB_ORG }}
+          TMP_CI_FORCE_DOCKER_PUSH:     ${{ secrets.FORCE_DOCKER_PUSH }}
+
+        run: |
+          OPT_CI_DOCKER_IMAGE_INFO="-i ${TMP_CI_DOCKER_IMAGE_INFO}";
+          OPT_CI_DOCKER_IMAGE_NAMES="-n ${TMP_CI_DOCKER_IMAGE_NAMES}"
+          if [ "X${TMP_CI_IMAGETYPE_VARS_FILE}" != "X" ]; then  OPT_CI_IMAGETYPE_VARS_FILE="-f ${TMP_CI_IMAGETYPE_VARS_FILE}";  fi
+          if [ "X${TMP_CI_DOCKER_HUB_ORG}" != "X" ]; then       OPT_CI_DOCKER_HUB_ORG="-o ${TMP_CI_DOCKER_HUB_ORG}";            fi
+          if [ "X${TMP_CI_FORCE_DOCKER_PUSH}" = "Xtrue" ]; then OPT_CI_FORCE_DOCKER_PUSH="-p";                                  elif [ "X${TMP_CI_FORCE_DOCKER_PUSH}" = "Xfalse" ]; then OPT_CI_FORCE_DOCKER_PUSH="-np"; fi
+          /bin/sh -c "${GITHUB_WORKSPACE}/.github/workflows/docker_helper.sh ${OPT_CI_DOCKER_IMAGE_INFO} ${OPT_CI_DOCKER_HUB_ORG} ${OPT_CI_DOCKER_IMAGE_NAMES} ${OPT_CI_FORCE_DOCKER_PUSH}"
+
 #
 # Local variables:
 # tab-width: 4

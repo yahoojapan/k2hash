@@ -7,6 +7,8 @@ k2hash
 [![GitHub issues](https://img.shields.io/github/issues/yahoojapan/k2hash.svg)](https://github.com/yahoojapan/k2hash/issues)
 [![debian packages](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/antpickax/stable)
 [![RPM packages](https://img.shields.io/badge/rpm-packagecloud.io-844fec.svg)](https://packagecloud.io/antpickax/stable)
+[![Docker image](https://img.shields.io/docker/pulls/antpickax/k2hash.svg)](https://hub.docker.com/r/antpickax/k2hash)
+[![Docker dev image](https://img.shields.io/docker/pulls/antpickax/k2hash-dev.svg)](https://hub.docker.com/r/antpickax/k2hash-dev)
 
 K2HASH - NoSQL Key Value Store(KVS) library
 
@@ -36,6 +38,10 @@ Yahoo! JAPAN. K2HASH is following specifications.
 ### Packages
   - [RPM packages(packagecloud.io)](https://packagecloud.io/antpickax/stable)
   - [Debian packages(packagecloud.io)](https://packagecloud.io/antpickax/stable)
+
+### Docker images
+  - [k2hash(Docker Hub)](https://hub.docker.com/r/antpickax/k2hash)
+  - [k2hash-dev(Docker Hub)](https://hub.docker.com/r/antpickax/k2hash-dev)
 
 ### License
 This software is released under the MIT License, see the license file.

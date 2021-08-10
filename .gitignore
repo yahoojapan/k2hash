@@ -90,6 +90,8 @@ stamp-h1
 #
 Makefile.in
 Makefile
+Dockerfile
+buildutils/Dockerfile.templ
 
 #
 # archive files and backups
