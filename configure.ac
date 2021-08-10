@@ -288,7 +288,8 @@ AC_CONFIG_FILES([Makefile
 				buildutils/Makefile
 				buildutils/control
 				buildutils/copyright
-				buildutils/k2hash.spec])
+				buildutils/k2hash.spec
+				buildutils/Dockerfile.templ])
 
 AC_OUTPUT
 
