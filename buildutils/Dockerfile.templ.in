@@ -1,19 +1,16 @@
 # syntax=docker/dockerfile:1
 #
-# Utility tools for building configure/packages by AntPickax
+# K2HASH
 #
-# Copyright 2021 Yahoo Japan Corporation.
+# Copyright 2013 Yahoo Japan Corporation.
 #
-# AntPickax provides utility tools for supporting autotools
-# builds.
+# K2HASH is key-valuew store base libraries.
+# K2HASH is made for the purpose of the construction of
+# original KVS system and the offer of the library.
+# The characteristic is this KVS library which Key can
+# layer. And can support multi-processing and multi-thread,
+# and is provided safely as available KVS.
 #
-# These tools retrieve the necessary information from the
-# repository and appropriately set the setting values of
-# configure, Makefile, spec,etc file and so on.
-# These tools were recreated to reduce the number of fixes and
-# reduce the workload of developers when there is a change in
-# the project configuration.
-# 
 # For the full copyright and license information, please view
 # the license file that was distributed with this source code.
 #
@@ -25,19 +22,20 @@
 # [NOTE]
 # This file expects the following variables to be expanded by autoconf.
 #	GIT_DOMAIN
-#	GIT_ORG
-#	GIT_REPO
 #	PACKAGE_NAME
 #
 # Also, replace the following variables.
-#	DOCKER_IMAGE_BASE		(ex. "antpickax/libfullock:latest")
-#	DOCKER_IMAGE_DEV_BASE	(ex. "antpickax/libfullock-dev:latest")
-#	PKG_UPDATE				(ex. "apk update -q --no-progress")
-#	PKG_INSTALL_BUILDER		(ex. "apk add -q --no-progress --no-cache git build-base openssl libtool automake autoconf procps")
-#	PKG_INSTALL_BIN			(ex. "apk add -q --no-progress --no-cache libstdc++")
-#	CONFIGURE_FLAG			(ex. "--with-gcrypt")
-#	BUILD_FLAGS				(ex. "CXXFLAGS=-Wno-address-of-packed-member")
-#	BUILD_ENV				(ex, "ENV DEBIAN_FRONTEND=noninteractive")
+#	DOCKER_IMAGE_BASE			(ex. "antpickax/libfullock:latest")
+#	DOCKER_IMAGE_DEV_BASE		(ex. "antpickax/libfullock-dev:latest")
+#	DOCKER_GIT_ORGANIZATION		(ex. "antpickax")
+#	DOCKER_GIT_REPOSITORY		(ex. "xxxxx")
+#	DOCKER_GIT_BRANCH			(ex. "yyyyy")
+#	PKG_UPDATE					(ex. "apk update -q --no-progress")
+#	PKG_INSTALL_BUILDER			(ex. "apk add -q --no-progress --no-cache git build-base openssl libtool automake autoconf procps")
+#	PKG_INSTALL_BIN				(ex. "apk add -q --no-progress --no-cache libstdc++")
+#	CONFIGURE_FLAG				(ex. "--with-gcrypt")
+#	BUILD_FLAGS					(ex. "CXXFLAGS=-Wno-address-of-packed-member")
+#	BUILD_ENV					(ex, "ENV DEBIAN_FRONTEND=noninteractive")
 #
 
 #
@@ -55,8 +53,9 @@ RUN set -x && \
 	%%PKG_UPDATE%% && \
 	%%PKG_INSTALL_BUILDER%% && \
 	cd / && \
-	git clone https://@GIT_DOMAIN@/@GIT_ORG@/@GIT_REPO@.git && \
-	cd @GIT_REPO@ && \
+	git clone https://@GIT_DOMAIN@/%%DOCKER_GIT_ORGANIZATION%%/%%DOCKER_GIT_REPOSITORY%%.git && \
+	cd %%DOCKER_GIT_REPOSITORY%% && \
+	git checkout %%DOCKER_GIT_BRANCH%% && \
 	./autogen.sh && \
 	./configure %%CONFIGURE_FLAG%% && \
 	make %%BUILD_FLAGS%% && \

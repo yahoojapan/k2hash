@@ -71,8 +71,8 @@ if [ "X${DOCKER_IMAGE_OSTYPE}" = "Xalpine" ]; then
 
 elif [ "X${DOCKER_IMAGE_OSTYPE}" = "Xubuntu" ]; then
 	PKGMGR_NAME="apt-get"
-	PKGMGR_UPDATE_OPT="update -q -y"
-	PKGMGR_INSTALL_OPT="install -q -y"
+	PKGMGR_UPDATE_OPT="update -qq -y"
+	PKGMGR_INSTALL_OPT="install -qq -y"
 	PKG_INSTALL_LIST_BUILDER="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config procps libgcrypt20-dev"
 	PKG_INSTALL_LIST_BIN=""
 
