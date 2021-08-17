@@ -45,7 +45,11 @@ func_usage()
 	echo "      antpickax/image:1.0.0-alpine  (imagetag is \"alpine\")"
 	echo "      antpickax/image:1.0.0         (imagetag is not specified)"
 	echo ""
-	echo "    This program uses the GITHUB_REF and GITHUB_EVENT_NAME environment variable internally."
+	echo "    This program uses folowing environment variable internally."
+	echo "      GITHUB_REPOSITORY"
+	echo "      GITHUB_REF"
+	echo "      GITHUB_EVENT_NAME"
+	echo "      GITHUB_EVENT_PATH"
 	echo ""
 }
 
@@ -235,19 +239,19 @@ fi
 #
 # Version
 #
-GITHUB_REF_VERSION=
+TAGGED_VERSION=
 if [ "X${GITHUB_REF}" != "X" ]; then
 	echo ${GITHUB_REF} | grep 'refs/tags/' >/dev/null 2>&1
 	if [ $? -eq 0 ]; then
-		GITHUB_REF_VERSION=$(echo ${GITHUB_REF} | sed -e 's#refs/tags/v##g' -e 's#refs/tags/##g')
+		TAGGED_VERSION=$(echo ${GITHUB_REF} | sed -e 's#refs/tags/v##g' -e 's#refs/tags/##g')
 	fi
 fi
 if [ "X${IMAGE_VERSION}" = "X" ]; then
-	if [ "X${GITHUB_REF_VERSION}" != "X" ]; then
+	if [ "X${TAGGED_VERSION}" != "X" ]; then
 		#
 		# From Github ref
 		#
-		IMAGE_VERSION=${GITHUB_REF_VERSION}
+		IMAGE_VERSION=${TAGGED_VERSION}
 	else
 		#
 		# From RELEASE_VERSION file
@@ -284,12 +288,57 @@ else
 	if [ "X${GITHUB_EVENT_NAME}" = "Xschedule" ]; then
 		DO_PUSH=0
 	else
-		if [ "X${GITHUB_REF_VERSION}" != "X" ]; then
+		if [ "X${TAGGED_VERSION}" != "X" ]; then
 			DO_PUSH=1
 		else
 			DO_PUSH=0
 		fi
 	fi
+fi
+
+#
+# Base Repository/SHA1 for creating Docker images
+#
+if [ "X${GITHUB_EVENT_NAME}" = "Xpull_request" ]; then
+	# [NOTE]
+	# In the PR case, GITHUB_REPOSITORY and GITHUB_REF cannot be used
+	# because they are the information on the merging side.
+	# Then the Organization/Repository/branch(or SHA1) of the PR source
+	# is fetched from the file(json) indicated by the GITHUB_EVENT_PATH
+	# environment variable.
+	#	ex.
+	#		{
+	#		  "pull_request": {
+	#		    "head": {
+	#		      "repo": {
+	#		        "full_name": "org/repo",
+	#		      },
+	#		      "sha": "776........",
+	#		    },
+	#		  },
+	#		}
+	#
+	if [ ! -f ${GITHUB_EVENT_PATH} ]; then
+		echo "[ERROR] ${PRGNAME} : \"GITHUB_EVENT_PATH\" environment is empty or not file path."
+		exit 1
+	fi
+
+	# [NOTE]
+	# we need "jq" for parsing json
+	#
+	PR_GITHUB_REPOSITORY=$(jq -r '.pull_request.head.repo.full_name' ${GITHUB_EVENT_PATH})
+	DOCKER_GIT_ORGANIZATION=$(echo ${PR_GITHUB_REPOSITORY} | sed 's#/# #g' | awk '{print $1}')
+	DOCKER_GIT_REPOSITORY=$(echo ${PR_GITHUB_REPOSITORY} | sed 's#/# #g' | awk '{print $2}')
+	DOCKER_GIT_BRANCH=$(jq -r '.pull_request.head.sha' ${GITHUB_EVENT_PATH})
+
+else
+	DOCKER_GIT_ORGANIZATION=$(echo ${GITHUB_REPOSITORY} | sed 's#/# #g' | awk '{print $1}')
+	DOCKER_GIT_REPOSITORY=$(echo ${GITHUB_REPOSITORY} | sed 's#/# #g' | awk '{print $2}')
+	DOCKER_GIT_BRANCH=$(echo ${GITHUB_REF} | sed 's#^refs/.*/##g')
+fi
+if [ "X${DOCKER_GIT_ORGANIZATION}" = "X" ] || [ "X${DOCKER_GIT_REPOSITORY}" = "X" ] || [ "X${DOCKER_GIT_BRANCH}" = "X" ]; then
+	echo "[ERROR] ${PRGNAME} : Not found Organization/Repository/branch(or SHA1)."
+	exit 1
 fi
 
 #
@@ -318,6 +367,9 @@ echo "  DOCKER_IMAGE_INFO        = ${DOCKER_IMAGE_INFO}"
 echo "  DOCKER_IMAGE_BASE        = ${DOCKER_IMAGE_BASE}"
 echo "  DOCKER_IMAGE_DEV_BASE    = ${DOCKER_IMAGE_DEV_BASE}"
 echo "  DOCKER_IMAGE_OSTYPE      = ${DOCKER_IMAGE_OSTYPE}"
+echo "  DOCKER_GIT_ORGANIZATION  = ${DOCKER_GIT_ORGANIZATION}"
+echo "  DOCKER_GIT_REPOSITORY    = ${DOCKER_GIT_REPOSITORY}"
+echo "  DOCKER_GIT_BRANCH        = ${DOCKER_GIT_BRANCH}"
 echo "  DEFAULT_IMAGE_TAGGING    = ${DEFAULT_IMAGE_TAGGING}"
 echo "  DOCKER_HUB_ORG           = ${DOCKER_HUB_ORG}"
 echo "  IMAGE_NAMES              = ${IMAGE_NAMES}"
@@ -329,6 +381,7 @@ echo "  PKGMGR_UPDATE_OPT        = ${PKGMGR_UPDATE_OPT}"
 echo "  PKGMGR_INSTALL_OPT       = ${PKGMGR_INSTALL_OPT}"
 echo "  PKG_INSTALL_LIST_BUILDER = ${PKG_INSTALL_LIST_BUILDER}"
 echo "  PKG_INSTALL_LIST_BIN     = ${PKG_INSTALL_LIST_BIN}"
+echo "  BUILDER_CONFIGURE_FLAG   = ${BUILDER_CONFIGURE_FLAG}"
 echo "  BUILDER_MAKE_FLAGS       = ${BUILDER_MAKE_FLAGS}"
 echo "  BUILDER_ENVIRONMENT      = ${BUILDER_ENVIRONMENT}"
 echo "  RUNNER_INSTALL_PACKAGES  = ${RUNNER_INSTALL_PACKAGES}"
@@ -420,6 +473,9 @@ fi
 cat ${BUILDUTILS_DIR}/${DOCKER_TEMPL_FILE} |							\
 	sed -e "s#%%DOCKER_IMAGE_BASE%%#${DOCKER_IMAGE_BASE}#g"				\
 		-e "s#%%DOCKER_IMAGE_DEV_BASE%%#${DOCKER_IMAGE_DEV_BASE}#g"		\
+		-e "s#%%DOCKER_GIT_ORGANIZATION%%#${DOCKER_GIT_ORGANIZATION}#g"	\
+		-e "s#%%DOCKER_GIT_REPOSITORY%%#${DOCKER_GIT_REPOSITORY}#g"		\
+		-e "s#%%DOCKER_GIT_BRANCH%%#${DOCKER_GIT_BRANCH}#g"				\
 		-e "s#%%PKG_UPDATE%%#${PKGMGR_NAME} ${PKGMGR_UPDATE_OPT}#g"		\
 		-e "s#%%PKG_INSTALL_BUILDER%%#${PKG_INSTALL_BUILDER_COMMAND}#g"	\
 		-e "s#%%PKG_INSTALL_BIN%%#${PKG_INSTALL_BIN_COMMAND}#g"			\
