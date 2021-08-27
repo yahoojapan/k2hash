@@ -384,6 +384,7 @@ echo "  PKG_INSTALL_LIST_BIN     = ${PKG_INSTALL_LIST_BIN}"
 echo "  BUILDER_CONFIGURE_FLAG   = ${BUILDER_CONFIGURE_FLAG}"
 echo "  BUILDER_MAKE_FLAGS       = ${BUILDER_MAKE_FLAGS}"
 echo "  BUILDER_ENVIRONMENT      = ${BUILDER_ENVIRONMENT}"
+echo "  UPDATE_LIBPATH           = ${UPDATE_LIBPATH}"
 echo "  RUNNER_INSTALL_PACKAGES  = ${RUNNER_INSTALL_PACKAGES}"
 
 #---------------------------------------------------------------------
@@ -456,18 +457,25 @@ if [ "X${PKG_INSTALL_LIST_BUILDER}" != "X" ]; then
 	PKG_INSTALL_BUILDER_COMMAND="${PKGMGR_NAME} ${PKGMGR_INSTALL_OPT} ${PKG_INSTALL_LIST_BUILDER}"
 else
 	#
-	# Set dummy command
+	# Set no-operation command
 	#
-	PKG_INSTALL_BUILDER_COMMAND="sleep 0"
+	PKG_INSTALL_BUILDER_COMMAND=":"
 fi
 
 if [ "X${PKG_INSTALL_LIST_BIN}" != "X" ]; then
 	PKG_INSTALL_BIN_COMMAND="${PKGMGR_NAME} ${PKGMGR_INSTALL_OPT} ${PKG_INSTALL_LIST_BIN}"
 else
 	#
-	# Set dummy command
+	# Set no-operation command
 	#
-	PKG_INSTALL_BIN_COMMAND="sleep 0"
+	PKG_INSTALL_BIN_COMMAND=":"
+fi
+
+if [ "X${UPDATE_LIBPATH}" = "X" ]; then
+	#
+	# Set no-operation command
+	#
+	UPDATE_LIBPATH=":"
 fi
 
 cat ${BUILDUTILS_DIR}/${DOCKER_TEMPL_FILE} |							\
@@ -481,6 +489,7 @@ cat ${BUILDUTILS_DIR}/${DOCKER_TEMPL_FILE} |							\
 		-e "s#%%PKG_INSTALL_BIN%%#${PKG_INSTALL_BIN_COMMAND}#g"			\
 		-e "s#%%CONFIGURE_FLAG%%#${BUILDER_CONFIGURE_FLAG}#g"			\
 		-e "s#%%BUILD_FLAGS%%#${BUILDER_MAKE_FLAGS}#g"					\
+		-e "s#%%UPDATE_LIBPATH%%#${UPDATE_LIBPATH}#g"					\
 		-e "s#%%BUILD_ENV%%#${BUILDER_ENVIRONMENT}#g"					> ${SRCTOP}/${DOCKER_FILE}
 if [ $? -ne 0 ]; then
 	echo "[ERROR] ${PRGNAME} : Failed to creating ${DOCKER_FILE} from ${DOCKER_TEMPL_FILE}."

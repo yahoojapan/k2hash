@@ -18,7 +18,7 @@
 #
 # AUTHOR:   Takeshi Nakatani
 # CREATE:   Tue, Aug 10 2021
-# REVISION:
+# REVISION:	1.0
 #
 
 #---------------------------------------------------------------------
@@ -48,6 +48,7 @@ PKG_INSTALL_LIST_BIN=
 BUILDER_CONFIGURE_FLAG=
 BUILDER_MAKE_FLAGS=
 BUILDER_ENVIRONMENT=
+UPDATE_LIBPATH=
 
 #
 # List the package names that contain pacakgecloud.io to install on Github Actions Runner.
@@ -75,6 +76,7 @@ elif [ "X${DOCKER_IMAGE_OSTYPE}" = "Xubuntu" ]; then
 	PKGMGR_INSTALL_OPT="install -qq -y"
 	PKG_INSTALL_LIST_BUILDER="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config procps libgcrypt20-dev"
 	PKG_INSTALL_LIST_BIN=""
+	UPDATE_LIBPATH="ldconfig"
 
 	BUILDER_CONFIGURE_FLAG="--with-gcrypt"
 

@@ -36,6 +36,7 @@
 #	CONFIGURE_FLAG				(ex. "--with-gcrypt")
 #	BUILD_FLAGS					(ex. "CXXFLAGS=-Wno-address-of-packed-member")
 #	BUILD_ENV					(ex, "ENV DEBIAN_FRONTEND=noninteractive")
+#	UPDATE_LIBPATH				(ex. "ldconfig", if want no-operation, specify ":")
 #
 
 #
@@ -89,7 +90,8 @@ COPY --from=@PACKAGE_NAME@-builder /@PACKAGE_NAME@-dev.tgz                      
 
 RUN cd / && \
 	tar xvzf @PACKAGE_NAME@-dev.tgz && \
-	rm /@PACKAGE_NAME@-dev.tgz
+	rm /@PACKAGE_NAME@-dev.tgz && \
+	%%UPDATE_LIBPATH%%
 
 CMD ["/bin/sh"]
 
@@ -116,7 +118,8 @@ COPY --from=@PACKAGE_NAME@-builder /@PACKAGE_NAME@.tgz        /@PACKAGE_NAME@.tg
 
 RUN cd / && \
 	tar xvzf @PACKAGE_NAME@.tgz && \
-	rm /@PACKAGE_NAME@.tgz
+	rm /@PACKAGE_NAME@.tgz && \
+	%%UPDATE_LIBPATH%%
 
 CMD ["/bin/sh"]
 
