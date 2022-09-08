@@ -30,6 +30,8 @@ using namespace std;
 //---------------------------------------------------------
 // Class Methods
 //---------------------------------------------------------
+// cppcheck-suppress unmatchedSuppression
+// cppcheck-suppress constParameter
 bool K2HPageMem::GetData(const K2HShm* pk2hshm, PPAGEHEAD reladdr, unsigned char** ppPageData, size_t* pLength)
 {
 	if(!pk2hshm || !ppPageData || !pLength){

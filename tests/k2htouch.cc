@@ -123,10 +123,10 @@ bool DTORCOMMAND = false ;
 #define K2MODE_ON			"ON"
 #define K2MODE_OFF			"OFF"
 
-string get(K2HShm* k2hash, string Key) ;
+string k2htouch_get_value(K2HShm* k2hash, const char* pKey) ;
 // -------------------------------------------------------------------
 // Check command line parameter
-bool isExistOption(int argc, char **argv, string target) 
+bool isExistOption(int argc, const char **argv, string target) 
 {
 	transform(target.begin(), target.end(), target.begin(), ::tolower) ;
 	bool answer = false ;
@@ -141,7 +141,7 @@ bool isExistOption(int argc, char **argv, string target)
 	return answer ;
 }
 // -------------------------------------------------------------------
-string GetOption (int argc, char **argv, string target) 
+string GetOption (int argc, const char **argv, string target) 
 {
 	string answer = "" ;
 
@@ -157,7 +157,7 @@ string GetOption (int argc, char **argv, string target)
 	return answer ;
 }
 // -------------------------------------------------------------------
-int CheckParameter(int argc, char **argv)
+int CheckParameter(int argc, const char **argv)
 {
 	int Answer = MODE_HELP ;
 	if (argc <= MINPARAMATERS) return Answer ; 
@@ -194,7 +194,7 @@ int CheckParameter(int argc, char **argv)
 		argValue = argv[5] ; 
 	} else if (com == "kpop" && argc == 4) { Answer = MODE_KPOP ; argQueprefix = argv[3] ; }
 	else if (com == "kclear" && argc == 4) { Answer = MODE_KCLEAR ; argQueprefix = argv[3] ; }
-	else if (com == "dtor" && argc >= 3) { 
+	else if (com == "dtor") { 
 		Answer = MODE_DTOR ; 
 		DTORCOMMAND = true ;
 		argKey   = K2MODE_DTOR_KEY ;
@@ -203,21 +203,21 @@ int CheckParameter(int argc, char **argv)
 		if (isExistOption(argc, argv, "on" )) argValue = K2MODE_DTOR_ON ;
 		argConffile =  GetOption(argc, argv, "-conf") ;
 	}
-	else if (com == "mtime" && argc >= 3) { 
+	else if (com == "mtime") { 
 		Answer = MODE_MTIME ; 
 		argKey   = K2MODE_ATTR_MTIME ;
 		argValue = "" ;
 		if (isExistOption(argc, argv, "off")) argValue = K2MODE_OFF ;
 		if (isExistOption(argc, argv, "on" )) argValue = K2MODE_ON ;
 	}
-	else if (com == "history" && argc >= 3) { 
+	else if (com == "history") { 
 		Answer = MODE_HISTORY ; 
 		argKey   = K2MODE_ATTR_HISTORY ;
 		argValue = "" ;
 		if (isExistOption(argc, argv, "off")) argValue = K2MODE_OFF ;
 		if (isExistOption(argc, argv, "on" )) argValue = K2MODE_ON ;
 	}
-	else if (com == "expire" && argc >= 3) { 
+	else if (com == "expire") { 
 		Answer = MODE_EXPIRE ; 
 		argKey   = K2MODE_ATTR_EXPIRE ;
 		argValue = "" ;
@@ -265,7 +265,7 @@ bool IsDTOR(K2HShm* k2hash)
 	return answer ;
 }
 // -------------------------------------------------------------------
-bool ReadFlag(K2HShm* k2hash, string FlagKey)
+bool ReadFlag(K2HShm* k2hash, const string& FlagKey)
 {
 	bool answer = false ;
 
@@ -284,7 +284,7 @@ bool AttrSet(K2HShm* k2hash)
 	bool is_mtime     = ReadFlag(k2hash, K2MODE_ATTR_MTIME) ;
 	bool is_history   = ReadFlag(k2hash, K2MODE_ATTR_HISTORY) ;
 
-	string expirestr  = get(k2hash, K2MODE_ATTR_EXPIRE) ;
+	string expirestr  = k2htouch_get_value(k2hash, K2MODE_ATTR_EXPIRE) ;
 	time_t expiretime = (long)atoi(expirestr.c_str()) ; 
 	time_t *argExpire = NULL ;
 	if (expiretime) argExpire = &expiretime ;
@@ -445,7 +445,7 @@ bool getattr()
 	return answer ;
 }
 // -------------------------------------------------------------------
-bool get()
+bool k2htouch_get_value_attach()
 {
 	bool answer = EXIT_SUCCESS ;
 	K2HShm    k2hash;
@@ -462,9 +462,14 @@ bool get()
 	return answer ;
 }
 
-string get(K2HShm* k2hash, string Key)
+string k2htouch_get_value(K2HShm* k2hash, const char* pKey)
 {
 	string answer = "" ;
+
+	if(!pKey){
+		return answer;
+	}
+	string	Key(pKey);
 
 	char* pValue = k2hash->Get(Key.c_str());
 	
@@ -538,10 +543,10 @@ bool info()
 	K2HShm    k2hash;
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
 	k2hash.PrintState() ;
-	cout << "DTOR      : " << get(&k2hash, K2MODE_DTOR_KEY    ) << endl ;
-	cout << "Modifytime: " << get(&k2hash, K2MODE_ATTR_MTIME  ) << endl ;
-	cout << "History   : " << get(&k2hash, K2MODE_ATTR_HISTORY) << endl ;
-	cout << "ExpireTime: " << get(&k2hash, K2MODE_ATTR_EXPIRE ) << endl ;
+	cout << "DTOR      : " << k2htouch_get_value(&k2hash, K2MODE_DTOR_KEY    ) << endl ;
+	cout << "Modifytime: " << k2htouch_get_value(&k2hash, K2MODE_ATTR_MTIME  ) << endl ;
+	cout << "History   : " << k2htouch_get_value(&k2hash, K2MODE_ATTR_HISTORY) << endl ;
+	cout << "ExpireTime: " << k2htouch_get_value(&k2hash, K2MODE_ATTR_EXPIRE ) << endl ;
 	k2hash.Detach();
 	return answer ;
 }
@@ -807,17 +812,17 @@ bool expire() // set builtin attribute mtime
 // -------------------------------------------------------------------
 // main
 // -------------------------------------------------------------------
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 	bool answer = EXIT_SUCCESS ;
 
-	int command = CheckParameter(argc, argv) ;
+	int command = CheckParameter(argc, argv);
 	switch (command) {
 		case MODE_CREATE: answer = create() ; break ;
 		case MODE_CREATEMINI: answer = createmini() ; break ;
 
 		case MODE_SET: answer = set() ; break ;
-		case MODE_GET: answer = get() ; break ;
+		case MODE_GET: answer = k2htouch_get_value_attach() ; break ;
 		case MODE_GETATTR: answer = getattr() ; break ;
 		case MODE_REMOVE: answer = remove() ; break ;
 

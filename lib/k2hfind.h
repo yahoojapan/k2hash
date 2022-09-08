@@ -31,8 +31,16 @@ class K2HShm;
 //---------------------------------------------------------
 // Class K2HIterator
 //---------------------------------------------------------
+// [NOTE]
+// Branched for CentOS7 support.
+//
+#if __GNUC__ > 5
+// cppcheck-suppress copyCtorAndEqOperator
+class K2HIterator
+#else
 // cppcheck-suppress copyCtorAndEqOperator
 class K2HIterator : public std::iterator<std::forward_iterator_tag, PELEMENT>
+#endif
 {
 		friend class K2HShm;
 
@@ -46,6 +54,15 @@ class K2HIterator : public std::iterator<std::forward_iterator_tag, PELEMENT>
 		PELEMENT		pEmptyElement;		// for dummy element
 		K2HLock			ALObjCKI;
 		K2HShmUpdater*	pShmUpdater;		// For blocking check monitor file
+
+	public:
+		#if __GNUC__ > 5
+		using iterator_category	= std::random_access_iterator_tag;
+		using value_type		= PELEMENT;
+		using difference_type	= std::ptrdiff_t;
+		using pointer			= value_type*;
+		using reference			= value_type&;
+		#endif
 
 	public:
 		K2HIterator(const K2HIterator& other);

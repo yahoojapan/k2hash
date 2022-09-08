@@ -1065,7 +1065,7 @@ static int RunChild(string cntlfile)
 			continue;
 		}
 	}
-	K2H_Delete(pthparam);
+	delete [] pthparam;
 
 	// exit
 	return EXIT_SUCCESS;
@@ -1291,7 +1291,7 @@ int main(int argc, char** argv)
 		// set measurement timespec
 		get_nomotonic_time(realtime, realstart);
 
-		K2H_Delete(pthparam);
+		delete [] pthparam;
 
 		// detach k2hash file
 		pk2hshm->Detach();
