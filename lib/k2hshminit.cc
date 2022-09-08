@@ -83,7 +83,7 @@ bool K2HShm::InitializeFileZero(int fd, off_t start, size_t length)
 	return true;
 }
 
-bool K2HShm::InitializeKeyIndexArray(void* pCKIndexShmBase, PKINDEX pKeyIndex, k2h_hash_t& start_hash, k2h_hash_t cur_mask, int cmask_bitcnt, PCKINDEX pCKIndex, int count, long default_assign)
+bool K2HShm::InitializeKeyIndexArray(void* pCKIndexShmBase, PKINDEX pKeyIndex, k2h_hash_t& start_hash, k2h_hash_t cur_mask, int cmask_bitcnt, const PCKINDEX pCKIndex, int count, long default_assign)
 {
 	if(!pCKIndexShmBase || !pKeyIndex || !pCKIndex){
 		ERR_K2HPRN("pSHmBase or PKINDEX or PCKINDEX is null");

@@ -42,7 +42,7 @@ void usage()
 	exit(EXIT_FAILURE) ;
 }
 
-bool isExistOption(int argc, char **argv, const string& target)
+bool isExistOption(int argc, const char **argv, const string& target)
 {
 	bool answer = false ;
 	for (int i = 1 ; i < argc; i++)
@@ -57,7 +57,7 @@ bool isExistOption(int argc, char **argv, const string& target)
 }
 
 #define MINPARAMATERS	3
-int CheckParamater(int argc, char **argv)
+int CheckParamater(int argc, const char **argv)
 {
 
 	int Answer = MODE_TSV ;
@@ -119,7 +119,7 @@ int ConvertfromMdbm(ifstream *ifs, K2HShm *k2hash)
 // -----------------------------------------
 // Main
 // -----------------------------------------
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 	int convertmode = CheckParamater(argc, argv) ;
 	string modename ;

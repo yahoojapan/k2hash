@@ -116,8 +116,16 @@ class K2HSubKeys
 //---------------------------------------------------------
 // Class K2HSKIterator
 //---------------------------------------------------------
+// [NOTE]
+// Branched for CentOS7 support.
+//
+#if __GNUC__ > 5
+// cppcheck-suppress copyCtorAndEqOperator
+class K2HSKIterator
+#else
 // cppcheck-suppress copyCtorAndEqOperator
 class K2HSKIterator : public std::iterator<std::forward_iterator_tag, SUBKEY>
+#endif
 {
 		friend class K2HSubKeys;
 		friend class K2HShm;
@@ -127,6 +135,15 @@ class K2HSKIterator : public std::iterator<std::forward_iterator_tag, SUBKEY>
 		const K2HSubKeys*	pK2HSubKeys;
 		skeyarr_t::iterator	iter_pos;
 		SUBKEY				dummy;
+
+	public:
+		#if __GNUC__ > 5
+		using iterator_category	= std::random_access_iterator_tag;
+		using value_type		= SUBKEY;
+		using difference_type	= std::ptrdiff_t;
+		using pointer			= value_type*;
+		using reference			= value_type&;
+		#endif
 
 	public:
 		K2HSKIterator(const K2HSKIterator& iterator);

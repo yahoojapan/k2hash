@@ -158,6 +158,11 @@ elif [ "X${CI_OSTYPE}" = "Xcentos:8" -o "X${CI_OSTYPE}" = "Xcentos:centos8" ]; t
 	# special variables
 	export K2HATTR_ENC_TYPE=AES256_PBKDF2
 
+	#
+	# Change mirrorlist
+	#
+	sed -i -e 's|^mirrorlist|#mirrorlist|g' -e 's|^#baseurl=http://mirror|baseurl=http://vault|g' /etc/yum.repos.d/CentOS-*repo
+
 elif [ "X${CI_OSTYPE}" = "Xcentos:7" -o "X${CI_OSTYPE}" = "Xcentos:centos7" ]; then
 	DIST_TAG="el/7"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"

@@ -137,8 +137,16 @@ class K2HAttrs
 //---------------------------------------------------------
 // Class K2HAttrIterator
 //---------------------------------------------------------
+// [NOTE]
+// Branched for CentOS7 support.
+//
+#if __GNUC__ > 5
+// cppcheck-suppress copyCtorAndEqOperator
+class K2HAttrIterator
+#else
 // cppcheck-suppress copyCtorAndEqOperator
 class K2HAttrIterator : public std::iterator<std::forward_iterator_tag, K2HATTR>
+#endif
 {
 		friend class K2HAttrs;
 		friend class K2HShm;
@@ -149,6 +157,15 @@ class K2HAttrIterator : public std::iterator<std::forward_iterator_tag, K2HATTR>
 
 		const K2HAttrs*			pK2HAttrs;
 		k2hattrarr_t::iterator	iter_pos;
+
+	public:
+		#if __GNUC__ > 5
+		using iterator_category	= std::random_access_iterator_tag;
+		using value_type		= K2HATTR;
+		using difference_type	= std::ptrdiff_t;
+		using pointer			= value_type*;
+		using reference			= value_type&;
+		#endif
 
 	public:
 		K2HAttrIterator(const K2HAttrIterator& iterator);

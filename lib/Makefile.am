@@ -124,8 +124,14 @@ endif
 libk2hash_la_LDFLAGS= -version-info $(LIB_VERSION_INFO)
 libk2hash_la_LIBADD	= $(fullock_LIBS) $(CRYPT_LIBS) -lrt -lpthread
 
-AM_CFLAGS			= -DK2HASH
-AM_CPPFLAGS			= -DK2HASH
+# [NOTE]
+# "-Waddress-of-packed-member" optsion was introduced by default
+# from GCC 9.
+# Knowing that packed structure is CPU architecture dependent,
+# this program ignores this warning.
+#
+AM_CFLAGS			= -DK2HASH -Wno-address-of-packed-member
+AM_CPPFLAGS			= -DK2HASH -Wno-address-of-packed-member
 
 ACLOCAL_AMFLAGS		= -I m4
 

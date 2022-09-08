@@ -139,14 +139,16 @@ bool K2HShm::Dump(FILE* stream, int dumpmask) const
 		DUMP_PRINT_NV(stream, nest, "Max element cnt",	NULL, "= %p(%lu)\n",		reinterpret_cast<void*>(pHead->max_element_count), pHead->max_element_count);
 		DUMP_LOWPRINT(stream, nest, "Last update {\n");
 		nest++;
-		DUMP_PRINT_NV(stream, nest, "Date",				NULL, "= %s",				ctime_r(&(pHead->last_update.tv_sec), szTime));
+		time_t	tmp_tv_sec = pHead->last_update.tv_sec;
+		DUMP_PRINT_NV(stream, nest, "Date",				NULL, "= %s",				ctime_r(&tmp_tv_sec, szTime));
 		DUMP_PRINT_NV(stream, nest, "sec",				NULL, "= %jd\n",			static_cast<intmax_t>(pHead->last_update.tv_sec));
 		DUMP_PRINT_NV(stream, nest, "usec",				NULL, "= %jd\n",			static_cast<intmax_t>(pHead->last_update.tv_usec));
 		nest--;
 		DUMP_LOWPRINT(stream, nest, "}\n");
 		DUMP_LOWPRINT(stream, nest, "Last area update {\n");
 		nest++;
-		DUMP_PRINT_NV(stream, nest, "Date",				NULL, "= %s",				ctime_r(&(pHead->last_area_update.tv_sec), szTime));
+		tmp_tv_sec = pHead->last_area_update.tv_sec;
+		DUMP_PRINT_NV(stream, nest, "Date",				NULL, "= %s",				ctime_r(&tmp_tv_sec, szTime));
 		DUMP_PRINT_NV(stream, nest, "sec",				NULL, "= %jd\n",			static_cast<intmax_t>(pHead->last_area_update.tv_sec));
 		DUMP_PRINT_NV(stream, nest, "usec",				NULL, "= %jd\n",			static_cast<intmax_t>(pHead->last_area_update.tv_usec));
 		nest--;

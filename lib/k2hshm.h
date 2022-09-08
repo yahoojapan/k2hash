@@ -309,7 +309,7 @@ class K2HShm
 
 		// Initializing(static)
 		static bool InitializeFileZero(int fd, off_t start, size_t length);
-		static bool InitializeKeyIndexArray(void* pCKIndexShmBase, PKINDEX pKeyIndex, k2h_hash_t& start_hash, k2h_hash_t cur_mask, int cmask_bitcnt, PCKINDEX pCKIndex, int count, long default_assign);
+		static bool InitializeKeyIndexArray(void* pCKIndexShmBase, PKINDEX pKeyIndex, k2h_hash_t& start_hash, k2h_hash_t cur_mask, int cmask_bitcnt, const PCKINDEX pCKIndex, int count, long default_assign);
 		static bool InitializeCollisionKeyIndexArray(PCKINDEX pCKIndex, int count);
 		static bool InitializeElementArray(void* pShmBase, PELEMENT pElement, int count, PELEMENT pLastRelElement = NULL);
 		static bool InitializePageArray(int fd, off_t start, ssize_t pagesize, int count, PPAGEHEAD pLastRelPage = NULL);

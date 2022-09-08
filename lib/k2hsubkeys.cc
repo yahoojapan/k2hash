@@ -380,7 +380,7 @@ K2HSKIterator::K2HSKIterator(const K2HSubKeys* pK2HSKeys, skeyarr_t::iterator po
 {
 }
 
-K2HSKIterator::K2HSKIterator(const K2HSKIterator& iterator) : pK2HSubKeys(iterator.pK2HSubKeys), iter_pos(iterator.iter_pos)
+K2HSKIterator::K2HSKIterator(const K2HSKIterator& iterator) : pK2HSubKeys(iterator.pK2HSubKeys), iter_pos(iterator.iter_pos), dummy()
 {
 }
 
