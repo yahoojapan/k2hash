@@ -98,10 +98,10 @@ AC_CHECK_FILE([configure.custom],
 		configure_custom_file=""
 		custom_git_domain="github.com"
 		custom_git_org="yahoojapan"
-		custom_git_repo="fullock"
+		custom_git_repo="k2hash"
 		custom_git_endpoint="https://api.github.com/repos/"
-		custom_dev_email="antpickax@mail.yahoo.co.jp"
-		custom_dev_name="FULLOCK_DEVELOPER"
+		custom_dev_email="antpickax-support@mail.yahoo.co.jp"
+		custom_dev_name="K2HASH_DEVELOPER"
 	]
 )
 
@@ -112,7 +112,7 @@ AC_SUBST([CONFIGURECUSTOM], "${configure_custom_file}")
 AC_SUBST([GIT_DOMAIN], "${custom_git_domain}")
 AC_SUBST([GIT_ORG], "${custom_git_org}")
 AC_SUBST([GIT_REPO], "${custom_git_repo}")
-AC_SUBST([CURRENTREV], "$($(pwd)/buildutils/make_commit_hash.sh -o yjcore -r fullock -ep "${custom_git_endpoint}" -short)")
+AC_SUBST([CURRENTREV], "$($(pwd)/buildutils/make_commit_hash.sh -o "${custom_git_org}" -r "${custom_git_repo}" -ep "${custom_git_endpoint}" -short)")
 AC_SUBST([DEV_EMAIL], "$(echo ${DEBEMAIL:-"${custom_dev_email}"})")
 AC_SUBST([DEV_NAME], "$(echo ${DEBFULLNAME:-"${custom_dev_name}"})")
 #
