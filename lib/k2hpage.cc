@@ -101,7 +101,7 @@ unsigned char* K2HPage::AllocateData(ssize_t length)
 	}
 	CleanLoadedData();
 
-	if(NULL == (pPageData = (unsigned char*)malloc(length))){
+	if(NULL == (pPageData = static_cast<unsigned char*>(malloc(length)))){
 		ERR_K2HPRN("Could not allocation memory.");
 		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress memleak
@@ -121,7 +121,7 @@ unsigned char* K2HPage::AppendData(const unsigned char* pAppend, ssize_t length)
 		// reallocation
 		unsigned char*	pTmp;
 		size_t			NewLength = (((DataLength + length) / PageSize) + 1) * PageSize;
-		if(NULL == (pTmp = (unsigned char*)realloc(pPageData, NewLength))){
+		if(NULL == (pTmp = static_cast<unsigned char*>(realloc(pPageData, NewLength)))){
 			ERR_K2HPRN("Could not allocation memory.");
 			return NULL;
 		}
@@ -211,7 +211,7 @@ bool K2HPage::CopyData(unsigned char** ppPageData, size_t* pLength) const
 	if(NULL == ppPageData || 0 == DataLength){
 		return false;
 	}
-	if(NULL == (*ppPageData = (unsigned char*)malloc(sizeof(unsigned char) * DataLength))){
+	if(NULL == (*ppPageData = static_cast<unsigned char*>(malloc(sizeof(unsigned char) * DataLength)))){
 		ERR_K2HPRN("Could not allocation memory.");
 		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress memleak

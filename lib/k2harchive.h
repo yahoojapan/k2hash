@@ -35,7 +35,7 @@ class K2HArchive
 		bool		isErrSkip;
 
 	public:
-		K2HArchive(const char* pFile = NULL, bool iserrskip = false);
+		explicit K2HArchive(const char* pFile = NULL, bool iserrskip = false);
 		virtual ~K2HArchive();
 
 		bool Initialize(const char* pFile, bool iserrskip);

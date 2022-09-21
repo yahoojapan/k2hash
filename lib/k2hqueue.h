@@ -53,7 +53,7 @@ class K2HQueue
 		unsigned char* GetUniqKey(size_t& keylen);
 
 	public:
-		K2HQueue(K2HShm* pk2h = NULL, bool is_fifo = true, const unsigned char* pref = NULL, size_t preflen = 0L, K2hAttrOpsMan::ATTRINITTYPE type = K2hAttrOpsMan::OPSMAN_MASK_QUEUEKEY);
+		explicit K2HQueue(K2HShm* pk2h = NULL, bool is_fifo = true, const unsigned char* pref = NULL, size_t preflen = 0L, K2hAttrOpsMan::ATTRINITTYPE type = K2hAttrOpsMan::OPSMAN_MASK_QUEUEKEY);
 		virtual ~K2HQueue();
 
 		bool Init(K2HShm* pk2h, bool is_fifo, const unsigned char* pref = NULL, size_t preflen = 0L, K2hAttrOpsMan::ATTRINITTYPE type = K2hAttrOpsMan::OPSMAN_MASK_QUEUEKEY);
@@ -105,7 +105,7 @@ class K2HQueue
 class K2HKeyQueue : public K2HQueue
 {
 	public:
-		K2HKeyQueue(K2HShm* pk2h = NULL, bool is_fifo = true, const unsigned char* pref = NULL, size_t preflen = 0L) : K2HQueue(pk2h, is_fifo, pref, preflen, K2hAttrOpsMan::OPSMAN_MASK_KEYQUEUEKEY) {}
+		explicit K2HKeyQueue(K2HShm* pk2h = NULL, bool is_fifo = true, const unsigned char* pref = NULL, size_t preflen = 0L) : K2HQueue(pk2h, is_fifo, pref, preflen, K2hAttrOpsMan::OPSMAN_MASK_KEYQUEUEKEY) {}
 		virtual ~K2HKeyQueue() {}
 
 		using K2HQueue::Push;
@@ -144,7 +144,7 @@ class K2HLowOpsQueue : public K2HQueue
 		unsigned char* GetEdgeQueueKey(size_t& keylen, bool is_top) const;
 
 	public:
-		K2HLowOpsQueue(K2HShm* pk2h = NULL, bool is_fifo = true, const unsigned char* pref = NULL, size_t preflen = 0L) : K2HQueue(pk2h, is_fifo, pref, preflen) {}
+		explicit K2HLowOpsQueue(K2HShm* pk2h = NULL, bool is_fifo = true, const unsigned char* pref = NULL, size_t preflen = 0L) : K2HQueue(pk2h, is_fifo, pref, preflen) {}
 		virtual ~K2HLowOpsQueue() {}
 
 		//

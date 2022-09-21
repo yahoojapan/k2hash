@@ -1134,9 +1134,9 @@ static bool BinaryDumpUtility(const char* prefix, const unsigned char* value, si
 	}
 
 	string	output;
-	string	line;
 	size_t	restcnt = vallen;
 	for(size_t pos = 0; pos < vallen; pos += BINARY_DUMP_BYTE_SIZE){
+		string	line;
 		if(0 == pos){
 			output += strpref;
 		}else{

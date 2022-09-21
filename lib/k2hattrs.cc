@@ -80,7 +80,7 @@ bool K2HAttrs::Serialize(unsigned char** ppattrs, size_t& attrslen) const
 
 	// allocation
 	unsigned char*	pSerialize;
-	if(NULL == (pSerialize = (unsigned char*)malloc(tlength))){
+	if(NULL == (pSerialize = static_cast<unsigned char*>(malloc(tlength)))){
 		ERR_K2HPRN("Could not allocate memory.");
 		return false;
 	}
@@ -319,7 +319,7 @@ K2HAttrs::iterator K2HAttrs::insert(const unsigned char* pkey, size_t keylength,
 	K2HATTR		attr;
 	attr.keylength = keylength;
 	attr.vallength = vallength;
-	if(NULL == (attr.pkey = (unsigned char*)malloc(attr.keylength))){
+	if(NULL == (attr.pkey = static_cast<unsigned char*>(malloc(attr.keylength)))){
 		ERR_K2HPRN("Could not allocate memory.");
 		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress memleak
@@ -328,7 +328,7 @@ K2HAttrs::iterator K2HAttrs::insert(const unsigned char* pkey, size_t keylength,
 	memcpy(attr.pkey, pkey, attr.keylength);
 
 	if(0UL < attr.vallength){
-		if(NULL == (attr.pval = (unsigned char*)malloc(attr.vallength))){
+		if(NULL == (attr.pval = static_cast<unsigned char*>(malloc(attr.vallength)))){
 			ERR_K2HPRN("Could not allocate memory.");
 			K2H_Free(attr.pkey);
 			// cppcheck-suppress unmatchedSuppression

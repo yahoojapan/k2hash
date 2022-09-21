@@ -38,7 +38,7 @@ class K2HTransaction : public K2HCommandArchive
 		bool			IsStackMode;
 
 	public:
-		K2HTransaction(const K2HShm* pk2hshm = NULL, bool isstack = false);
+		explicit K2HTransaction(const K2HShm* pk2hshm = NULL, bool isstack = false);
 		virtual ~K2HTransaction();
 
 		bool Put(void);

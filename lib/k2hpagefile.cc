@@ -48,7 +48,7 @@ bool K2HPageFile::GetData(const K2HShm* pk2hshm, int fd, off_t offset, unsigned 
 	if(!k2hpage_obj.LoadData()){
 		return false;
 	}
-	if(NULL == (*ppPageData = (unsigned char*)malloc(k2hpage_obj.DataLength))){
+	if(NULL == (*ppPageData = static_cast<unsigned char*>(malloc(k2hpage_obj.DataLength)))){
 		ERR_K2HPRN("Could not allocation memory.");
 		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress memleak

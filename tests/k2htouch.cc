@@ -342,7 +342,7 @@ bool AttachK2File(K2HShm* k2hash)
 		char* pConf  = k2hash->Get(K2MODE_DTOR_CONF);
 		string dtorconf = pConf ;
 		if (!k2hash->EnableTransaction(NULL, NULL, 0,
-		       (const unsigned char *)dtorconf.c_str(), dtorconf.length() + 1))
+		       reinterpret_cast<const unsigned char*>(dtorconf.c_str()), dtorconf.length() + 1))
 			cerr << "DTOR Start Failed. Please check your dtorinifile or chmpx process." << endl ;
 	}
 
@@ -408,7 +408,7 @@ static char* GetPrintableString(const unsigned char* byData, size_t length)
 // -------------------------------------------------------------------
 string GetPrintableDate(const unsigned char* byData, size_t length)
 {
-	timespec *ts = (timespec *)byData ;
+	const timespec* ts = reinterpret_cast<const timespec*>(byData);
 	struct tm *expiretm = localtime(&ts->tv_sec) ;
 	char time_str[0xff] ;
 	strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S ", expiretm);
@@ -487,8 +487,8 @@ bool set()
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
 
 	if(!k2hash.Set(
-				(const unsigned char*)argKey.c_str(), (size_t)argKey.length() +1 , 
-				(const unsigned char*)argValue.c_str(), (size_t)argValue.length() +1
+				reinterpret_cast<const unsigned char*>(argKey.c_str()), static_cast<size_t>(argKey.length() + 1), 
+				reinterpret_cast<const unsigned char*>(argValue.c_str()), static_cast<size_t>(argValue.length() + 1)
 				)){
 			answer = EXIT_FAILURE ;
 	}
@@ -580,8 +580,8 @@ bool push()
 	K2HShm    k2hash;
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
 
-	K2HQueue myqueue(&k2hash, isFIFO, (const unsigned char*)argQueprefix.c_str(), argQueprefix.length());
-	if(!myqueue.Push((const unsigned char*)argValue.c_str(), argValue.length() +1))
+	K2HQueue myqueue(&k2hash, isFIFO, reinterpret_cast<const unsigned char*>(argQueprefix.c_str()), argQueprefix.length());
+	if(!myqueue.Push(reinterpret_cast<const unsigned char*>(argValue.c_str()), argValue.length() +1))
 		answer = EXIT_FAILURE ;
 
 	k2hash.Detach();
@@ -594,7 +594,7 @@ bool pop()
 	bool answer = EXIT_SUCCESS ;
 	K2HShm    k2hash;
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
-	K2HQueue myqueue(&k2hash, isFIFO, (const unsigned char*)argQueprefix.c_str(), argQueprefix.length());
+	K2HQueue myqueue(&k2hash, isFIFO, reinterpret_cast<const unsigned char*>(argQueprefix.c_str()), argQueprefix.length());
 
 	unsigned char* pdata   = NULL;
 	size_t         datalen = 0;
@@ -611,7 +611,7 @@ bool pop()
 		popvalue = "" ;
 	else 
 	{
-		popvalue = string((const char*)pdata, datalen) ;
+		popvalue = string(reinterpret_cast<const char*>(pdata), datalen) ;
 		free(pdata);
 	}
 	cout << popvalue << endl ;
@@ -626,7 +626,7 @@ bool clear()
 	K2HShm    k2hash;
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
 
-	K2HQueue myqueue(&k2hash, isFIFO, (const unsigned char*)argQueprefix.c_str(), argQueprefix.length());
+	K2HQueue myqueue(&k2hash, isFIFO, reinterpret_cast<const unsigned char*>(argQueprefix.c_str()), argQueprefix.length());
 	if(!myqueue.Remove(0xffff))
 		answer = EXIT_FAILURE ;
 
@@ -643,12 +643,12 @@ bool kpush()
 	K2HShm    k2hash;
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
 
-	const unsigned char *myKey  = (const unsigned char *) argKey.c_str() ;
-	const unsigned char *myVal  = (const unsigned char *) argValue.c_str() ;
+	const unsigned char *myKey  = reinterpret_cast<const unsigned char*>(argKey.c_str());
+	const unsigned char *myVal  = reinterpret_cast<const unsigned char*>(argValue.c_str());
 	int myKeylen = argKey.length() ;
 	int myVallen = argValue.length() ;
 
-	K2HKeyQueue myqueue(&k2hash, isFIFO, (unsigned char*)argQueprefix.c_str(), argQueprefix.length());
+	K2HKeyQueue myqueue(&k2hash, isFIFO, reinterpret_cast<const unsigned char*>(argQueprefix.c_str()), argQueprefix.length());
 	if(!myqueue.Push(myKey, myKeylen, myVal, myVallen+1)) {
 		cout << "pop false"  << endl ;
 		answer = EXIT_FAILURE ;
@@ -665,7 +665,7 @@ bool kpop()
 	K2HShm    k2hash;
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
 
-	K2HKeyQueue myqueue(&k2hash, isFIFO, (unsigned char*)argQueprefix.c_str(), argQueprefix.length());
+	K2HKeyQueue myqueue(&k2hash, isFIFO, reinterpret_cast<const unsigned char*>(argQueprefix.c_str()), argQueprefix.length());
 	unsigned char* pkey   = NULL;
 	size_t         keylen = 0;
 	unsigned char* pval   = NULL;
@@ -678,8 +678,8 @@ bool kpop()
 	}
 	else 
 	{
-		popkey   = string((const char*)pkey, keylen) ;
-		popvalue = string((const char*)pval, vallen) ;
+		popkey   = string(reinterpret_cast<const char*>(pkey), keylen) ;
+		popvalue = string(reinterpret_cast<const char*>(pval), vallen) ;
 		free(pkey);
 		free(pval);
 	}
@@ -696,7 +696,7 @@ bool kclear()
 	K2HShm    k2hash;
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
 
-	K2HKeyQueue myqueue(&k2hash, isFIFO, (unsigned char*)argQueprefix.c_str(), argQueprefix.length());
+	K2HKeyQueue myqueue(&k2hash, isFIFO, reinterpret_cast<const unsigned char*>(argQueprefix.c_str()), argQueprefix.length());
 	if(!myqueue.Remove(0xffff))
 		answer = EXIT_FAILURE ;
 

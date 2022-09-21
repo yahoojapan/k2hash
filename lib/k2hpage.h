@@ -68,7 +68,7 @@ class K2HPage
 		virtual void CleanLoadedData(void);
 
 	public:
-		K2HPage(const K2HShm* pk2hshm = NULL);
+		explicit K2HPage(const K2HShm* pk2hshm = NULL);
 		virtual ~K2HPage();
 
 		bool SetPageHead(int type, PPAGEHEAD prev, PPAGEHEAD next = NULL, size_t length = 0UL);
