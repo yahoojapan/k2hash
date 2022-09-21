@@ -39,7 +39,7 @@ class K2HPageMem : public K2HPage
 		static bool GetData(const K2HShm* pk2hshm, PPAGEHEAD reladdr, unsigned char** ppPageData, size_t* pLength);
 		static bool FreeData(unsigned char* pPageData);
 
-		K2HPageMem(const K2HShm* pk2hshm = NULL, PPAGEHEAD reladdr = NULL);
+		explicit K2HPageMem(const K2HShm* pk2hshm = NULL, PPAGEHEAD reladdr = NULL);
 		virtual ~K2HPageMem();
 
 		bool Initialize(const K2HShm* pk2hshm, PPAGEHEAD reladdr);

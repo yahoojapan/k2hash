@@ -47,7 +47,7 @@ class K2HPageFile : public K2HPage
 		static bool GetData(const K2HShm* pk2hshm, int fd, off_t offset, unsigned char** ppPageData, size_t* pLength);
 		static bool FreeData(unsigned char* pPageData);
 
-		K2HPageFile(const K2HShm* pk2hshm = NULL, int fd = -1, off_t offset = 0);
+		explicit K2HPageFile(const K2HShm* pk2hshm = NULL, int fd = -1, off_t offset = 0);
 		virtual ~K2HPageFile();
 
 		bool Initialize(const K2HShm* pk2hshm, int fd, off_t offset);

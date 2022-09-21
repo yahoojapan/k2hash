@@ -227,10 +227,9 @@ int main(int argc, char** argv)
 	printf("-------------------------------------------------------\n");
 
 	// Set data
-	string	strkey;
-	char	szBuff[64];
-
 	for(long cnt = 0; cnt < MaxCount; cnt++){
+		string	strkey;
+		char	szBuff[64];
 		sprintf(szBuff, "%ld", cnt);
 		strkey = strKeyBase;
 		strkey += szBuff;

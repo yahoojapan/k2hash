@@ -39,7 +39,7 @@ class K2HDALock
 		PELEMENT			pElement;
 
 	public:
-		K2HDALock(K2HShm* pk2hshm = NULL, bool is_read_lock = true, const unsigned char* byKey = NULL, size_t keylength = 0L);
+		explicit K2HDALock(K2HShm* pk2hshm = NULL, bool is_read_lock = true, const unsigned char* byKey = NULL, size_t keylength = 0L);
 		K2HDALock(K2HShm* pk2hshm, bool is_read_lock, const char* pKey);
 		virtual ~K2HDALock();
 
