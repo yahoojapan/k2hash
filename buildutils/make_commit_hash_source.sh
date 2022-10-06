@@ -26,88 +26,103 @@
 # This script puts git commit hash string to C header file.
 # ex) char version[] = "....";
 #
+
+#
+# Common variables
+#
+PRGNAME=$(basename "${0}")
+MYSCRIPTDIR=$(dirname "${0}")
+#SRCTOP=$(cd "${MYSCRIPTDIR}/.." || exit 1; pwd)
+
+#
+# Variables
+#
+COMMITHASH_TOOL="${MYSCRIPTDIR}/make_commit_hash.sh"
+FILEPATH=""
+VALUENAME=""
+
+#
+# Utility functions
+#
 func_usage()
 {
 	echo ""
-	echo "Usage:  $1 <file path> <value name>"
+	echo "Usage:  $1 [--help(-h)] <file path> <value name>"
 	echo "        file path     specify output file path"
 	echo "        value name    specify variable name in output C source file"
 	echo "        -h            print help"
 	echo ""
 }
-PRGNAME=`basename $0`
-MYSCRIPTDIR=`dirname $0`
-SRCTOP=`cd ${MYSCRIPTDIR}/..; pwd`
-COMMITHASH_TOOL="${MYSCRIPTDIR}/make_commit_hash.sh"
 
 #
-# Check options
+# Parse parameters
 #
-FILEPATH=""
-VALUENAME=""
 while [ $# -ne 0 ]; do
-	if [ "X$1" = "X" ]; then
+	if [ -z "$1" ]; then
 		break
-	elif [ "X$1" = "X-h" -o "X$1" = "X-help" ]; then
-		func_usage $PRGNAME
+
+	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+		func_usage "${PRGNAME}"
 		exit 0
+
 	else
-		if [ "X${FILEPATH}" = "X" ]; then
-			FILEPATH=$1
-		elif [ "X${VALUENAME}" = "X" ]; then
-			VALUENAME=$1
+		if [ -z "${FILEPATH}" ]; then
+			FILEPATH="$1"
+		elif [ -z "${VALUENAME}" ]; then
+			VALUENAME="$1"
 		else
-			echo "ERROR: unknown option $1" 1>&2
+			echo "[ERROR] unknown option $1" 1>&2
 			exit 1
 		fi
 	fi
 	shift
 done
-if [ "X${FILEPATH}" = "X" -o "X${VALUENAME}" = "X" ]; then
-	echo "ERROR: not specify file path and value name" 1>&2
+if [ -z "${FILEPATH}" ] || [ -z "${VALUENAME}" ]; then
+	echo "[ERROR] must specify file path and value name" 1>&2
 	exit 1
 fi
 
 #
 # Get commit hash value
 #
-COMMITHASH=`${COMMITHASH_TOOL} -short`
-if [ $? -ne 0 ]; then
-	echo "WARNING: git commit hash code is not found, so set to \"unknown\"." 1>&2
+if ! COMMITHASH=$("${COMMITHASH_TOOL}" --short); then
+	echo "[WARNING] git commit hash code is not found, so set to \"unknown\"." 1>&2
 	COMMITHASH="unknown"
 fi
 
 #
-# Make code line
+# Gerenate codes
 #
-NEWCODES="char ${VALUENAME}[] = \"${COMMITHASH}\";"
+GENARATED_CODES="char ${VALUENAME}[] = \"${COMMITHASH}\";"
 
 #
 # Put codes to file
 #
-if [ -f ${FILEPATH} ]; then
+if [ -f "${FILEPATH}" ]; then
 	#
 	# The file exists, then we need to check it whichever codes is same.
 	#
-	FILECODES=`cat ${FILEPATH}`
+	EXISTED_CODES=$(cat "${FILEPATH}")
 
-	if [ "X${FILECODES}" = "X${NEWCODES}" ]; then
-		echo "SUCCESS: ${FILEPATH} already has current git commit hash value." 1>&2
+	if [ -n "${EXISTED_CODES}" ] && [ "${EXISTED_CODES}" = "${GENARATED_CODES}" ]; then
+		echo "[SUCCESS] ${FILEPATH} already has current git commit hash value." 1>&2
 		exit 0
 	fi
 fi
 
-echo ${NEWCODES} > ${FILEPATH}
-if [ $? -ne 0 ]; then
-	echo "ERROR: Could not put git commit hash value to ${FILEPATH}" 1>&2
+if ! echo "${GENARATED_CODES}" > "${FILEPATH}"; then
+	echo "[ERROR] Could not put git commit hash value to ${FILEPATH}" 1>&2
 	exit 1
 fi
 
-echo "SUCCESS: ${FILEPATH} is updated with current git commit hash value(${COMMITHASH}) in ${VALUENAME} variable." 1>&2
+echo "[SUCCESS] ${FILEPATH} is updated with current git commit hash value(${COMMITHASH}) in ${VALUENAME} variable." 1>&2
 exit 0
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
 #
