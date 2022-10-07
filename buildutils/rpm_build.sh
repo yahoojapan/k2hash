@@ -122,7 +122,7 @@ cd ${SRCTOP}
 #
 # package version
 #
-PACKAGE_VERSION=`${MYSCRIPTDIR}/make_variables.sh -pkg_version`
+PACKAGE_VERSION=`${MYSCRIPTDIR}/make_variables.sh --pkg_version`
 
 #
 # copy spec file

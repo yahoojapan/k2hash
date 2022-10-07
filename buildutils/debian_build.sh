@@ -185,8 +185,8 @@ fi
 #
 ${SRCTOP}/autogen.sh				|| exit 1
 ${SRCTOP}/configure ${CONFIGUREOPT}	|| exit 1
-PACKAGE_VERSION=`${MYSCRIPTDIR}/make_variables.sh -pkg_version`
-PACKAGE_MAJOR_VER=`${MYSCRIPTDIR}/make_variables.sh -major_number`
+PACKAGE_VERSION=`${MYSCRIPTDIR}/make_variables.sh --pkg_version`
+PACKAGE_MAJOR_VER=`${MYSCRIPTDIR}/make_variables.sh --major_number`
 
 echo "===== make dist: start =============================="
 make dist || exit 1
@@ -271,7 +271,7 @@ fi
 #
 FOUND_LIB_LINES=`find ./ -name Makefile.am -exec grep ${LIB_BASENAME} {} \; 2>/dev/null`
 if [ "X${FOUND_LIB_LINES}" != "X" ]; then
-	LIBRARY_LIBTOOL_VERSION=`${MYSCRIPTDIR}/make_variables.sh -lib_version_for_link 2>/dev/null` || exit 1
+	LIBRARY_LIBTOOL_VERSION=`${MYSCRIPTDIR}/make_variables.sh --lib_version_for_link 2>/dev/null` || exit 1
 	echo "usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${LIBRARY_LIBTOOL_VERSION} usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so"						>> ${EXPANDDIR}/debian/${PACKAGE_DEV_NAME}.links	|| exit 1
 	echo "usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${LIBRARY_LIBTOOL_VERSION} usr/lib/x86_64-linux-gnu/${LIB_BASENAME}.so.${PACKAGE_MAJOR_VER}"	>> ${EXPANDDIR}/debian/${PACKAGE_NAME}.links		|| exit 1
 fi
