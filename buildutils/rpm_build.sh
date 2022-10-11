@@ -25,68 +25,109 @@
 #
 # Autobuid for rpm package
 #
+
+#
+# Common variables
+#
+PRGNAME=$(basename "${0}")
+MYSCRIPTDIR=$(dirname "${0}")
+SRCTOP=$(cd "${MYSCRIPTDIR}/.." || exit 1; pwd)
+
+#
+# Variables
+#
+RPM_TOPDIR="${SRCTOP}/rpmbuild"
+NO_INTERACTIVE=0
+BUILD_NUMBER=0
+PACKAGE_NAME=""
+
+#
+# Utility functions
+#
 func_usage()
 {
 	echo ""
-	echo "Usage:  $1 [-buildnum <build number>] [-product <product name>] [-y]"
-	echo "        -buildnum                     specify build number for packaging(default 1)"
-	echo "        -product                      specify product name(use PACKAGE_NAME in Makefile s default)"
-	echo "        -y                            runs no interactive mode."
-	echo "        -h                            print help"
+	echo "Usage:  $1 [--help(-h)] [--buildnum(-b) <build number>] [--product(-p) <product name>] [--yes(-y)]"
+	echo "        --help(-h)                     print help."
+	echo "        --buildnum(-b) <build number>  specify build number for packaging(default 1)"
+	echo "        --product(-p) <product name>   specify product name(use PACKAGE_NAME in Makefile s default)"
+	echo "        --yes(-y)                      runs no interactive mode."
+	echo ""
+	echo "Environment:"
+	echo "        CONFIGUREOPT                   specify options when running configure."
 	echo ""
 }
-PRGNAME=`basename $0`
-MYSCRIPTDIR=`dirname $0`
-MYSCRIPTDIR=`cd ${MYSCRIPTDIR}; pwd`
-SRCTOP=`cd ${MYSCRIPTDIR}/..; pwd`
-RPM_TOPDIR=${SRCTOP}/rpmbuild
 
 #
-# Check options
+# Parse parameters
 #
-IS_INTERACTIVE=1
-BUILD_NUMBER=1
 while [ $# -ne 0 ]; do
-	if [ "X$1" = "X" ]; then
+	if [ -z "$1" ]; then
 		break
 
-	elif [ "X$1" = "X-h" -o "X$1" = "X-help" ]; then
-		func_usage $PRGNAME
+	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "X$1" = "X-buildnum" ]; then
-		shift
-		if [ $# -eq 0 ]; then
-			echo "[ERROR] ${PRGNAME} : -buildnum option needs parameter." 1>&2
+	elif [ "$1" = "-b" ] || [ "$1" = "-B" ] || [ "$1" = "--buildnum" ] || [ "$1" = "--BUILDNUM" ]; then
+		if [ "${BUILD_NUMBER}" -ne 0 ]; then
+			echo "[ERROR] Already --buildnum(-b) option is specified(${BUILD_NUMBER})." 1>&2
 			exit 1
 		fi
-		BUILD_NUMBER=$1
-
-	elif [ "X$1" = "X-product" ]; then
 		shift
-		if [ $# -eq 0 ]; then
-			echo "[ERROR] ${PRGNAME} : -product option needs parameter." 1>&2
+		if [ -z "$1" ]; then
+			echo "[ERROR] --buildnum(-b) option need parameter." 1>&2
 			exit 1
 		fi
-		PACKAGE_NAME=$1
+		if echo "$1" | grep -q "[^0-9]"; then
+			echo "[ERROR] --buildnum(-b) option parameter must be number(and not equal zero)." 1>&2
+			exit 1
+		fi
+		if [ "$1" -eq 0 ]; then
+			echo "[ERROR] --buildnum(-b) option parameter must be number(and not equal zero)." 1>&2
+			exit 1
+		fi
+		BUILD_NUMBER="$1"
 
-	elif [ "X$1" = "X-y" ]; then
-		IS_INTERACTIVE=0
+	elif [ "$1" = "-p" ] || [ "$1" = "-P" ] || [ "$1" = "--product" ] || [ "$1" = "--PRODUCT" ]; then
+		if [ -n "${PACKAGE_NAME}" ]; then
+			echo "[ERROR] Already --product(-p) option is specified(${PACKAGE_NAME})." 1>&2
+			exit 1
+		fi
+		shift
+		if [ -z "$1" ]; then
+			echo "[ERROR] --product(-p) option need parameter." 1>&2
+			exit 1
+		fi
+		PACKAGE_NAME="$1"
+
+	elif [ "$1" = "-y" ] || [ "$1" = "-Y" ] || [ "$1" = "--yes" ] || [ "$1" = "--YES" ]; then
+		if [ "${NO_INTERACTIVE}" -ne 0 ]; then
+			echo "[ERROR] Already --yes(-y) option is specified." 1>&2
+			exit 1
+		fi
+		NO_INTERACTIVE=1
 
 	else
-		echo "[ERROR] ${PRGNAME} : unknown option $1." 1>&2
+		echo "[ERROR] Unknown option $1." 1>&2
 		exit 1
 	fi
 	shift
 done
 
-#
-# Package name
-#
-if [ "X${PACKAGE_NAME}" = "X" ]; then
-	PACKAGE_NAME=`grep PACKAGE_NAME ${SRCTOP}/Makefile 2>/dev/null | awk '{print $3}' 2>/dev/null`
-	if [ "X${PACKAGE_NAME}" = "X" ]; then
-		echo "[ERROR] ${PRGNAME} : no product name" 1>&2
+if [ "${BUILD_NUMBER}" -eq 0 ]; then
+	BUILD_NUMBER=1
+fi
+if [ -z "${PACKAGE_NAME}" ]; then
+	#
+	# Get default package name from ChangeLog
+	#
+	if ! PACKAGE_NAME=$(grep -v '^$' ChangeLog  | grep -v '^[[:space:]]' | head -1 | awk '{print $1}' | tr -d '\n'); then
+		echo "[ERROR] Could not get package name from ChangeLog" 1>&2
+		exit 1
+	fi
+	if [ -z "${PACKAGE_NAME}" ]; then
+		echo "[ERROR] Could not get package name from ChangeLog" 1>&2
 		exit 1
 	fi
 fi
@@ -94,97 +135,138 @@ fi
 #
 # Welcome message and confirming for interactive mode
 #
-if [ ${IS_INTERACTIVE} -eq 1 ]; then
+if [ ${NO_INTERACTIVE} -eq 0 ]; then
 	echo "---------------------------------------------------------------"
 	echo " Do you change these file and commit to github?"
-	echo " - ChangeLog              modify / add changes like dch tool format"
-	echo " - Git TAG                stamp git tag for release"
+	echo " - ChangeLog     modify / add changes like dch tool format"
+	echo " - Git TAG       stamp git tag for release"
 	echo "---------------------------------------------------------------"
-	while true; do
-		echo -n "Confirm: [y/n] "
-		read CONFIRM
+	IS_CONFIRMED=0
+	while [ "${IS_CONFIRMED}" -eq 0 ]; do
+		printf '[INPUT] Confirm (y/n) : '
+		read -r CONFIRM
 
-		if [ "X${CONFIRM}" = "XY" -o "X${CONFIRM}" = "Xy" ]; then
-			break;
-		elif [ "X${CONFIRM}" = "XN" -o "X${CONFIRM}" = "Xn" ]; then
-			echo "Bye..."
-			exit 1
+		if [ "${CONFIRM}" = "y" ] || [ "${CONFIRM}" = "Y" ] || [ "${CONFIRM}" = "yes" ] || [ "${CONFIRM}" = "YES" ]; then
+			IS_CONFIRMED=1
+		elif [ "${CONFIRM}" = "n" ] || [ "${CONFIRM}" = "N" ] || [ "${CONFIRM}" = "no" ] || [ "${CONFIRM}" = "NO" ]; then
+			echo "Interrupt this processing, bye..."
+			exit 0
 		fi
 	done
 	echo ""
 fi
 
-#
-# before building
-#
-cd ${SRCTOP}
-
-#
-# package version
-#
-PACKAGE_VERSION=`${MYSCRIPTDIR}/make_variables.sh --pkg_version`
-
-#
-# copy spec file
-#
-cp ${SRCTOP}/buildutils/*.spec ${SRCTOP}/
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : could not find and copy spec files." 1>&2
-	exit 1
-fi
+#---------------------------------------------------------------
+# Main processing
+#---------------------------------------------------------------
+cd "${SRCTOP}" || exit 1
 
 #
 # create rpm top directory and etc
 #
-mkdir -p ${RPM_TOPDIR}/{BUILD,BUILDROOT,RPM,SOURCES,SPECS,SRPMS}
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : could not make ${RPM_TOPDIR}/* directories." 1>&2
+if ! mkdir -p "${RPM_TOPDIR}"/{BUILD,BUILDROOT,RPM,SOURCES,SPECS,SRPMS}; then
+	echo "[ERROR] Could not make ${RPM_TOPDIR}/* directories." 1>&2
 	exit 1
 fi
 
 #
-# copy source tar.gz from git by archive
+# Run configure for package version
 #
-git archive HEAD --prefix=${PACKAGE_NAME}-${PACKAGE_VERSION}/ --output=${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : could not make source tar ball(${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz) from github repository." 1>&2
+if ! ${SRCTOP}/autogen.sh; then
+	echo "[ERROR] Failed to run autogen.sh." 1>&2
+	exit 1
+fi
+if ! /bin/sh -c "${SRCTOP}/configure ${CONFIGUREOPT}"; then
+	echo "[ERROR] Failed to run configure." 1>&2
 	exit 1
 fi
 
 #
-# rpm build
+# Get package version
 #
-rpmbuild -vv -ba --define "_topdir ${RPM_TOPDIR}" --define "_prefix /usr" --define "_mandir /usr/share/man" --define "_defaultdocdir /usr/share/doc" --define "package_revision ${BUILD_NUMBER}" *.spec
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : failed to build rpm packages by rpmbuild." 1>&2
+if ! PACKAGE_VERSION=$("${MYSCRIPTDIR}/make_variables.sh" --pkg_version); then
+	echo "[ERROR] Failed to get package version(make_variables.sh)." 1>&2
 	exit 1
 fi
 
 #
-# copy RPM files to package directory for uploading
+# create archive file(tar.gz)
 #
-cp ${SRCTOP}/rpmbuild/RPMS/*/*.rpm ${SRCTOP}/
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : failed to copy rpm files to ${SRCTOP} directory." 1>&2
+if [ "$(git status -s | wc -l)" -eq 0 ]; then
+	#
+	# No untracked files
+	#
+	RUN_AUTOGEN_FLAG=""
+
+	#
+	# make source package(tar.gz) by git archive
+	#
+	if ! git archive HEAD --prefix=${PACKAGE_NAME}-${PACKAGE_VERSION}/ --output=${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz; then
+		echo "[ERROR] Could not make source tar ball(${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz) from github repository." 1>&2
+		exit 1
+	fi
+
+else
+	#
+	# Found untracked files
+	#
+	RUN_AUTOGEN_FLAG='--define "not_run_autogen 1"'
+
+	#
+	# make dist package(tar.gz) and copy it
+	#
+	if ! make dist; then
+		echo "[ERROR] Failed to create dist package(make dist)." 1>&2
+		exit 1
+	fi
+	if ! cp -p "${SRCTOP}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz" "${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz"; then
+		echo "[ERROR] Failed to copy ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz to ${RPM_TOPDIR}/SOURCES/." 1>&2
+		exit 1
+	fi
+fi
+
+#
+# Copy spec file to root
+#
+if ! cp "${SRCTOP}"/buildutils/*.spec "${SRCTOP}"/; then
+	echo "[ERROR] Failed to copy spec files to sour top directory." 1>&2
 	exit 1
 fi
 
-cp ${SRCTOP}/rpmbuild/SRPMS/*.rpm ${SRCTOP}/
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : failed to copy source rpm files to ${SRCTOP} directory." 1>&2
+#
+# build RPM packages
+#
+if ! /bin/sh -c "rpmbuild -vv -ba ${RUN_AUTOGEN_FLAG} --define \"_topdir ${RPM_TOPDIR}\" --define \"_prefix /usr\" --define \"_mandir /usr/share/man\" --define \"_defaultdocdir /usr/share/doc\" --define \"package_revision ${BUILD_NUMBER}\" *.spec"; then
+	echo "[ERROR] Failed to build rpm packages by rpmbuild." 1>&2
 	exit 1
 fi
 
 #
-# finish
+# Copy RPM files to package directory for uploading
+#
+if ! cp "${SRCTOP}"/rpmbuild/RPMS/*/*.rpm "${SRCTOP}"/; then
+	echo "[ERROR] Failed to copy rpm package files to ${SRCTOP} directory." 1>&2
+	exit 1
+fi
+if ! cp "${SRCTOP}"/rpmbuild/SRPMS/*.rpm "${SRCTOP}"/; then
+	echo "[ERROR] Failed to copy source rpm package files to ${SRCTOP} directory." 1>&2
+	exit 1
+fi
+
+#
+# Finish
 #
 echo ""
 echo "You can find ${PACKAGE_NAME} ${PACKAGE_VERSION}-${BUILD_NUMBER} version rpm package in ${SRCTOP} directory."
 echo ""
+
 exit 0
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
 #

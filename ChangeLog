@@ -29,7 +29,7 @@ k2hash (1.0.79) trusty; urgency=low
   * Updates editor setting variables - #54
   * Fixes a queue remove command bug in k2hlinetool - #54
 
- -- Hirotaka Wakabayashi <hiwakaba@yahoo-corp.jp> Wed, 27 Jan 2021 09:52:49 +0900
+ -- Hirotaka Wakabayashi <hiwakaba@yahoo-corp.jp>  Wed, 27 Jan 2021 09:52:49 +0900
 
 k2hash (1.0.78) trusty; urgency=low
 
@@ -130,7 +130,7 @@ k2hash (1.0.63) trusty; urgency=low
   * Fixed requires in specfile
   * Fixed fatal error in destructor code corresponding to SIOF etc
 
- -- Takeshi Nakatani <ggtakec@gmail.com> Wed, 17 Oct 2018 12:42:43 +0900
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 17 Oct 2018 12:42:43 +0900
 
 k2hash (1.0.62) trusty; urgency=low
 
@@ -169,7 +169,7 @@ k2hash (1.0.57) trusty; urgency=low
 
   * Fixed type qualifiers ignored on function return type
 
- -- Takeshi Nakatani <ggtakec@gmail.com> Wed, 17 May 2017 08:19:59 +0900
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 17 May 2017 08:19:59 +0900
 
 k2hash (1.0.56) trusty; urgency=low
 

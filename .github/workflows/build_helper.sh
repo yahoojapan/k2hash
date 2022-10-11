@@ -579,8 +579,8 @@ if [ ${PKG_TYPE_RPM} -eq 1 ]; then
 	#
 	# Create rpm packages
 	#
-	prn_cmd ./buildutils/rpm_build.sh -buildnum ${BUILD_NUMBER} -y
-	./buildutils/rpm_build.sh -buildnum ${BUILD_NUMBER} -y
+	prn_cmd CONFIGUREOPT=${CONFIGURE_EXT_OPT} ./buildutils/rpm_build.sh --buildnum ${BUILD_NUMBER} -y
+	CONFIGUREOPT=${CONFIGURE_EXT_OPT} ./buildutils/rpm_build.sh --buildnum ${BUILD_NUMBER} -y
 else
 	#
 	# Create debian packages

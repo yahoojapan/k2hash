@@ -38,6 +38,7 @@ MYSCRIPTDIR=$(dirname "${0}")
 # Variables
 #
 COMMITHASH_TOOL="${MYSCRIPTDIR}/make_commit_hash.sh"
+DIRECT_COMMIT_HASH=""
 FILEPATH=""
 VALUENAME=""
 
@@ -47,10 +48,11 @@ VALUENAME=""
 func_usage()
 {
 	echo ""
-	echo "Usage:  $1 [--help(-h)] <file path> <value name>"
-	echo "        file path     specify output file path"
-	echo "        value name    specify variable name in output C source file"
-	echo "        -h            print help"
+	echo "Usage:  $1 [--help(-h)] [--direct commit_hash(-dch) <commit hash>] <file path> <value name>"
+	echo "        --help(-h)                                print help."
+	echo "        --direct commit_hash(-dch) <commit_hash>  the commit_hash value directly when .git directory does not exist."
+	echo "        file path                                 specify output file path"
+	echo "        value name                                specify variable name in output C source file"
 	echo ""
 }
 
@@ -64,6 +66,18 @@ while [ $# -ne 0 ]; do
 	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
 		func_usage "${PRGNAME}"
 		exit 0
+
+	elif [ "$1" = "-dch" ] || [ "$1" = "-DCH" ] || [ "$1" = "--direct commit_hash" ] || [ "$1" = "--DIRECT COMMIT_HASH" ]; then
+		if [ -n "${DIRECT_COMMIT_HASH}" ]; then
+			echo "[ERROR] Already --direct_commit_hash(-dch) option is specified(${DIRECT_COMMIT_HASH})." 1>&2
+			exit 1
+		fi
+		shift
+		if [ -z "$1" ]; then
+			echo "[ERROR] --direct_commit_hash(-dch) option needs parameter." 1>&2
+			exit 1
+		fi
+		DIRECT_COMMIT_HASH="$1"
 
 	else
 		if [ -z "${FILEPATH}" ]; then
@@ -86,8 +100,13 @@ fi
 # Get commit hash value
 #
 if ! COMMITHASH=$("${COMMITHASH_TOOL}" --short); then
-	echo "[WARNING] git commit hash code is not found, so set to \"unknown\"." 1>&2
-	COMMITHASH="unknown"
+	if [ -n "${DIRECT_COMMIT_HASH}" ]; then
+		echo "[INFO] git commit hash code is not found, but commit hash was specified by option so use it." 1>&2
+		COMMITHASH="${DIRECT_COMMIT_HASH}"
+	else
+		echo "[WARNING] git commit hash code is not found, so set to \"unknown\"." 1>&2
+		COMMITHASH="unknown"
+	fi
 fi
 
 #

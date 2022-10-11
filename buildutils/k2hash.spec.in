@@ -39,6 +39,12 @@
 %global make_check 1
 %endif
 
+%if %{undefined not_run_autogen}
+%global run_autogen ./autogen.sh
+%else
+%global run_autogen echo "skip autogen.sh"
+%endif
+
 #
 # main package
 #
@@ -60,7 +66,7 @@ BuildRequires: git-core gcc-c++ make libtool libfullock-devel >= 1.0.35
 %autosetup -n %{name}-%{version}
 
 %build
-./autogen.sh
+%run_autogen
 %configure --disable-static @CONFIGUREWITHOPT@
 %make_build
 
