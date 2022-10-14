@@ -1,0 +1,61 @@
+#!/usr/bin/make -f
+#
+# K2HASH
+#
+# Copyright 2013 Yahoo Japan Corporation.
+#
+# K2HASH is key-valuew store base libraries.
+# K2HASH is made for the purpose of the construction of
+# original KVS system and the offer of the library.
+# The characteristic is this KVS library which Key can
+# layer. And can support multi-processing and multi-thread,
+# and is provided safely as available KVS.
+#
+# For the full copyright and license information, please view
+# the license file that was distributed with this source code.
+#
+# AUTHOR:   Takeshi Nakatani
+# CREATE:   Fri Dec 2 2013
+# REVISION:
+#
+
+#---------------------------------------------------------------
+# @PACKAGE_NAME@ / @PACKAGE_NAME@-dev packages
+#---------------------------------------------------------------
+%:
+	dh $@
+
+override_dh_auto_install:
+	dh_auto_install --destdir=debian/@PACKAGE_NAME@
+	dh_auto_install --destdir=debian/@PACKAGE_NAME@-dev
+	rm -rf debian/@PACKAGE_NAME@/usr/include
+	rm -rf debian/@PACKAGE_NAME@/usr/lib/x86_64-linux-gnu/pkgconfig
+	rm -rf debian/@PACKAGE_NAME@-dev/usr/bin
+	rm -rf debian/@PACKAGE_NAME@-dev/usr/share/man
+	rm -rf debian/@PACKAGE_NAME@/usr/lib/x86_64-linux-gnu/*.a
+	rm -rf debian/@PACKAGE_NAME@/usr/lib/x86_64-linux-gnu/*.la
+	rm -rf debian/@PACKAGE_NAME@/usr/lib/x86_64-linux-gnu/*.so
+	rm -rf debian/@PACKAGE_NAME@-dev/usr/lib/x86_64-linux-gnu/*.a
+	rm -rf debian/@PACKAGE_NAME@-dev/usr/lib/x86_64-linux-gnu/*.la
+	rm -rf debian/@PACKAGE_NAME@-dev/usr/lib/x86_64-linux-gnu/*.so.*
+
+#
+# Placefolder for configure options
+#
+# [NOTE]
+# If an option is required for running configure, the placeholder will be rewritten as follows.
+# -------------------------------------------------
+# override_dh_auto_configure:
+#     dh_auto_configure -- <configure options>
+# -------------------------------------------------
+#
+# [PLACEFOLDER CONFIGURE OPTION]
+
+#
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
+#

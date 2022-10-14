@@ -115,19 +115,24 @@ while [ $# -ne 0 ]; do
 	shift
 done
 
+#
+# Check parameters
+#
 if [ "${BUILD_NUMBER}" -eq 0 ]; then
 	BUILD_NUMBER=1
 fi
 if [ -z "${PACKAGE_NAME}" ]; then
 	#
-	# Get default package name from ChangeLog
+	# Get default package name from Makefile or ChangeLog
 	#
-	if ! PACKAGE_NAME=$(grep -v '^$' ChangeLog  | grep -v '^[[:space:]]' | head -1 | awk '{print $1}' | tr -d '\n'); then
-		echo "[ERROR] Could not get package name from ChangeLog" 1>&2
-		exit 1
+	if [ -f "${SRCTOP}/Makefile" ]; then
+		PACKAGE_NAME=$(grep '^PACKAGE_NAME' "${SRCTOP}"/Makefile 2>/dev/null | awk '{print $3}' | tr -d '\n')
+	fi
+	if [ -z "${PACKAGE_NAME}" ] && [ -f "${SRCTOP}/ChangeLog" ] ; then
+		PACKAGE_NAME=$(grep -v '^$' "${SRCTOP}"/ChangeLog | grep -v '^[[:space:]]' | head -1 | awk '{print $1}' | tr -d '\n')
 	fi
 	if [ -z "${PACKAGE_NAME}" ]; then
-		echo "[ERROR] Could not get package name from ChangeLog" 1>&2
+		echo "[ERROR] Could not get package name from Makefile or ChangeLog, please use --product(-p) option." 1>&2
 		exit 1
 	fi
 fi
@@ -135,7 +140,7 @@ fi
 #
 # Welcome message and confirming for interactive mode
 #
-if [ ${NO_INTERACTIVE} -eq 0 ]; then
+if [ "${NO_INTERACTIVE}" -eq 0 ]; then
 	echo "---------------------------------------------------------------"
 	echo " Do you change these file and commit to github?"
 	echo " - ChangeLog     modify / add changes like dch tool format"
@@ -156,27 +161,36 @@ if [ ${NO_INTERACTIVE} -eq 0 ]; then
 	echo ""
 fi
 
-#---------------------------------------------------------------
+#===============================================================
 # Main processing
-#---------------------------------------------------------------
+#===============================================================
 cd "${SRCTOP}" || exit 1
 
 #
 # create rpm top directory and etc
 #
-if ! mkdir -p "${RPM_TOPDIR}"/{BUILD,BUILDROOT,RPM,SOURCES,SPECS,SRPMS}; then
-	echo "[ERROR] Could not make ${RPM_TOPDIR}/* directories." 1>&2
-	exit 1
-fi
+_SUB_RPM_DIRS="BUILD BUILDROOT RPM SOURCES SPECS SRPMS"
+for _SUB_RPM_DIR in ${_SUB_RPM_DIRS}; do
+	if ! mkdir -p "${RPM_TOPDIR}/${_SUB_RPM_DIR}"; then
+		echo "[ERROR] Could not make ${RPM_TOPDIR}/${_SUB_RPM_DIR} directory." 1>&2
+		exit 1
+	fi
+done
 
+#---------------------------------------------------------------
+# Prepare base source codes
+#---------------------------------------------------------------
 #
 # Run configure for package version
 #
-if ! ${SRCTOP}/autogen.sh; then
+echo "[INFO] Run autogen"
+if ! "${SRCTOP}"/autogen.sh | sed -e 's/^/    /'; then
 	echo "[ERROR] Failed to run autogen.sh." 1>&2
 	exit 1
 fi
-if ! /bin/sh -c "${SRCTOP}/configure ${CONFIGUREOPT}"; then
+echo ""
+echo "[INFO] Run configure"
+if ! /bin/sh -c "${SRCTOP}/configure ${CONFIGUREOPT}" | sed -e 's/^/    /'; then
 	echo "[ERROR] Failed to run configure." 1>&2
 	exit 1
 fi
@@ -192,6 +206,8 @@ fi
 #
 # create archive file(tar.gz)
 #
+echo ""
+echo "[INFO] Create base source code file(tar.gz)"
 if [ "$(git status -s | wc -l)" -eq 0 ]; then
 	#
 	# No untracked files
@@ -201,7 +217,7 @@ if [ "$(git status -s | wc -l)" -eq 0 ]; then
 	#
 	# make source package(tar.gz) by git archive
 	#
-	if ! git archive HEAD --prefix=${PACKAGE_NAME}-${PACKAGE_VERSION}/ --output=${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz; then
+	if ! git archive HEAD --prefix="${PACKAGE_NAME}-${PACKAGE_VERSION}/" --output="${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz" | sed -e 's/^/    /'; then
 		echo "[ERROR] Could not make source tar ball(${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz) from github repository." 1>&2
 		exit 1
 	fi
@@ -215,7 +231,7 @@ else
 	#
 	# make dist package(tar.gz) and copy it
 	#
-	if ! make dist; then
+	if ! make dist | sed -e 's/^/    /'; then
 		echo "[ERROR] Failed to create dist package(make dist)." 1>&2
 		exit 1
 	fi
@@ -225,6 +241,9 @@ else
 	fi
 fi
 
+#---------------------------------------------------------------
+# Initialize files
+#---------------------------------------------------------------
 #
 # Copy spec file to root
 #
@@ -233,10 +252,14 @@ if ! cp "${SRCTOP}"/buildutils/*.spec "${SRCTOP}"/; then
 	exit 1
 fi
 
+#---------------------------------------------------------------
+# Create packages
+#---------------------------------------------------------------
 #
 # build RPM packages
 #
-if ! /bin/sh -c "rpmbuild -vv -ba ${RUN_AUTOGEN_FLAG} --define \"_topdir ${RPM_TOPDIR}\" --define \"_prefix /usr\" --define \"_mandir /usr/share/man\" --define \"_defaultdocdir /usr/share/doc\" --define \"package_revision ${BUILD_NUMBER}\" *.spec"; then
+echo "[INFO] Create RPM packages"
+if ! /bin/sh -c "rpmbuild -vv -ba ${RUN_AUTOGEN_FLAG} --define \"_topdir ${RPM_TOPDIR}\" --define \"_prefix /usr\" --define \"_mandir /usr/share/man\" --define \"_defaultdocdir /usr/share/doc\" --define \"package_revision ${BUILD_NUMBER}\" *.spec" 2>&1 | sed -e 's/^/    /'; then
 	echo "[ERROR] Failed to build rpm packages by rpmbuild." 1>&2
 	exit 1
 fi
@@ -253,11 +276,11 @@ if ! cp "${SRCTOP}"/rpmbuild/SRPMS/*.rpm "${SRCTOP}"/; then
 	exit 1
 fi
 
-#
+#---------------------------------------------------------------
 # Finish
-#
+#---------------------------------------------------------------
 echo ""
-echo "You can find ${PACKAGE_NAME} ${PACKAGE_VERSION}-${BUILD_NUMBER} version rpm package in ${SRCTOP} directory."
+echo "[SUCCEED] You can find RPM package ${PACKAGE_NAME} : ${PACKAGE_VERSION}-${BUILD_NUMBER} version in ${SRCTOP} directory."
 echo ""
 
 exit 0

@@ -130,6 +130,7 @@ COMMIT_HASH
 *.k2h
 buildutils/control
 buildutils/copyright
+buildutils/rules
 rpmbuild
 rpmbuild/*
 debian
