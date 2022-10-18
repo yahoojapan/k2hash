@@ -25,158 +25,225 @@
 #
 # Puts project version/revision/age/etc variables for building
 #
+
+#
+# Common variables
+#
+PRGNAME=$(basename "${0}")
+MYSCRIPTDIR=$(dirname "${0}")
+SRCTOP=$(cd "${MYSCRIPTDIR}/.." || exit 1; pwd)
+
+#
+# Variables
+#
+RELEASE_VERSION_FILE="${SRCTOP}/RELEASE_VERSION"
+EXCLUSIVE_OPT=0
+PRGMODE=""
+DEB_WITH_SYSTEMD=0
+
+#
+# Utility functions
+#
 func_usage()
 {
 	echo ""
-	echo "Usage:  $1 [-pkg_version | -lib_version_info | -lib_version_for_link | -major_number | -debhelper_dep | -rpmpkg_group]"
-	echo "	-pkg_version            returns package version."
-	echo "	-lib_version_info       returns library libtools revision"
-	echo "	-lib_version_for_link   return library version for symbolic link"
-	echo "	-major_number           return major version number"
-	echo "	-debhelper_dep          return debhelper dependency string"
-	echo "	-rpmpkg_group           return group string for rpm package"
-	echo "	-h(help)                print help."
+	echo "Usage:  $1 [--help(-h)] [--pkg_version(-pv) | --lib_version_info(-lvi) | --lib_version_for_link(-lvl) | --major_number(-mn) | --debhelper_dep(-dd) | --debhelper_dep_with_systemd(-dds) | --rpmpkg_group(-rg)]"
+	echo "  --help(-h)                    print help"
+	echo "	--pkg_version(-pv)            returns package version."
+	echo "	--lib_version_info(-lvi)      returns library libtools revision"
+	echo "	--lib_version_for_link(-lvl)  return library version for symbolic link"
+	echo "	--major_number(-mn)           return major version number"
+	echo "	--debhelper_dep(-dd)          return debhelper dependency string"
+	echo "	--rpmpkg_group(-rg)           return group string for rpm package"
 	echo ""
 }
-PRGNAME=`basename $0`
-MYSCRIPTDIR=`dirname $0`
-SRCTOP=`cd ${MYSCRIPTDIR}/..; pwd`
-RELEASE_VERSION_FILE="${SRCTOP}/RELEASE_VERSION"
 
 #
 # Check options
 #
-PRGMODE=""
 while [ $# -ne 0 ]; do
-	if [ "X$1" = "X" ]; then
-		break;
+	if [ -z "$1" ]; then
+		break
 
-	elif [ "X$1" = "X-h" -o "X$1" = "X-help" ]; then
-		func_usage $PRGNAME
+	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "X$1" = "X-pkg_version" ]; then
+	elif [ "$1" = "-pv" ] || [ "$1" = "-PV" ] || [ "$1" = "--pkg_version" ] || [ "$1" = "--PKG_VERSION" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
+			printf '0'
+			exit 1
+		fi
 		PRGMODE="PKG"
+		EXCLUSIVE_OPT=1
 
-	elif [ "X$1" = "X-lib_version_info" ]; then
+	elif [ "$1" = "-lvi" ] || [ "$1" = "-LVI" ] || [ "$1" = "--lib_version_info" ] || [ "$1" = "--LIB_VERSION_INFO" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
+			printf '0'
+			exit 1
+		fi
 		PRGMODE="LIB"
+		EXCLUSIVE_OPT=1
 
-	elif [ "X$1" = "X-lib_version_for_link" ]; then
+	elif [ "$1" = "-lvl" ] || [ "$1" = "-LVL" ] || [ "$1" = "--lib_version_for_link" ] || [ "$1" = "--LIB_VERSION_FOR_LINK" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
+			printf '0'
+			exit 1
+		fi
 		PRGMODE="LINK"
+		EXCLUSIVE_OPT=1
 
-	elif [ "X$1" = "X-major_number" ]; then
+	elif [ "$1" = "-mn" ] || [ "$1" = "-MN" ] || [ "$1" = "--major_number" ] || [ "$1" = "--MAJOR_NUMBER" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
+			printf '0'
+			exit 1
+		fi
 		PRGMODE="MAJOR"
+		EXCLUSIVE_OPT=1
 
-	elif [ "X$1" = "X-debhelper_dep" ]; then
+	elif [ "$1" = "-dd" ] || [ "$1" = "-DD" ] || [ "$1" = "--debhelper_dep" ] || [ "$1" = "--DEBHELPER_DEP" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
+			printf '0'
+			exit 1
+		fi
 		PRGMODE="DEBHELPER"
+		DEB_WITH_SYSTEMD=0
+		EXCLUSIVE_OPT=1
 
-	elif [ "X$1" = "X-rpmpkg_group" ]; then
+	elif [ "$1" = "-dds" ] || [ "$1" = "-DDS" ] || [ "$1" = "--debhelper_dep_with_systemd" ] || [ "$1" = "--DEBHELPER_DEP_WITH_SYSTEMD" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
+			printf '0'
+			exit 1
+		fi
+		PRGMODE="DEBHELPER"
+		DEB_WITH_SYSTEMD=1
+		EXCLUSIVE_OPT=1
+
+	elif [ "$1" = "-rg" ] || [ "$1" = "-RG" ] || [ "$1" = "--rpmpkg_group" ] || [ "$1" = "--RPMPKG_GROUP" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
+			printf '0'
+			exit 1
+		fi
 		PRGMODE="RPMGROUP"
+		EXCLUSIVE_OPT=1
 
 	else
-		echo "ERROR: unknown option $1" 1>&2
-		echo -n "0"
+		echo "[ERROR] unknown option $1" 1>&2
+		printf '0'
 		exit 1
 	fi
 	shift
 done
-if [ "X${PRGMODE}" = "X" ]; then
-	echo "ERROR: option is not specified." 1>&2
-	echo -n "0"
+if [ -z "${PRGMODE}" ]; then
+	echo "[ERROR] option is not specified." 1>&2
+	printf '0'
 	exit 1
 fi
 
 #
 # Make result
 #
-if [ ${PRGMODE} = "PKG" ]; then
-	RESULT=`cat ${RELEASE_VERSION_FILE}`
+if [ "${PRGMODE}" = "PKG" ]; then
+	RESULT=$(cat "${RELEASE_VERSION_FILE}")
 
-elif [ ${PRGMODE} = "LIB" -o ${PRGMODE} = "LINK" ]; then
-	MAJOR_VERSION=`cat ${RELEASE_VERSION_FILE} | sed 's/["|\.]/ /g' | awk '{print $1}'`
-	MID_VERSION=`cat ${RELEASE_VERSION_FILE} | sed 's/["|\.]/ /g' | awk '{print $2}'`
-	LAST_VERSION=`cat ${RELEASE_VERSION_FILE} | sed 's/["|\.]/ /g' | awk '{print $3}'`
+elif [ "${PRGMODE}" = "LIB" ] || [ "${PRGMODE}" = "LINK" ]; then
+	#
+	# get version numbers
+	#
+	MAJOR_VERSION=$(sed -e 's/["|\.]/ /g' "${RELEASE_VERSION_FILE}" | awk '{print $1}')
+	MID_VERSION=$(sed -e 's/["|\.]/ /g' "${RELEASE_VERSION_FILE}" | awk '{print $2}')
+	LAST_VERSION=$(sed -e 's/["|\.]/ /g' "${RELEASE_VERSION_FILE}" | awk '{print $3}')
 
+	#
 	# check version number
-	expr "${MAJOR_VERSION}" + 1 >/dev/null 2>&1
-	if [ $? -ge 2 ]; then
-		echo "ERROR: wrong version number in RELEASE_VERSION file" 1>&2
-		echo -n "0"
+	#
+	if echo "${MAJOR_VERSION}" | grep -q "[^0-9]"; then
+		echo "[ERROR] wrong version number in RELEASE_VERSION file" 1>&2
+		printf '0'
 		exit 1
 	fi
-	expr "${MID_VERSION}" + 1 >/dev/null 2>&1
-	if [ $? -ge 2 ]; then
-		echo "ERROR: wrong version number in RELEASE_VERSION file" 1>&2
-		echo -n "0"
+	if echo "${MID_VERSION}" | grep -q "[^0-9]"; then
+		echo "[ERROR] wrong version number in RELEASE_VERSION file" 1>&2
+		printf '0'
 		exit 1
 	fi
-	expr "${LAST_VERSION}" + 1 >/dev/null 2>&1
-	if [ $? -ge 2 ]; then
-		echo "ERROR: wrong version number in RELEASE_VERSION file" 1>&2
-		echo -n "0"
+	if echo "${LAST_VERSION}" | grep -q "[^0-9]"; then
+		echo "[ERROR] wrong version number in RELEASE_VERSION file" 1>&2
+		printf '0'
 		exit 1
 	fi
 
+	#
 	# make library revision number
-	if [ ${MID_VERSION} -gt 0 ]; then
-		REV_VERSION=`expr ${MID_VERSION} \* 100`
-		REV_VERSION=`expr ${LAST_VERSION} + ${REV_VERSION}`
+	#
+	if [ "${MID_VERSION}" -gt 0 ]; then
+		REV_VERSION=$((MID_VERSION * 100))
+		REV_VERSION=$((LAST_VERSION + REV_VERSION))
 	else
-		REV_VERSION=${LAST_VERSION}
+		REV_VERSION="${LAST_VERSION}"
 	fi
 
-	if [ ${PRGMODE} = "LIB" ]; then
+	if [ "${PRGMODE}" = "LIB" ]; then
 		RESULT="${MAJOR_VERSION}:${REV_VERSION}:0"
 	else
 		RESULT="${MAJOR_VERSION}.0.${REV_VERSION}"
 	fi
 
-elif [ ${PRGMODE} = "MAJOR" ]; then
-	RESULT=`cat ${RELEASE_VERSION_FILE} | sed 's/["|\.]/ /g' | awk '{print $1}'`
+elif [ "${PRGMODE}" = "MAJOR" ]; then
+	RESULT=$(sed -e 's/["|\.]/ /g' "${RELEASE_VERSION_FILE}" | awk '{print $1}')
 
-elif [ ${PRGMODE} = "DEBHELPER" ]; then
+elif [ "${PRGMODE}" = "DEBHELPER" ]; then
 	# [NOTE]
 	# This option returns debhelper dependency string in control file for debian package.
 	# That string is depended debhelper package version and os etc.
 	# (if not ubuntu/debian os, returns default string)
 	#
-	apt-cache --version >/dev/null 2>&1
-	if [ $? -eq 0 ]; then
-		IS_OS_UBUNTU=0
-		if [ -f /etc/lsb-release ]; then
-			grep [Uu]buntu /etc/lsb-release >/dev/null 2>&1
-			if [ $? -eq 0 ]; then
-				IS_OS_UBUNTU=1
-			fi
-		fi
+	OS_ID_STRING=$(grep '^ID[[:space:]]*=[[:space:]]*' /etc/os-release | sed -e 's|^ID[[:space:]]*=[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g')
 
-		DEBHELPER_MAJOR_VER=`apt-cache show debhelper 2>/dev/null | grep Version 2>/dev/null | awk '{print $2}' 2>/dev/null | sed 's/\..*/ /g' 2>/dev/null`
-		expr "${DEBHELPER_MAJOR_VER}" + 1 >/dev/null 2>&1
-		if [ $? -ne 0 ]; then
-			DEBHELPER_MAJOR_VER=0
-		else
-			DEBHELPER_MAJOR_VER=`expr "${DEBHELPER_MAJOR_VER}" + 0`
-		fi
-		if [ ${DEBHELPER_MAJOR_VER} -lt 10 ]; then
-			RESULT="debhelper (>= 9), autotools-dev"
-		else
-			if [ ${IS_OS_UBUNTU} -eq 1 ]; then
-				RESULT="debhelper (>= 10)"
-			else
-				RESULT="debhelper (>= 10), autotools-dev"
-			fi
-		fi
-	else
-		# Not debian/ubuntu, set default
-		RESULT="debhelper (>= 10), autotools-dev"
+	DEBHELPER_MAJOR_VER=$(apt-cache show debhelper 2>/dev/null | grep Version 2>/dev/null | awk '{print $2}' 2>/dev/null | sed -e 's/\..*/ /g' 2>/dev/null)
+
+	if echo "${DEBHELPER_MAJOR_VER}" | grep -q "[^0-9]"; then
+		DEBHELPER_MAJOR_VER=0
 	fi
 
-elif [ ${PRGMODE} = "RPMGROUP" ]; then
+	if [ "${DEB_WITH_SYSTEMD}" -eq 1 ]; then
+		DEB_WITH_SYSTEMD_STRING=" | dh-systemd"
+	else
+		DEB_WITH_SYSTEMD_STRING=""
+	fi
+
+	if [ -n "${OS_ID_STRING}" ]; then
+		if [ "${OS_ID_STRING}" = "debian" ]; then
+			RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}, autotools-dev"
+
+		elif [ "${OS_ID_STRING}" = "ubuntu" ]; then
+			if [ ${DEBHELPER_MAJOR_VER} -lt 10 ]; then
+				RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}, autotools-dev"
+			else
+				RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}"
+			fi
+		else
+			# Not debian/ubuntu, set default
+			RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}, autotools-dev"
+		fi
+	else
+		# Unknown OS, set default
+		RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}, autotools-dev"
+	fi
+
+elif [ "${PRGMODE}" = "RPMGROUP" ]; then
 	# [NOTE]
 	# Fedora rpm does not need "Group" key in spec file.
 	# If not fedora, returns "NEEDRPMGROUP", and you must replace this string in configure.ac
 	#
-	if [ -f /etc/fedora-release ]; then
+	if grep -q '^ID[[:space:]]*=[[:space:]]*["]*fedora["]*[[:space:]]*$' /etc/os-release; then
 		RESULT=""
 	else
 		RESULT="NEEDRPMGROUP"
@@ -186,12 +253,15 @@ fi
 #
 # Output result
 #
-echo -n $RESULT
+printf '%s' "${RESULT}"
 
 exit 0
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
 #

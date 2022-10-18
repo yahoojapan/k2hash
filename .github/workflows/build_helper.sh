@@ -353,7 +353,7 @@ fi
 # Set variables for packaging
 #
 if [ "X${OPT_BUILD_NUMBER}" != "X" ]; then
-	BUILD_NUMBER=${BUILD_NUMBER}
+	BUILD_NUMBER=${OPT_BUILD_NUMBER}
 else
 	BUILD_NUMBER=1
 fi
@@ -579,18 +579,14 @@ if [ ${PKG_TYPE_RPM} -eq 1 ]; then
 	#
 	# Create rpm packages
 	#
-	prn_cmd ./buildutils/rpm_build.sh -buildnum ${BUILD_NUMBER} -y
-	./buildutils/rpm_build.sh -buildnum ${BUILD_NUMBER} -y
+	prn_cmd CONFIGUREOPT=${CONFIGURE_EXT_OPT} ./buildutils/rpm_build.sh --buildnum ${BUILD_NUMBER} -y
+	CONFIGUREOPT=${CONFIGURE_EXT_OPT} ./buildutils/rpm_build.sh --buildnum ${BUILD_NUMBER} -y
 else
 	#
 	# Create debian packages
 	#
-	DEBUILD_OPT=""
-	if [ ${IS_PUBLISH} -ne 1 ]; then
-		DEBUILD_OPT="-nodebuild"
-	fi
-	prn_cmd CONFIGUREOPT=${CONFIGURE_EXT_OPT} ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} -disttype ${DIST_TAG} ${DEBUILD_OPT} -y
-	CONFIGUREOPT=${CONFIGURE_EXT_OPT} ./buildutils/debian_build.sh -buildnum ${BUILD_NUMBER} -disttype ${DIST_TAG} ${DEBUILD_OPT} -y
+	prn_cmd CONFIGUREOPT=${CONFIGURE_EXT_OPT} ./buildutils/debian_build.sh --buildnum ${BUILD_NUMBER} --disttype ${DIST_TAG} -y
+	CONFIGUREOPT=${CONFIGURE_EXT_OPT} ./buildutils/debian_build.sh --buildnum ${BUILD_NUMBER} --disttype ${DIST_TAG} -y
 fi
 if [ $? -ne 0 ]; then
 	echo "[ERROR] ${PRGNAME} : Failed to build packages"

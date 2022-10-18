@@ -1,92 +1,92 @@
-k2hash (1.0.83) trusty; urgency=low
+k2hash (1.0.83) unstable; urgency=low
 
   * Fixed Dockerfile template for calling ldconfig - #63
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 27 Aug 2021 15:00:59 +0900
 
-k2hash (1.0.82) trusty; urgency=low
+k2hash (1.0.82) unstable; urgency=low
 
   * Fixed a bug in Docker image build - #61
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 17 Aug 2021 14:51:43 +0900
 
-k2hash (1.0.81) trusty; urgency=low
+k2hash (1.0.81) unstable; urgency=low
 
   * Fixed to create /var/lib/antpickax at installation - #59
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 16 Aug 2021 10:20:24 +0900
 
-k2hash (1.0.80) trusty; urgency=low
+k2hash (1.0.80) unstable; urgency=low
 
   * Added docker build and push in Github Actions - #57
   * Functional improvements and bug fixes - #56
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 10 Aug 2021 15:27:17 +0900
 
-k2hash (1.0.79) trusty; urgency=low
+k2hash (1.0.79) unstable; urgency=low
 
   * Fixes the cppcheck error - #54
   * Updates editor setting variables - #54
   * Fixes a queue remove command bug in k2hlinetool - #54
 
- -- Hirotaka Wakabayashi <hiwakaba@yahoo-corp.jp> Wed, 27 Jan 2021 09:52:49 +0900
+ -- Hirotaka Wakabayashi <hiwakaba@yahoo-corp.jp>  Wed, 27 Jan 2021 09:52:49 +0900
 
-k2hash (1.0.78) trusty; urgency=low
+k2hash (1.0.78) unstable; urgency=low
 
   * Fixed centos8 build and removed centos6 build - #47
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 16 Dec 2020 11:43:31 +0900
 
-k2hash (1.0.77) trusty; urgency=low
+k2hash (1.0.77) unstable; urgency=low
 
   * Fixed a error by cppcheck 2.2 - #45
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 24 Nov 2020 09:26:12 +0900
 
-k2hash (1.0.76) trusty; urgency=low
+k2hash (1.0.76) unstable; urgency=low
 
   * Updated README.md for Github Actions status - #43
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 16 Nov 2020 16:33:30 +0900
 
-k2hash (1.0.75) trusty; urgency=low
+k2hash (1.0.75) unstable; urgency=low
 
   * Switched Travis CI to Github actions and extended supported OS - #41
   * Fixed bugs detected by cppcheck - #40
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 16 Nov 2020 15:13:40 +0900
 
-k2hash (1.0.74) trusty; urgency=low
+k2hash (1.0.74) unstable; urgency=low
 
   * Allow 0 sec for expire when setting directly as placeholder - #38
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 03 Apr 2020 09:38:17 +0900
 
-k2hash (1.0.73) trusty; urgency=low
+k2hash (1.0.73) unstable; urgency=low
 
   * Stopped deleting monitor files of the last process - #36
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 25 Feb 2020 17:21:28 +0900
 
-k2hash (1.0.72) trusty; urgency=low
+k2hash (1.0.72) unstable; urgency=low
 
   * Enhanced lock of monitor file parts - #34
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 18 Feb 2020 10:10:31 +0900
 
-k2hash (1.0.71) trusty; urgency=low
+k2hash (1.0.71) unstable; urgency=low
 
   * Fixed a bug that leaked file descriptor - #31
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 17 May 2019 11:16:56 +0900
 
-k2hash (1.0.70) trusty; urgency=low
+k2hash (1.0.70) unstable; urgency=low
 
   * Fixed codes for cppcheck 1.87 - #28
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 12 Mar 2019 12:53:26 +0900
 
-k2hash (1.0.69) trusty; urgency=low
+k2hash (1.0.69) unstable; urgency=low
 
   * Fixed incorporation of multibyte characters - #25
   * Added check using cppcheck - #24
@@ -95,68 +95,68 @@ k2hash (1.0.69) trusty; urgency=low
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Thu, 17 Jan 2019 09:15:44 +0900
 
-k2hash (1.0.68) trusty; urgency=low
+k2hash (1.0.68) unstable; urgency=low
 
   * Updated common build tool files
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 11 Dec 2018 11:41:41 +0900
 
-k2hash (1.0.67) trusty; urgency=low
+k2hash (1.0.67) unstable; urgency=low
 
   * Updated configure.ac and packaging scripts/files
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 05 Dec 2018 08:05:19 +0900
 
-k2hash (1.0.66) trusty; urgency=low
+k2hash (1.0.66) unstable; urgency=low
 
   * Fixed bug in debian package creation
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 30 Nov 2018 15:07:54 +0900
 
-k2hash (1.0.65) trusty; urgency=low
+k2hash (1.0.65) unstable; urgency=low
 
   * Changed to strict packaging and changed documents
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Thu, 29 Nov 2018 17:11:51 +0900
 
-k2hash (1.0.64) trusty; urgency=low
+k2hash (1.0.64) unstable; urgency=low
 
   * Fixed a bug segmentation fault exiting tr thread
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 07 Nov 2018 10:11:02 +0900
 
-k2hash (1.0.63) trusty; urgency=low
+k2hash (1.0.63) unstable; urgency=low
 
   * Fixed requires in specfile
   * Fixed fatal error in destructor code corresponding to SIOF etc
 
- -- Takeshi Nakatani <ggtakec@gmail.com> Wed, 17 Oct 2018 12:42:43 +0900
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 17 Oct 2018 12:42:43 +0900
 
-k2hash (1.0.62) trusty; urgency=low
+k2hash (1.0.62) unstable; urgency=low
 
   * Fixed fatal error in destructing mmap info and etc
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Thu, 04 Oct 2018 13:23:50 +0900
 
-k2hash (1.0.61) trusty; urgency=low
+k2hash (1.0.61) unstable; urgency=low
 
   * avoid static object initialization order problem(SIOF)
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 29 Jun 2018 14:54:05 +0900
 
-k2hash (1.0.60) trusty; urgency=low
+k2hash (1.0.60) unstable; urgency=low
 
   * Fixed build options for pthread
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 26 Jun 2018 11:32:23 +0900
 
-k2hash (1.0.59) trusty; urgency=low
+k2hash (1.0.59) unstable; urgency=low
 
   * Fixed a bug about lead loop
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Thu, 21 Jun 2018 18:27:00 +0900
 
-k2hash (1.0.58) trusty; urgency=low
+k2hash (1.0.58) unstable; urgency=low
 
   * Cleanup credit comments in sources
   * Supported multi crypt libraries(NSS/gcrypt/nettle)
@@ -165,20 +165,20 @@ k2hash (1.0.58) trusty; urgency=low
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 16 May 2018 10:13:04 +0900
 
-k2hash (1.0.57) trusty; urgency=low
+k2hash (1.0.57) unstable; urgency=low
 
   * Fixed type qualifiers ignored on function return type
 
- -- Takeshi Nakatani <ggtakec@gmail.com> Wed, 17 May 2017 08:19:59 +0900
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 17 May 2017 08:19:59 +0900
 
-k2hash (1.0.56) trusty; urgency=low
+k2hash (1.0.56) unstable; urgency=low
 
   * Strict/Robust queue processing for conflicting
   * Fixed deadlock at updating key with subkeys
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 28 Mar 2017 10:52:24 +0900
 
-k2hash (1.0.55) trusty; urgency=low
+k2hash (1.0.55) unstable; urgency=low
 
   * Updated fullock submodule v1.0.24
   * Added lib_version_for_link option to make_valiables.sh
@@ -186,20 +186,20 @@ k2hash (1.0.55) trusty; urgency=low
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 21 Mar 2017 11:10:31 +0900
 
-k2hash (1.0.54) trusty; urgency=low
+k2hash (1.0.54) unstable; urgency=low
 
   * Updated dependency for fixing bugs in libfullock
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 14 Feb 2017 11:57:56 +0900
 
-k2hash (1.0.53) trusty; urgency=low
+k2hash (1.0.53) unstable; urgency=low
 
   * Fixed mistaking codes - #3
   * Fixed error/warning for compiling and changed travis.yaml - #2
 
  -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 06 Feb 2017 15:13:24 +0900
 
-k2hash (1.0.52) trusty; urgency=low
+k2hash (1.0.52) unstable; urgency=low
 
   * First version of open sorce on Github
 

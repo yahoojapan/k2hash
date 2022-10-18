@@ -25,141 +25,191 @@
 #
 # This script gets short/long description from man page.
 #
+
+#
+# Common variables
+#
+PRGNAME=$(basename "${0}")
+#MYSCRIPTDIR=$(dirname "${0}")
+#SRCTOP=$(cd "${MYSCRIPTDIR}/.." || exit 1; pwd)
+
+#
+# Variables
+#
+EXCLUSIVE_OPT=0
+MAN_FILE=""
+IS_SHORT=0
+IS_DEB_CONTROL_FILE=0
+ESC_LF_CHAR=""
+TEMP_FILE="/tmp/${PRGNAME}_$$.tmp"
+
+#
+# Utility functions
+#
 func_usage()
 {
-        echo ""
-        echo "Usage:  $1 <man page file path> [-short | -long | -esclong | -deblong]"
-        echo ""
-        echo "        man page file path    Input file path for man page file in source directory"
-        echo "        -short                return short(summary) description"
-        echo "        -long                 return long description"
-        echo "        -esclong              return long description with escaped LF"
-        echo "        -deblong              return long description for debian in debian control file"
-        echo ""
+	echo ""
+	echo "Usage:  $1 <man page file path> [--help(-h)] [--short(-s) | --long(-l) | --esclong(-e) | --deblong(-d)]"
+	echo ""
+	echo "	<man page file path>  input file path for man page file in source directory"
+	echo "  --help(-h)            print help"
+	echo "	--short(-s)           return short(summary) description"
+	echo "	--long(-l)            return long description"
+	echo "	--esclong(-e)         return long description with escaped LF"
+	echo "	--deblong(-d)         return long description for debian in debian control file"
+	echo ""
 }
-PRGNAME=`basename $0`
-MYSCRIPTDIR=`dirname $0`
-SRCTOP=`cd ${MYSCRIPTDIR}/..; pwd`
 
 #
 # Check options
 #
-INFILE=""
-ISSHORT=0
-SPACECHAR=0
-ESCLF=""
 while [ $# -ne 0 ]; do
-	if [ "X$1" = "X" ]; then
-		break;
+	if [ -z "$1" ]; then
+		break
 
-	elif [ "X$1" = "X-h" -o "X$1" = "X-help" ]; then
-		func_usage $PRGNAME
+	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "X$1" = "X-short" ]; then
-		ISSHORT=1
+	elif [ "$1" = "-s" ] || [ "$1" = "-S" ] || [ "$1" = "--short" ] || [ "$1" = "--SHORT" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --short(-s), --long(-l), --esclong(-e), --deblong(-d) ) is specified." 1>&2
+			echo "No description because the ${PRGNAME} program failed to extract the description."
+			exit 1
+		fi
+		IS_SHORT=1
+		EXCLUSIVE_OPT=1
 
-	elif [ "X$1" = "X-long" ]; then
-		ISSHORT=0
-		SPACECHAR=0
+	elif [ "$1" = "-l" ] || [ "$1" = "-L" ] || [ "$1" = "--long" ] || [ "$1" = "--LONG" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --short(-s), --long(-l), --esclong(-e), --deblong(-d) ) is specified." 1>&2
+			echo "No description because the ${PRGNAME} program failed to extract the description."
+			exit 1
+		fi
+		IS_SHORT=0
+		IS_DEB_CONTROL_FILE=0
+		EXCLUSIVE_OPT=1
 
-	elif [ "X$1" = "X-esclong" ]; then
-		ISSHORT=0
-		ESCLF="\\n\\"
+	elif [ "$1" = "-e" ] || [ "$1" = "-E" ] || [ "$1" = "--esclong" ] || [ "$1" = "--ESCLONG" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --short(-s), --long(-l), --esclong(-e), --deblong(-d) ) is specified." 1>&2
+			echo "No description because the ${PRGNAME} program failed to extract the description."
+			exit 1
+		fi
+		IS_SHORT=0
+		ESC_LF_CHAR="\\n\\"
+		EXCLUSIVE_OPT=1
 
-	elif [ "X$1" = "X-deblong" ]; then
-		ISSHORT=0
-		SPACECHAR=1
+	elif [ "$1" = "-d" ] || [ "$1" = "-D" ] || [ "$1" = "--deblong" ] || [ "$1" = "--DEBLONG" ]; then
+		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
+			echo "[ERROR] already one of eclusive options( --short(-s), --long(-l), --esclong(-e), --deblong(-d) ) is specified." 1>&2
+			echo "No description because the ${PRGNAME} program failed to extract the description."
+			exit 1
+		fi
+		IS_SHORT=0
+		IS_DEB_CONTROL_FILE=1
+		EXCLUSIVE_OPT=1
 
 	else
-		if [ "X${INFILE}" != "X" ]; then
-			echo "ERROR: already ${INFILE} file is specified." 1>&2
-			echo "No description by $PRGNAME with error."
+		if [ -n "${MAN_FILE}" ]; then
+			echo "[ERROR] already man page file path(${MAN_FILE}) is specified." 1>&2
+			echo "No description because the ${PRGNAME} program failed to extract the description."
 			exit 1
 		fi
-		if [ ! -f $1 ]; then
-			echo "ERROR: $1 file is not existed." 1>&2
-			echo "No description by $PRGNAME with error."
+		if [ ! -f "$1" ]; then
+			echo "[ERROR] $1 file is not existed." 1>&2
+			echo "No description because the ${PRGNAME} program failed to extract the description."
 			exit 1
 		fi
-		INFILE=$1
+		MAN_FILE="$1"
 	fi
 	shift
 done
 
 #
-# put man page formatted by nroff and insert space head.
+# Extract formatted man output from a man file using nroff
 #
-TEMPFILE=/tmp/${PRGNAME}_$$.tmp
-nroff -man ${INFILE} 2>/dev/null | col -b 2>/dev/null | sed 's/[0-9][0-9]*m//g' 2>/dev/null | sed 's/^\s/_____/g' > ${TEMPFILE} 2>/dev/null
-if [ $? -ne 0 ]; then
-	echo "ERROR: Could not read ${INFILE} file with converting." 1>&2
-	echo "No description by $PRGNAME with error."
-	rm -f ${TEMPFILE} > /dev/null 2>&1
+# [NOTE]
+# A special character string("_____") is inserted at the beginning
+# of lines other than section lines.
+# There are spaces at the beginning of lines other than lines that
+# indicate sections, so use them as markers to insert characters.
+# This allows you to see the section breaks.
+#
+if ! nroff -man "${MAN_FILE}" 2>/dev/null | col -b 2>/dev/null | sed -e 's/[0-9][0-9]*m//g' -e 's/^[[:space:]]/_____/g' >"${TEMP_FILE}" 2>/dev/null; then
+	echo "[ERROR] Could not read ${MAN_FILE} file with converting." 1>&2
+	echo "No description because the ${PRGNAME} program failed to extract the description."
+	rm -f "${TEMP_FILE}"
 	exit 1
 fi
 
 #
 # Loop for printing with converting
 #
-LINELEVEL=0
-LONGDEST_START="no"
-while read LINE; do
+LINE_LEVEL=0
+START_LONG_DESCRIPT=0
+while IFS= read -r ONE_LINE; do
 	#
 	# revert inserted special chars.
 	#
-	CHKLINE=`echo ${LINE} | sed 's/^_____//g'`
-	CHKLINE=`echo ${CHKLINE}`
+	REVERTED_LINE=$(echo "${ONE_LINE}" | sed -e 's/^_____//g' -e 's/^[[:space:]]*//g')
 
-	if [ $LINELEVEL -eq 0 ]; then
-		if [ "X$CHKLINE" = "XNAME" ]; then
-			LINELEVEL=1
+	if [ "${LINE_LEVEL}" -eq 0 ]; then
+		if [ -n "${REVERTED_LINE}" ] && [ "${REVERTED_LINE}" = "NAME" ]; then
+			LINE_LEVEL=1
 		fi
-	elif [ $LINELEVEL -eq 1 ]; then
-		if [ $ISSHORT -eq 1 ]; then
-			echo "${CHKLINE}${ESCLF}" | sed 's/.* - //g'
+
+	elif [ "${LINE_LEVEL}" -eq 1 ]; then
+		if [ "${IS_SHORT}" -eq 1 ]; then
+			echo "${REVERTED_LINE}${ESC_LF_CHAR}" | sed -e 's/.* - //g' -e 's/[[:space:]]\+/ /g'
 			break
 		fi
-		LINELEVEL=2
+		LINE_LEVEL=2
 
-	elif [ $LINELEVEL -eq 2 ]; then
-		if [ "X$CHKLINE" = "XDESCRIPTION" ]; then
-			LINELEVEL=3
+	elif [ "${LINE_LEVEL}" -eq 2 ]; then
+		if [ -n "${REVERTED_LINE}" ] && [ "${REVERTED_LINE}" = "DESCRIPTION" ]; then
+			LINE_LEVEL=3
 		fi
-	elif [ $LINELEVEL -eq 3 ]; then
-		if [ "X$CHKLINE" = "X" ]; then
-			if [ $SPACECHAR -eq 1 ]; then
-				echo " .${ESCLF}"
+
+	elif [ "${LINE_LEVEL}" -eq 3 ]; then
+		if [ -z "${REVERTED_LINE}" ]; then
+			if [ "${IS_DEB_CONTROL_FILE}" -eq 0 ]; then
+				echo "${ESC_LF_CHAR}"
 			else
-				echo "${ESCLF}"
+				echo " .${ESC_LF_CHAR}"
 			fi
 		else
-			if [ "X$LINE" = "X$CHKLINE" ]; then
+			if [ "X${ONE_LINE}" = "X${REVERTED_LINE}" ]; then
 				#
 				# This is new section
 				#
 				break
 			fi
-			if [ $SPACECHAR -eq 0 ]; then
-				echo "${CHKLINE}${ESCLF}"
+
+			OUTPUT_LINE=$(echo "${REVERTED_LINE}${ESC_LF_CHAR}" | sed -e 's/[[:space:]]\+/ /g')
+			if [ "${IS_DEB_CONTROL_FILE}" -eq 0 ]; then
+				echo "${OUTPUT_LINE}"
 			else
-				if [ "X$LONGDEST_START" = "Xno" ]; then
-					echo " ${CHKLINE}${ESCLF}"
-					LONGDEST_START="yes"
+				if [ "${START_LONG_DESCRIPT}" -eq 0 ]; then
+					echo " ${OUTPUT_LINE}"
+					START_LONG_DESCRIPT=1
 				else
-					echo "  ${CHKLINE}${ESCLF}"
+					echo "  ${OUTPUT_LINE}"
 				fi
 			fi
 		fi
 	fi
-done < ${TEMPFILE}
+done < "${TEMP_FILE}"
 
-rm -f ${TEMPFILE} > /dev/null 2>&1
+rm -f "${TEMP_FILE}"
 
 exit 0
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
 #

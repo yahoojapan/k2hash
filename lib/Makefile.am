@@ -139,7 +139,7 @@ ACLOCAL_AMFLAGS		= -I m4
 .PHONY:	k2hashversion
 
 k2hashversion.cc:	k2hashversion
-	@../buildutils/make_commit_hash_source.sh k2hashversion.cc k2h_commit_hash
+	@../buildutils/make_commit_hash_source.sh -dch @CURRENTREV@ k2hashversion.cc k2h_commit_hash
 
 #
 # VIM modelines

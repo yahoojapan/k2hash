@@ -54,7 +54,7 @@ AC_CHECK_LIB(dl, dlopen)
 #
 # Checks for header files.
 #
-AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h strings.h sys/time.h termios.h unistd.h netdb.h endian.h sys/endian.h])
+AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h strings.h sys/time.h termios.h unistd.h netdb.h endian.h inttypes.h sys/endian.h])
 
 #
 # Checks for typedefs, structures, and compiler characteristics.
@@ -69,6 +69,7 @@ AC_TYPE_UINT64_T
 AC_TYPE_INT32_T
 AC_TYPE_UID_T
 AC_TYPE_MODE_T
+AC_CHECK_TYPES([ptrdiff_t])
 
 #
 # Checks for library functions.
@@ -112,23 +113,23 @@ AC_SUBST([CONFIGURECUSTOM], "${configure_custom_file}")
 AC_SUBST([GIT_DOMAIN], "${custom_git_domain}")
 AC_SUBST([GIT_ORG], "${custom_git_org}")
 AC_SUBST([GIT_REPO], "${custom_git_repo}")
-AC_SUBST([CURRENTREV], "$($(pwd)/buildutils/make_commit_hash.sh -o "${custom_git_org}" -r "${custom_git_repo}" -ep "${custom_git_endpoint}" -short)")
+AC_SUBST([CURRENTREV], "$($(pwd)/buildutils/make_commit_hash.sh -o "${custom_git_org}" -r "${custom_git_repo}" -ep "${custom_git_endpoint}" -s)")
 AC_SUBST([DEV_EMAIL], "$(echo ${DEBEMAIL:-"${custom_dev_email}"})")
 AC_SUBST([DEV_NAME], "$(echo ${DEBFULLNAME:-"${custom_dev_name}"})")
 #
 AC_SUBST([RPMCHANGELOG], "`$(pwd)/buildutils/make_rpm_changelog.sh $(pwd)/ChangeLog`")
-AC_SUBST([SHORTDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 -short`")
-AC_SUBST([LONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 -long`")
-AC_SUBST([ESCLONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 -esclong`")
-AC_SUBST([DEBLONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 -deblong`")
-AC_SUBST([PKG_VERSION], "`$(pwd)/buildutils/make_variables.sh -pkg_version`")
-AC_SUBST([LIB_VERSION_INFO], "`$(pwd)/buildutils/make_variables.sh -lib_version_info`")
-AC_SUBST([LIB_VERSION_LINK], "`$(pwd)/buildutils/make_variables.sh -lib_version_for_link`")
-AC_SUBST([LIB_MAJOR_NUMBER], "`$(pwd)/buildutils/make_variables.sh -major_number`")
+AC_SUBST([SHORTDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 --short`")
+AC_SUBST([LONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 --long`")
+AC_SUBST([ESCLONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 --esclong`")
+AC_SUBST([DEBLONGDESC], "`$(pwd)/buildutils/make_description.sh $(pwd)/docs/k2hash.1 --deblong`")
+AC_SUBST([PKG_VERSION], "`$(pwd)/buildutils/make_variables.sh --pkg_version`")
+AC_SUBST([LIB_VERSION_INFO], "`$(pwd)/buildutils/make_variables.sh --lib_version_info`")
+AC_SUBST([LIB_VERSION_LINK], "`$(pwd)/buildutils/make_variables.sh --lib_version_for_link`")
+AC_SUBST([LIB_MAJOR_NUMBER], "`$(pwd)/buildutils/make_variables.sh --major_number`")
 AC_SUBST([PKGLICENSE], "`grep License COPYING | sed 's/ License//g'`")
 AC_SUBST([DEBCOPYING], "`tail -n +5 COPYING | sed 's/^$/./g' | sed 's/^/ /g'`")
-AC_SUBST([DEBHELPER_DEP], "`$(pwd)/buildutils/make_variables.sh -debhelper_dep`")
-AC_SUBST([RPMPKG_GROUP], ["`$(pwd)/buildutils/make_variables.sh -rpmpkg_group | sed 's#NEEDRPMGROUP#Group: Applications/Databases#g'`"])
+AC_SUBST([DEBHELPER_DEP], "`$(pwd)/buildutils/make_variables.sh --debhelper_dep`")
+AC_SUBST([RPMPKG_GROUP], ["`$(pwd)/buildutils/make_variables.sh --rpmpkg_group | sed 's#NEEDRPMGROUP#Group: Applications/Databases#g'`"])
 AM_SUBST_NOTMAKE([CURRENTREV])
 AM_SUBST_NOTMAKE([RPMCHANGELOG])
 AM_SUBST_NOTMAKE([SHORTDESC])
@@ -289,9 +290,8 @@ AS_IF([test ${std_fnv_function} = 1],
 #
 AC_MSG_CHECKING(for MAP_ANONYMOUS symbol)
 AC_CACHE_VAL(ac_cv_map_anonymous,
-	AC_TRY_COMPILE([
-		# include <sys/mman.h>],
-		[int val = MAP_ANONYMOUS; ],
+	AC_COMPILE_IFELSE(
+		[AC_LANG_PROGRAM([[#include <sys/mman.h>; int val = MAP_ANONYMOUS;]])],
 		ac_cv_map_anonymous=yes,
 		ac_cv_map_anonymous=no
 	)
@@ -313,6 +313,7 @@ AC_CONFIG_FILES([Makefile
 				buildutils/Makefile
 				buildutils/control
 				buildutils/copyright
+				buildutils/rules
 				buildutils/k2hash.spec
 				buildutils/Dockerfile.templ])
 

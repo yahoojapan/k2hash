@@ -130,6 +130,7 @@ COMMIT_HASH
 *.k2h
 buildutils/control
 buildutils/copyright
+buildutils/rules
 rpmbuild
 rpmbuild/*
 debian
@@ -137,7 +138,6 @@ debian/*
 debian_build
 debian_build/*
 lib/k2hashversion.cc
-tests/results.xml
 tests/test-suite.log
 tests/test.sh.log
 tests/test.sh.trs
