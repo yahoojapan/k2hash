@@ -24,6 +24,14 @@
 # REVISION:
 #
 
+#==============================================================
+# Autotools
+#==============================================================
+#
+# Instead of pipefail(for shells not support "set -o pipefail")
+#
+PIPEFAILURE_FILE="/tmp/.pipefailure.$(od -An -tu4 -N4 /dev/random | tr -d ' \n')"
+
 #
 # Common variables
 #
@@ -32,7 +40,7 @@ AUTOGEN_DIR=$(dirname "${0}")
 SRCTOP=$(cd "${AUTOGEN_DIR}" || exit 1; pwd)
 
 #
-# Run
+# Start to run
 #
 echo "[RUN] autogen.sh"
 echo ""
@@ -75,7 +83,7 @@ done
 #
 if [ "${UPDATE_VERSION_FILE}" -eq 1 ] && [ -f "${SRCTOP}/buildutils/make_release_version_file.sh" ]; then
 	echo "    [INFO] run make_release_version_file.sh"
-	if ! /bin/sh -c "${SRCTOP}/buildutils/make_release_version_file.sh" "${PARAMETERS}" 2>&1 | sed -e 's|^|        |g'; then
+	if ({ /bin/sh -c "${SRCTOP}/buildutils/make_release_version_file.sh" "${PARAMETERS}" 2>&1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's|^|        |g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 		echo "[ERROR] update RELEASE_VERSION file"
 		exit 1
 	fi
@@ -102,7 +110,7 @@ fi
 #
 if [ ! -f configure.scan ] || [ -n "${FORCEPARAM}" ]; then
 	echo "    [INFO] run autoscan"
-	if ! autoscan 2>&1 | sed -e 's|^|        |g'; then
+	if ({ autoscan 2>&1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's|^|        |g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 		echo "[ERROR] something error occurred in autoscan"
 		exit 1
 	fi
@@ -112,7 +120,7 @@ fi
 # Copy libtools
 #
 if grep -q 'LT_INIT' configure.ac configure.scan; then
-	if ! libtoolize --force --copy 2>&1 | sed -e 's|^|        |g'; then
+	if ({ libtoolize --force --copy 2>&1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's|^|        |g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 		echo "[ERROR] something error occurred in libtoolize"
 		exit 1
 	fi
@@ -122,27 +130,27 @@ fi
 # Build configure and Makefile
 #
 echo "    [INFO] run aclocal ${FORCEPARAM}"
-if ! /bin/sh -c "aclocal ${FORCEPARAM}" 2>&1 | sed -e 's|^|        |g'; then
+if ({ /bin/sh -c "aclocal ${FORCEPARAM}" 2>&1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's|^|        |g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] something error occurred in aclocal ${FORCEPARAM}"
 	exit 1
 fi
 
 if grep -q 'AC_CONFIG_HEADERS' configure.ac configure.scan; then
 	echo "    [INFO] run autoheader"
-	if ! autoheader 2>&1 | sed -e 's|^|        |g'; then
+	if ({ autoheader 2>&1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's|^|        |g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 		echo "[ERROR] something error occurred in autoheader"
 		exit 1
 	fi
 fi
 
 echo "    [INFO] run automake -c --add-missing"
-if ! automake -c --add-missing 2>&1 | sed -e 's|^|        |g'; then
+if ({ automake -c --add-missing 2>&1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's|^|        |g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] something error occurred in automake -c --add-missing"
 	exit 1
 fi
 
 echo "    [INFO] run autoconf"
-if ! autoconf 2>&1 | sed -e 's|^|        |g'; then
+if ({ autoconf 2>&1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's|^|        |g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] something error occurred in autoconf"
 	exit 1
 fi

@@ -22,9 +22,28 @@
 # REVISION:
 #
 
+#==============================================================
+# Autobuild for debian package
+#==============================================================
 #
-# Autobuid for debian package
+# Instead of pipefail(for shells not support "set -o pipefail")
 #
+PIPEFAILURE_FILE="/tmp/.pipefailure.$(od -An -tu4 -N4 /dev/random | tr -d ' \n')"
+
+#
+# For shellcheck
+#
+if locale -a | grep -q -i '^[[:space:]]*C.utf8[[:space:]]*$'; then
+	LANG=$(locale -a | grep -i '^[[:space:]]*C.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+	LC_ALL="${LANG}"
+	export LANG
+	export LC_ALL
+elif locale -a | grep -q -i '^[[:space:]]*en_US.utf8[[:space:]]*$'; then
+	LANG=$(locale -a | grep -i '^[[:space:]]*en_US.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+	LC_ALL="${LANG}"
+	export LANG
+	export LC_ALL
+fi
 
 #
 # Common variables
@@ -264,13 +283,13 @@ fi
 # Run configure for package version
 #
 echo "[INFO] Run autogen"
-if ! "${SRCTOP}"/autogen.sh | sed -e 's/^/    /'; then
+if ({ "${SRCTOP}"/autogen.sh || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to run autogen.sh." 1>&2
 	exit 1
 fi
 echo ""
 echo "[INFO] Run configure"
-if ! /bin/sh -c "${SRCTOP}/configure ${CONFIGUREOPT}" | sed -e 's/^/    /'; then
+if ({ /bin/sh -c "${SRCTOP}/configure ${CONFIGUREOPT}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to run configure." 1>&2
 	exit 1
 fi
@@ -295,7 +314,7 @@ fi
 #
 echo ""
 echo "[INFO] Create dist file(tar.gz)"
-if ! make dist | sed -e 's/^/    /'; then
+if ({ make dist || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to create dist package(make dist)." 1>&2
 	exit 1
 fi
@@ -314,7 +333,7 @@ if ! cp "${SRCTOP}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz" "${BUILDDEBDIR}/."
 	echo "[ERROR] Failed to copy ${SRCTOP}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz file to ${BUILDDEBDIR}" 1>&2
 	exit 1
 fi
-if ! tar xvfz "${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz" | sed -e 's/^/    /'; then
+if ({ tar xvfz "${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to expand source code from ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz" 1>&2
 	exit 1
 fi
@@ -341,7 +360,7 @@ if [ -z "${LOGNAME}" ] && [ -z "${USER}" ]; then
 	export USER="root"
 	export LOGNAME="root"
 fi
-if ! /bin/sh -c "dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig --${PKG_CLASS_NAME} ${DH_MAKE_AUTORUN_OPTION}" | sed -e 's/^/    /'; then
+if ({ /bin/sh -c "dh_make -f ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz --createorig --${PKG_CLASS_NAME} ${DH_MAKE_AUTORUN_OPTION}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to run dh_make with ${BUILDDEBDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz for initializing debian directory." 1>&2
 	exit 1
 fi
@@ -520,7 +539,7 @@ fi
 # This option can be removed if ubuntu16.04 is unsupported.
 #
 echo "[INFO] Create debian packages"
-if ! debuild -us -uc -d | sed -e 's/^/    /'; then
+if ({ debuild -us -uc -d || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to run \"debuild -us -uc\"." 1>&2
 	exit 1
 fi
@@ -543,13 +562,13 @@ fi
 for _one_pkg in ${FOUND_DEB_PACKAGES}; do
 	echo ""
 	echo "[INFO] ${_one_pkg} package information"
-	if ! dpkg -c "${_one_pkg}" | sed -e 's/^/    /'; then
+	if ({ dpkg -c "${_one_pkg}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 		echo "[ERROR] Failed to print ${_one_pkg} package insformation by \"dpkg -c\"." 1>&2
 		exit 1
 	fi
 	echo "    ---------------------------"
 
-	if ! dpkg -I "${_one_pkg}" | sed -e 's/^/    /'; then
+	if ({ dpkg -I "${_one_pkg}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 		echo "[ERROR] Failed to print ${_one_pkg} package insformation by \"dpkg -I\"." 1>&2
 		exit 1
 	fi
