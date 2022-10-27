@@ -1,3 +1,4 @@
+
 #!/bin/sh
 #
 # Utility tools for building configure/packages by AntPickax
@@ -22,9 +23,28 @@
 # REVISION:
 #
 
+#==============================================================
+# Autobuild for rpm package
+#==============================================================
 #
-# Autobuid for rpm package
+# Instead of pipefail(for shells not support "set -o pipefail")
 #
+PIPEFAILURE_FILE="/tmp/.pipefailure.$(od -An -tu4 -N4 /dev/random | tr -d ' \n')"
+
+#
+# For shellcheck
+#
+if locale -a | grep -q -i '^[[:space:]]*C.utf8[[:space:]]*$'; then
+	LANG=$(locale -a | grep -i '^[[:space:]]*C.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+	LC_ALL="${LANG}"
+	export LANG
+	export LC_ALL
+elif locale -a | grep -q -i '^[[:space:]]*en_US.utf8[[:space:]]*$'; then
+	LANG=$(locale -a | grep -i '^[[:space:]]*en_US.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+	LC_ALL="${LANG}"
+	export LANG
+	export LC_ALL
+fi
 
 #
 # Common variables
@@ -184,13 +204,13 @@ done
 # Run configure for package version
 #
 echo "[INFO] Run autogen"
-if ! "${SRCTOP}"/autogen.sh | sed -e 's/^/    /'; then
+if ({ "${SRCTOP}"/autogen.sh || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to run autogen.sh." 1>&2
 	exit 1
 fi
 echo ""
 echo "[INFO] Run configure"
-if ! /bin/sh -c "${SRCTOP}/configure ${CONFIGUREOPT}" | sed -e 's/^/    /'; then
+if ({ /bin/sh -c "${SRCTOP}/configure ${CONFIGUREOPT}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to run configure." 1>&2
 	exit 1
 fi
@@ -217,7 +237,7 @@ if [ "$(git status -s | wc -l)" -eq 0 ]; then
 	#
 	# make source package(tar.gz) by git archive
 	#
-	if ! git archive HEAD --prefix="${PACKAGE_NAME}-${PACKAGE_VERSION}/" --output="${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz" | sed -e 's/^/    /'; then
+	if ({ git archive HEAD --prefix="${PACKAGE_NAME}-${PACKAGE_VERSION}/" --output="${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 		echo "[ERROR] Could not make source tar ball(${RPM_TOPDIR}/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz) from github repository." 1>&2
 		exit 1
 	fi
@@ -231,7 +251,7 @@ else
 	#
 	# make dist package(tar.gz) and copy it
 	#
-	if ! make dist | sed -e 's/^/    /'; then
+	if ({ make dist || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 		echo "[ERROR] Failed to create dist package(make dist)." 1>&2
 		exit 1
 	fi
@@ -259,7 +279,7 @@ fi
 # build RPM packages
 #
 echo "[INFO] Create RPM packages"
-if ! /bin/sh -c "rpmbuild -vv -ba ${RUN_AUTOGEN_FLAG} --define \"_topdir ${RPM_TOPDIR}\" --define \"_prefix /usr\" --define \"_mandir /usr/share/man\" --define \"_defaultdocdir /usr/share/doc\" --define \"package_revision ${BUILD_NUMBER}\" *.spec" 2>&1 | sed -e 's/^/    /'; then
+if ({ /bin/sh -c "rpmbuild -vv -ba ${RUN_AUTOGEN_FLAG} --define \"_topdir ${RPM_TOPDIR}\" --define \"_prefix /usr\" --define \"_mandir /usr/share/man\" --define \"_defaultdocdir /usr/share/doc\" --define \"package_revision ${BUILD_NUMBER}\" *.spec" 2>&1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to build rpm packages by rpmbuild." 1>&2
 	exit 1
 fi
