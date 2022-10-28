@@ -88,7 +88,7 @@ func_usage()
 
 get_default_package_class()
 {
-	if dh_make -h 2>/dev/null | grep '\--multi' >/dev/null 2>&1; then
+	if dh_make -h 2>/dev/null | grep -q '\--multi'; then
 		printf 'multi'
 	else
 		printf 'library'
