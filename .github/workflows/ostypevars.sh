@@ -1,5 +1,7 @@
 #
-# Utility helper tools for Github Actions by AntPickax
+# K2HASH
+#
+# Utility tools for building configure/packages by AntPickax
 #
 # Copyright 2020 Yahoo Japan Corporation.
 #
@@ -18,12 +20,12 @@
 #
 # AUTHOR:   Takeshi Nakatani
 # CREATE:   Fri, Nov 13 2020
-# REVISION:	1.0
+# REVISION:	1.1
 #
 
-#---------------------------------------------------------------------
-# About this file
-#---------------------------------------------------------------------
+#===============================================================
+# Configuration for build_helper.sh
+#===============================================================
 # This file is loaded into the build_helper.sh script.
 # The build_helper.sh script is a Github Actions helper script that
 # builds and packages the target repository.
@@ -38,8 +40,6 @@
 #                       packaging
 #   CONFIGURE_EXT_OPT : Options to specify when running configure
 #   INSTALLER_BIN     : Package management command
-#   PKG_TYPE_DEB      : Set to 1 for debian packages, 0 otherwise
-#   PKG_TYPE_RPM      : Set to 1 for rpm packages, 0 otherwise
 #   PKG_OUTPUT_DIR    : Set the directory path where the package will
 #                       be created relative to the top directory of the
 #                       source
@@ -48,6 +48,8 @@
 #   IS_OS_DEBIAN      : Set to 1 for Debian, 0 otherwise
 #   IS_OS_CENTOS      : Set to 1 for CentOS, 0 otherwise
 #   IS_OS_FEDORA      : Set to 1 for Fedora, 0 otherwise
+#   IS_OS_ROCKY       : Set to 1 for Rocky, 0 otherwise
+#   IS_OS_ALPINE      : Set to 1 for Alpine, 0 otherwise
 #
 # Set these variables according to the CI_OSTYPE variable.
 # The value of the CI_OSTYPE variable matches the name of the
@@ -55,169 +57,269 @@
 # Check the ".github/workflow/***.yml" file for the value.
 #
 
-#---------------------------------------------------------------------
+#----------------------------------------------------------
 # Default values
-#---------------------------------------------------------------------
-DIST_TAG=
-INSTALL_PKG_LIST=
-CONFIGURE_EXT_OPT=
-INSTALLER_BIN=
-PKG_TYPE_DEB=0
-PKG_TYPE_RPM=0
-PKG_OUTPUT_DIR=
-PKG_EXT=
+#----------------------------------------------------------
+DIST_TAG=""
+INSTALL_PKG_LIST=""
+CONFIGURE_EXT_OPT=""
+INSTALLER_BIN=""
+PKG_OUTPUT_DIR=""
+PKG_EXT=""
+
 IS_OS_UBUNTU=0
 IS_OS_DEBIAN=0
 IS_OS_CENTOS=0
 IS_OS_FEDORA=0
+IS_OS_ROCKY=0
+IS_OS_ALPINE=0
 
-#---------------------------------------------------------------------
+#----------------------------------------------------------
 # Variables for each OS Type
-#---------------------------------------------------------------------
-if [ "X${CI_OSTYPE}" = "Xubuntu:20.04" -o "X${CI_OSTYPE}" = "Xubuntu:focal" ]; then
+#----------------------------------------------------------
+#
+# special variables for all
+#
+export K2HATTR_ENC_TYPE=AES256_PBKDF2
+
+if [ -z "${CI_OSTYPE}" ]; then
+	#
+	# Unknown OS : Nothing to do
+	#
+	:
+elif [ "${CI_OSTYPE}" = "ubuntu:22.04" ] || [ "${CI_OSTYPE}" = "ubuntu:jammy" ]; then
+	DIST_TAG="ubuntu/jammy"
+	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
+	INSTALLER_BIN="apt-get"
+	INSTALL_QUIET_ARG="-qq"
+	PKG_OUTPUT_DIR="debian_build"
+	PKG_EXT="deb"
+	IS_OS_UBUNTU=1
+
+elif [ "${CI_OSTYPE}" = "ubuntu:20.04" ] || [ "${CI_OSTYPE}" = "ubuntu:focal" ]; then
 	DIST_TAG="ubuntu/focal"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	CONFIGURE_EXT_OPT="--with-gcrypt"
 	INSTALLER_BIN="apt-get"
 	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=1
-	PKG_TYPE_RPM=0
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
 	IS_OS_UBUNTU=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
 
-elif [ "X${CI_OSTYPE}" = "Xubuntu:18.04" -o "X${CI_OSTYPE}" = "Xubuntu:bionic" ]; then
+elif [ "${CI_OSTYPE}" = "ubuntu:18.04" ] || [ "${CI_OSTYPE}" = "ubuntu:bionic" ]; then
 	DIST_TAG="ubuntu/bionic"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	CONFIGURE_EXT_OPT="--with-gcrypt"
 	INSTALLER_BIN="apt-get"
 	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=1
-	PKG_TYPE_RPM=0
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
 	IS_OS_UBUNTU=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
 
-elif [ "X${CI_OSTYPE}" = "Xubuntu:16.04" -o "X${CI_OSTYPE}" = "Xubuntu:xenial" ]; then
-	DIST_TAG="ubuntu/xenial"
+elif [ "${CI_OSTYPE}" = "debian:11" ] || [ "${CI_OSTYPE}" = "debian:bullseye" ]; then
+	DIST_TAG="debian/bullseye"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	CONFIGURE_EXT_OPT="--with-gcrypt"
 	INSTALLER_BIN="apt-get"
 	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=1
-	PKG_TYPE_RPM=0
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
-	IS_OS_UBUNTU=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
+	IS_OS_DEBIAN=1
 
-elif [ "X${CI_OSTYPE}" = "Xdebian:10" -o "X${CI_OSTYPE}" = "Xdebian:buster" ]; then
+elif [ "${CI_OSTYPE}" = "debian:10" ] || [ "${CI_OSTYPE}" = "debian:buster" ]; then
 	DIST_TAG="debian/buster"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	CONFIGURE_EXT_OPT="--with-gcrypt"
 	INSTALLER_BIN="apt-get"
 	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=1
-	PKG_TYPE_RPM=0
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
 	IS_OS_DEBIAN=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
 
-elif [ "X${CI_OSTYPE}" = "Xdebian:9" -o "X${CI_OSTYPE}" = "Xdebian:stretch" ]; then
-	DIST_TAG="debian/stretch"
-	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	CONFIGURE_EXT_OPT="--with-gcrypt"
-	INSTALLER_BIN="apt-get"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=1
-	PKG_TYPE_RPM=0
-	PKG_OUTPUT_DIR="debian_build"
-	PKG_EXT="deb"
-	IS_OS_DEBIAN=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
+elif [ "${CI_OSTYPE}" = "rockylinux:9.0" ] || [ "${CI_OSTYPE}" = "rockylinux:9" ]; then
+	DIST_TAG="el/9"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+	INSTALLER_BIN="dnf"
+	INSTALL_QUIET_ARG="-q"
+	PKG_OUTPUT_DIR="."
+	PKG_EXT="rpm"
+	IS_OS_ROCKY=1
 
-elif [ "X${CI_OSTYPE}" = "Xcentos:8" -o "X${CI_OSTYPE}" = "Xcentos:centos8" ]; then
+elif [ "${CI_OSTYPE}" = "rockylinux:8.6" ] || [ "${CI_OSTYPE}" = "rockylinux:8" ]; then
 	DIST_TAG="el/8"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	CONFIGURE_EXT_OPT="--with-nss"
 	INSTALLER_BIN="dnf"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=0
-	PKG_TYPE_RPM=1
+	INSTALL_QUIET_ARG="-q"
+	PKG_OUTPUT_DIR="."
+	PKG_EXT="rpm"
+	IS_OS_ROCKY=1
+
+elif [ "${CI_OSTYPE}" = "centos:7" ] || [ "${CI_OSTYPE}" = "centos:centos7" ]; then
+	DIST_TAG="el/7"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+	INSTALLER_BIN="yum"
+	INSTALL_QUIET_ARG="-q"
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
 	IS_OS_CENTOS=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
+
+elif [ "${CI_OSTYPE}" = "fedora:36" ]; then
+	DIST_TAG="fedora/36"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+	INSTALLER_BIN="dnf"
+	INSTALL_QUIET_ARG="-q"
+	PKG_OUTPUT_DIR="."
+	PKG_EXT="rpm"
+	IS_OS_FEDORA=1
+
+elif [ "${CI_OSTYPE}" = "fedora:35" ]; then
+	DIST_TAG="fedora/35"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+	INSTALLER_BIN="dnf"
+	INSTALL_QUIET_ARG="-q"
+	PKG_OUTPUT_DIR="."
+	PKG_EXT="rpm"
+	IS_OS_FEDORA=1
+
+#
+# [NOTICE]
+# The OS from here onwards will be used until a new version is created, but we will drop support for it soon.
+# Newer versions will only support the OSes mentioned before this line.
+#
+elif [ "${CI_OSTYPE}" = "ubuntu:16.04" ] || [ "${CI_OSTYPE}" = "ubuntu:xenial" ]; then
+	DIST_TAG="ubuntu/xenial"
+	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
+	INSTALLER_BIN="apt-get"
+	INSTALL_QUIET_ARG="-qq"
+	PKG_OUTPUT_DIR="debian_build"
+	PKG_EXT="deb"
+	IS_OS_UBUNTU=1
+
+elif [ "${CI_OSTYPE}" = "debian:9" ] || [ "${CI_OSTYPE}" = "debian:stretch" ]; then
+	DIST_TAG="debian/stretch"
+	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
+	INSTALLER_BIN="apt-get"
+	INSTALL_QUIET_ARG="-qq"
+	PKG_OUTPUT_DIR="debian_build"
+	PKG_EXT="deb"
+	IS_OS_DEBIAN=1
+
+elif [ "${CI_OSTYPE}" = "centos:8" ] || [ "${CI_OSTYPE}" = "centos:centos8" ]; then
+	DIST_TAG="el/8"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+	INSTALLER_BIN="dnf"
+	INSTALL_QUIET_ARG="-qq"
+	PKG_OUTPUT_DIR="."
+	PKG_EXT="rpm"
+	IS_OS_CENTOS=1
 
 	#
 	# Change mirrorlist
 	#
 	sed -i -e 's|^mirrorlist|#mirrorlist|g' -e 's|^#baseurl=http://mirror|baseurl=http://vault|g' /etc/yum.repos.d/CentOS-*repo
 
-elif [ "X${CI_OSTYPE}" = "Xcentos:7" -o "X${CI_OSTYPE}" = "Xcentos:centos7" ]; then
-	DIST_TAG="el/7"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	CONFIGURE_EXT_OPT="--with-nss"
-	INSTALLER_BIN="yum"
-	INSTALL_QUIET_ARG=""
-	PKG_TYPE_DEB=0
-	PKG_TYPE_RPM=1
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_CENTOS=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
-
-elif [ "X${CI_OSTYPE}" = "Xfedora:32" ]; then
+elif [ "${CI_OSTYPE}" = "fedora:32" ]; then
 	DIST_TAG="fedora/32"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	CONFIGURE_EXT_OPT="--with-nss"
 	INSTALLER_BIN="dnf"
 	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=0
-	PKG_TYPE_RPM=1
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
 	IS_OS_FEDORA=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
 
-elif [ "X${CI_OSTYPE}" = "Xfedora:31" ]; then
+elif [ "${CI_OSTYPE}" = "fedora:31" ]; then
 	DIST_TAG="fedora/31"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	CONFIGURE_EXT_OPT="--with-nss"
 	INSTALLER_BIN="dnf"
 	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=0
-	PKG_TYPE_RPM=1
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
 	IS_OS_FEDORA=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
 
-elif [ "X${CI_OSTYPE}" = "Xfedora:30" ]; then
+elif [ "${CI_OSTYPE}" = "fedora:30" ]; then
 	DIST_TAG="fedora/30"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	CONFIGURE_EXT_OPT="--with-nss"
 	INSTALLER_BIN="dnf"
 	INSTALL_QUIET_ARG="-qq"
-	PKG_TYPE_DEB=0
-	PKG_TYPE_RPM=1
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
 	IS_OS_FEDORA=1
-	# special variables
-	export K2HATTR_ENC_TYPE=AES256_PBKDF2
+fi
+
+#---------------------------------------------------------------
+# Enable/Disable processing
+#---------------------------------------------------------------
+# [NOTE]
+# Specify the phase of processing to use.
+# The phases that can be specified are the following values, and
+# the default is set for C/C++ processing.
+# Setting this value to 1 enables the corresponding processing,
+# setting it to 0 disables it.
+#
+#	<variable name>		<default value>
+#	RUN_PRE_CONFIG			1
+#	RUN_CONFIG				1
+#	RUN_PRE_CLEANUP			0
+#	RUN_CLEANUP				1
+#	RUN_POST_CLEANUP		0
+#	RUN_CPPCHECK			1
+#	RUN_SHELLCHECK			1
+#	RUN_CHECK_OTHER			0
+#	RUN_PRE_BUILD			0
+#	RUN_BUILD				1
+#	RUN_POST_BUILD			0
+#	RUN_PRE_TEST			0
+#	RUN_TEST				1
+#	RUN_POST_TEST			0
+#	RUN_PRE_PACKAGE			0
+#	RUN_PACKAGE				1
+#	RUN_POST_PACKAGE		0
+#	RUN_PUBLISH_PACKAGE		1
+#
+RUN_SHELLCHECK=0
+
+#---------------------------------------------------------------
+# Variables for each process
+#---------------------------------------------------------------
+# [NOTE]
+# Specify the following variables that can be specified in each phase.
+# Each value has a default value for C/C++ processing.
+#
+#	AUTOGEN_EXT_OPT_RPM				""
+#	AUTOGEN_EXT_OPT_DEBIAN			""
+#	AUTOGEN_EXT_OPT_ALPINE			""
+#	AUTOGEN_EXT_OPT_OTHER			""
+#
+#	CONFIGURE_EXT_OPT_RPM			""
+#	CONFIGURE_EXT_OPT_DEBIAN		""
+#	CONFIGURE_EXT_OPT_ALPINE		""
+#	CONFIGURE_EXT_OPT_OTHER			""
+#
+#	BUILD_MAKE_EXT_OPT_RPM			""
+#	BUILD_MAKE_EXT_OPT_DEBIAN		""
+#	BUILD_MAKE_EXT_OPT_ALPINE		""
+#	BUILD_MAKE_EXT_OPT_OTHER		""
+#
+#	MAKE_TEST_OPT_RPM				"check"
+#	MAKE_TEST_OPT_DEBIAN			"check"
+#	MAKE_TEST_OPT_ALPINE			"check"
+#	MAKE_TEST_OPT_OTHER				"check"
+#
+#	CREATE_PACKAGE_TOOL_RPM			"buildutils/rpm_build.sh"
+#	CREATE_PACKAGE_TOOL_DEBIAN		"buildutils/debian_build.sh"
+#	CREATE_PACKAGE_TOOL_ALPINE		"buildutils/apline_build.sh"
+#	CREATE_PACKAGE_TOOL_OTHER		""
+#
+#	CREATE_PACKAGE_TOOL_OPT_AUTO	"-y"
+#	CREATE_PACKAGE_TOOL_OPT_RPM		""
+#	CREATE_PACKAGE_TOOL_OPT_DEBIAN	""
+#	CREATE_PACKAGE_TOOL_OPT_ALPINE	""
+#	CREATE_PACKAGE_TOOL_OPT_OTHER	""
+#
+if [ "${IS_OS_UBUNTU}" -eq 1 ] || [ "${IS_OS_DEBIAN}" -eq 1 ]; then
+	CONFIGURE_EXT_OPT_DEBIAN="--with-gcrypt"
+elif [ "${IS_OS_CENTOS}" -eq 1 ] || [ "${IS_OS_ROCKY}" -eq 1 ] || [ "${IS_OS_FEDORA}" -eq 1 ]; then
+	CONFIGURE_EXT_OPT_RPM="--with-nss"
+fi
+
+if [ "${IS_OS_UBUNTU}" -eq 1 ] || [ "${IS_OS_DEBIAN}" -eq 1 ]; then
+	CREATE_PACKAGE_TOOL_OPT_DEBIAN="--disttype ${DIST_TAG}"
 fi
 
 #

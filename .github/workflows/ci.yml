@@ -1,5 +1,7 @@
 #
-# Utility helper tools for Github Actions by AntPickax
+# K2HASH
+#
+# Utility tools for building configure/packages by AntPickax
 #
 # Copyright 2020 Yahoo Japan Corporation.
 #
@@ -57,6 +59,22 @@ jobs:
       #
       # matrix for containers
       #
+      # [NOTICE]
+      # The current matrix(OS) will be used until launching a new version
+      # is created, including the OS that will end support soon.
+      # The new version will support the following OS, and these OS list
+      # will replace current matrix.
+      #    ubuntu:jammy
+      #    ubuntu:focal
+      #    ubuntu:bionic
+      #    debian:bullseye
+      #    debian:buster
+      #    centos:centos7
+      #    rockylinux:9
+      #    rockylinux:8
+      #    fedora:36
+      #    fedora:35
+      #
       matrix:
         container:
           - ubuntu:20.04
@@ -64,7 +82,6 @@ jobs:
           - ubuntu:16.04
           - debian:buster
           - debian:stretch
-          - centos:centos8
           - centos:centos7
           - fedora:32
           - fedora:31
@@ -75,26 +92,20 @@ jobs:
 
     steps:
       #
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      #
-      # [NOTE] using checkout@v1 instead of @v2
-      # We need to run on centos6, it fails checkout@v2 because checkout@v2 uses nodejs12
-      # and nodejs12 cannot run old os(like centos6).
-      # However checkout@v1 does not use nodejs, then it can run on old os(like centos6)
-      # see: https://github.com/actions/runner/issues/337
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your
+      # job can access it
       #
       - name: Checkout sources
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       #
-      # Run building and packaging helper
+      # Set environments from secrets
       #
-      # [NOTE] Secrets and Environments
-      # When passing parameters to build_helper.sh in build and packaging,
-      # use Secret of organization or repository.
-      # 
-      # By setting the correct values for the following variable names,
-      # they will be passed as parameters in build_helper.sh.
+      # [NOTE] Secrets
+      # Use Secrets of organization or repository as parameters to
+      # pass to build_helper.sh for building and packaging, .
+      #
+      # The available Secret variables are listed below:
       #    OSTYPE_VARS_FILE           : specify custom variables file
       #    BUILD_NUMBER               : buld number for packaging
       #    DEVELOPER_FULLNAME         : developer name for package
@@ -106,35 +117,28 @@ jobs:
       #    PACKAGECLOUD_PUBLISH_REPO  : repo name as a pat of path to packagcloud.io for publishing
       #    PACKAGECLOUD_DOWNLOAD_REPO : repo name as a pat of path to packagcloud.io for downloading
       #
-      # [REQUIRED]
-      # PACKAGECLOUD_TOKEN is required to publish(upload) the package!!!
-      # For yahoojapan organization repositories, always set PACKAGECLOUD_TOKEN!!!
+      # "PACKAGECLOUD_TOKEN" is a required variable to publish the
+      # package.
+      #
+      - name: Set environments from secrets
+        run: |
+          echo "ENV_OSTYPE_VARS_FILE=${{ secrets.OSTYPE_VARS_FILE }}"                     >> "${GITHUB_ENV}"
+          echo "ENV_BUILD_NUMBER=${{ secrets.BUILD_NUMBER }}"                             >> "${GITHUB_ENV}"
+          echo "ENV_DEVELOPER_FULLNAME=${{ secrets.DEVELOPER_FULLNAME }}"                 >> "${GITHUB_ENV}"
+          echo "ENV_DEVELOPER_EMAIL=${{ secrets.DEVELOPER_EMAIL }}"                       >> "${GITHUB_ENV}"
+          echo "ENV_FORCE_PUBLISH=${{ secrets.FORCE_PUBLISH }}"                           >> "${GITHUB_ENV}"
+          echo "ENV_USE_PACKAGECLOUD_REPO=${{ secrets.USE_PACKAGECLOUD_REPO }}"           >> "${GITHUB_ENV}"
+          echo "ENV_PACKAGECLOUD_TOKEN=${{ secrets.PACKAGECLOUD_TOKEN }}"                 >> "${GITHUB_ENV}"
+          echo "ENV_PACKAGECLOUD_OWNER=${{ secrets.PACKAGECLOUD_OWNER }}"                 >> "${GITHUB_ENV}"
+          echo "ENV_PACKAGECLOUD_PUBLISH_REPO=${{ secrets.PACKAGECLOUD_PUBLISH_REPO }}"   >> "${GITHUB_ENV}"
+          echo "ENV_PACKAGECLOUD_DOWNLOAD_REPO=${{ secrets.PACKAGECLOUD_DOWNLOAD_REPO }}" >> "${GITHUB_ENV}"
+
+      #
+      # Run building and packaging helper
       #
       - name: Run building and packaging
-        env:
-          TMP_CI_OSTYPE_VARS_FILE:           ${{ secrets.OSTYPE_VARS_FILE }}
-          TMP_CI_BUILD_NUMBER:               ${{ secrets.BUILD_NUMBER }}
-          TMP_CI_DEVELOPER_FULLNAME:         ${{ secrets.DEVELOPER_FULLNAME }}
-          TMP_CI_DEVELOPER_EMAIL:            ${{ secrets.DEVELOPER_EMAIL }}
-          TMP_CI_FORCE_PUBLISH:              ${{ secrets.FORCE_PUBLISH }}
-          TMP_CI_USE_PACKAGECLOUD_REPO:      ${{ secrets.USE_PACKAGECLOUD_REPO }}
-          TMP_CI_PACKAGECLOUD_TOKEN:         ${{ secrets.PACKAGECLOUD_TOKEN }}
-          TMP_CI_PACKAGECLOUD_OWNER:         ${{ secrets.PACKAGECLOUD_OWNER }}
-          TMP_CI_PACKAGECLOUD_PUBLISH_REPO:  ${{ secrets.PACKAGECLOUD_PUBLISH_REPO }}
-          TMP_CI_PACKAGECLOUD_DOWNLOAD_REPO: ${{ secrets.PACKAGECLOUD_DOWNLOAD_REPO }}
-
         run: |
-          if [ "X${TMP_CI_OSTYPE_VARS_FILE}" != "X" ]; then           OPT_CI_OSTYPE_VARS_FILE="-f ${TMP_CI_OSTYPE_VARS_FILE}";                            fi
-          if [ "X${TMP_CI_BUILD_NUMBER}" != "X" ]; then               OPT_CI_BUILD_NUMBER="-num ${TMP_CI_BUILD_NUMBER}";                                  fi
-          if [ "X${TMP_CI_DEVELOPER_FULLNAME}" != "X" ]; then         OPT_CI_DEVELOPER_FULLNAME="-devname ${TMP_CI_DEVELOPER_FULLNAME}";                  fi
-          if [ "X${TMP_CI_DEVELOPER_EMAIL}" != "X" ]; then            OPT_CI_DEVELOPER_EMAIL="-devmail ${TMP_CI_DEVELOPER_EMAIL}";                        fi
-          if [ "X${TMP_CI_FORCE_PUBLISH}" = "Xtrue" ]; then           OPT_CI_FORCE_PUBLISH="-p";                                                          elif [ "X${TMP_CI_FORCE_PUBLISH}" = "Xfalse" ]; then         OPT_CI_FORCE_PUBLISH="-np";            fi
-          if [ "X${TMP_CI_USE_PACKAGECLOUD_REPO}" = "Xtrue" ]; then   OPT_CI_USE_PACKAGECLOUD_REPO="-usepc";                                              elif [ "X${TMP_CI_USE_PACKAGECLOUD_REPO}" = "Xfalse" ]; then OPT_CI_USE_PACKAGECLOUD_REPO="-notpc"; fi
-          if [ "X${TMP_CI_PACKAGECLOUD_TOKEN}" != "X" ]; then         OPT_CI_PACKAGECLOUD_TOKEN="-pctoken ${TMP_CI_PACKAGECLOUD_TOKEN}";                  fi
-          if [ "X${TMP_CI_PACKAGECLOUD_OWNER}" != "X" ]; then         OPT_CI_PACKAGECLOUD_OWNER="-pcowner ${TMP_CI_PACKAGECLOUD_OWNER}";                  fi
-          if [ "X${TMP_CI_PACKAGECLOUD_PUBLISH_REPO}" != "X" ]; then  OPT_CI_PACKAGECLOUD_PUBLISH_REPO="-pcprepo ${TMP_CI_PACKAGECLOUD_PUBLISH_REPO}";    fi
-          if [ "X${TMP_CI_PACKAGECLOUD_DOWNLOAD_REPO}" != "X" ]; then OPT_CI_PACKAGECLOUD_DOWNLOAD_REPO="-pcdlrepo ${TMP_CI_PACKAGECLOUD_DOWNLOAD_REPO}"; fi
-          /bin/sh -c "$GITHUB_WORKSPACE/.github/workflows/build_helper.sh -os ${{ matrix.container }} $OPT_CI_OSTYPE_VARS_FILE $OPT_CI_BUILD_NUMBER $OPT_CI_DEVELOPER_FULLNAME $OPT_CI_DEVELOPER_EMAIL $OPT_CI_FORCE_PUBLISH $OPT_CI_USE_PACKAGECLOUD_REPO $OPT_CI_PACKAGECLOUD_TOKEN $OPT_CI_PACKAGECLOUD_OWNER $OPT_CI_PACKAGECLOUD_PUBLISH_REPO $OPT_CI_PACKAGECLOUD_DOWNLOAD_REPO"
+          /bin/sh -c "$GITHUB_WORKSPACE/.github/workflows/build_helper.sh -os ${{ matrix.container }}"
 
   dockerimage:
     runs-on: ubuntu-latest

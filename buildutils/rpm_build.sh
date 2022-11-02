@@ -1,4 +1,3 @@
-
 #!/bin/sh
 #
 # Utility tools for building configure/packages by AntPickax
@@ -228,7 +227,7 @@ fi
 #
 echo ""
 echo "[INFO] Create base source code file(tar.gz)"
-if [ "$(git status -s | wc -l)" -eq 0 ]; then
+if [ -d "${SRCTOP}/.git" ] && [ "$(git status -s 2>&1 | wc -l)" -eq 0 ]; then
 	#
 	# No untracked files
 	#
@@ -244,7 +243,7 @@ if [ "$(git status -s | wc -l)" -eq 0 ]; then
 
 else
 	#
-	# Found untracked files
+	# Found untracked files or Not have .git directory
 	#
 	RUN_AUTOGEN_FLAG='--define "not_run_autogen 1"'
 
