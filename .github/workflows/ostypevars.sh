@@ -77,11 +77,6 @@ IS_OS_ALPINE=0
 #----------------------------------------------------------
 # Variables for each OS Type
 #----------------------------------------------------------
-#
-# special variables for all
-#
-export K2HATTR_ENC_TYPE=AES256_PBKDF2
-
 if [ -z "${CI_OSTYPE}" ]; then
 	#
 	# Unknown OS : Nothing to do

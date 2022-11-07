@@ -48,7 +48,6 @@ MAINTAINER antpickax
 WORKDIR /
 
 %%BUILD_ENV%%
-ENV K2HATTR_ENC_TYPE=AES256_PBKDF2
 
 RUN set -x && \
 	%%PKG_UPDATE%% && \
