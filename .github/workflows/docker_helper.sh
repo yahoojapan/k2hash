@@ -22,9 +22,127 @@
 # REVISION:	1.0
 #
 
-#---------------------------------------------------------------------
+#----------------------------------------------------------
 # Docker Image Helper for container on Github Actions
-#---------------------------------------------------------------------
+#----------------------------------------------------------
+
+#==========================================================
+# Common setting
+#==========================================================
+#
+# Instead of pipefail(for shells not support "set -o pipefail")
+#
+PIPEFAILURE_FILE="/tmp/.pipefailure.$(od -An -tu4 -N4 /dev/random | tr -d ' \n')"
+
+#
+# For shellcheck
+#
+if locale -a | grep -q -i '^[[:space:]]*C.utf8[[:space:]]*$'; then
+	LANG=$(locale -a | grep -i '^[[:space:]]*C.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+	LC_ALL="${LANG}"
+	export LANG
+	export LC_ALL
+elif locale -a | grep -q -i '^[[:space:]]*en_US.utf8[[:space:]]*$'; then
+	LANG=$(locale -a | grep -i '^[[:space:]]*en_US.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+	LC_ALL="${LANG}"
+	export LANG
+	export LC_ALL
+fi
+
+#==========================================================
+# Common Variables
+#==========================================================
+PRGNAME=$(basename "$0")
+SCRIPTDIR=$(dirname "$0")
+SCRIPTDIR=$(cd "${SCRIPTDIR}" || exit 1; pwd)
+SRCTOP=$(cd "${SCRIPTDIR}/../.." || exit 1; pwd)
+
+#
+# Directories / Files
+#
+DOCKER_TEMPL_FILE="Dockerfile.templ"
+DOCKER_FILE="Dockerfile"
+
+#==========================================================
+# Utility functions and variables for messaging
+#==========================================================
+#
+# Utilities for message
+#
+if [ -t 1 ] || { [ -n "${CI}" ] && [ "${CI}" = "true" ]; }; then
+	CBLD=$(printf '\033[1m')
+	CREV=$(printf '\033[7m')
+	CRED=$(printf '\033[31m')
+	CYEL=$(printf '\033[33m')
+	CGRN=$(printf '\033[32m')
+	CDEF=$(printf '\033[0m')
+else
+	CBLD=""
+	CREV=""
+	CRED=""
+	CYEL=""
+	CGRN=""
+	CDEF=""
+fi
+if [ -n "${CI}" ] && [ "${CI}" = "true" ]; then
+	GHAGRP_START="::group::"
+	GHAGRP_END="::endgroup::"
+else
+	GHAGRP_START=""
+	GHAGRP_END=""
+fi
+
+PRNGROUPEND()
+{
+	if [ -n "${IN_GHAGROUP_AREA}" ] && [ "${IN_GHAGROUP_AREA}" -eq 1 ]; then
+		if [ -n "${GHAGRP_END}" ]; then
+			echo "${GHAGRP_END}"
+		fi
+	fi
+	IN_GHAGROUP_AREA=0
+}
+PRNTITLE()
+{
+	PRNGROUPEND
+	echo "${GHAGRP_START}${CBLD}${CGRN}${CREV}[TITLE]${CDEF} ${CGRN}$*${CDEF}"
+	IN_GHAGROUP_AREA=1
+}
+PRNINFO()
+{
+	echo "${CBLD}${CREV}[INFO]${CDEF} $*"
+}
+PRNWARN()
+{
+	echo "${CBLD}${CYEL}${CREV}[WARNING]${CDEF} ${CYEL}$*${CDEF}"
+}
+PRNERR()
+{
+	echo "${CBLD}${CRED}${CREV}[ERROR]${CDEF} ${CRED}$*${CDEF}"
+	PRNGROUPEND
+}
+PRNSUCCESS()
+{
+	echo "${CBLD}${CGRN}${CREV}[SUCCEED]${CDEF} ${CGRN}$*${CDEF}"
+	PRNGROUPEND
+}
+PRNFAILURE()
+{
+	echo "${CBLD}${CRED}${CREV}[FAILURE]${CDEF} ${CRED}$*${CDEF}"
+	PRNGROUPEND
+}
+RUNCMD()
+{
+	PRNINFO "Run \"$*\""
+	if ! /bin/sh -c "$*"; then
+		PRNERR "Failed to run \"$*\""
+		return 1
+	fi
+	return 0
+}
+
+#
+# Print Usage
+#
 func_usage()
 {
 	echo ""
@@ -33,273 +151,404 @@ func_usage()
 	echo "  Option:"
 	echo "    --help(-h)                                print help"
 	echo "    --imagetype-vars-file(-f) <file path>     specify the file path to imagetype variable(deafult. \"imagetypevars.sh\")"
-	echo "    --imageinfo(-i)           <image info>    specify infomration about "base docker image", "base docker dev image", "os type tag" and "default flag" (ex. \"libfullock:1.0.41,libfullock-dev:1.0.41,alpine,default\")"
+	echo "    --imageinfo(-i)           <image info>    specify infomration about "base docker image", "base docker dev image", "os type tag" and "default flag" (ex. \"alpine:latest,alpine:latest,alpine,default\")"
 	echo "    --organization(-o)        <organization>  specify organaization name on DockerHub(default. \"antpickax\")"
 	echo "    --imagenames(-n)          <image name>    specify build image names, separate multiple names with commas(ex. \"target,target-dev\")"
 	echo "    --imageversion(-v)        <version>       the value of this option is set automatically and is usually not specified.(ex. \"1.0.0\")"
+	echo "    --giturl(-g)              <url>           specify git domain url. if not specify, using GITHUB_SERVER_URL environment value. if both are not specified, using \"https://github.com\""
 	echo "    --push(-p)                                specify this when force pushing the image to Docker Hub, normally the images is pushed only when it is tagged(determined from GITHUB_REF/GITHUB_EVENT_NAME)"
 	echo "    --notpush(-np)                            specify this when force never pushing the image to Docker Hub."
+	echo ""
+	echo "  Environments:"
+	echo "    ENV_IMAGEVAR_FILE         the file path to imagetype variable           ( same as option '--imagetype-vars-file(-f)' )"
+	echo "    ENV_DOCKER_IMAGE_INFO     image infomration                             ( same as option '--imageinfo(-i)' )"
+	echo "    ENV_DOCKER_HUB_ORG        organaization name on DockerHub               ( same as option '--organization(-o)' )"
+	echo "    ENV_IMAGE_NAMES           build image names                             ( same as option '--imagenames(-n)' )"
+	echo "    ENV_IMAGE_VERSION         the value of this option is set automatically ( same as option '--imageversion(-v)' )"
+	echo "    ENV_GIT_URL               git domain url.                               ( same as option '--giturl(-g)' or environment 'GITHUB_SERVER_URL' )"
+	echo "    ENV_FORCE_PUSH            force the release package to push: true/false ( same as option '--push(-p)' and '--notpush(-np)' )"
+	echo ""
+	echo "    This program uses folowing environment variable internally."
+	echo "      GITHUB_SERVER_URL"
+	echo "      GITHUB_REPOSITORY"
+	echo "      GITHUB_REF"
+	echo "      GITHUB_EVENT_NAME"
+	echo "      GITHUB_EVENT_PATH"
+	echo ""
+	echo "  Node: \"--imageinfo(-i)\" option"
+	echo "    Specify the \"baseimage\" in the following format: \"<base image tag>,<base dev image tag>,<OS tag name>(,<default tag flag>)\""
+	echo "      <base image tag>:     specify the Docker image name(ex. \"alpine:latest\")"
+	echo "      <base dev image tag>: specify the Docker image name(ex. \"alpine:latest\")"
+	echo "      <OS tag name>:        OS tag attached to the created Docker image"
+	echo "      <default tag flag>:   If you want to use the created Docker image as the default image, specify \"default\"."
 	echo ""
 	echo "  Note:"
 	echo "    Specifying the above options will create the image shown in the example below:"
 	echo "      antpickax/image:1.0.0-alpine  (imagetag is \"alpine\")"
 	echo "      antpickax/image:1.0.0         (imagetag is not specified)"
 	echo ""
-	echo "    This program uses folowing environment variable internally."
-	echo "      GITHUB_REPOSITORY"
-	echo "      GITHUB_REF"
-	echo "      GITHUB_EVENT_NAME"
-	echo "      GITHUB_EVENT_PATH"
-	echo ""
 }
 
-#---------------------------------------------------------------------
-# Common Variables
-#---------------------------------------------------------------------
-PRGNAME=$(basename $0)
-MYSCRIPTDIR=$(dirname $0)
-MYSCRIPTDIR=$(cd ${MYSCRIPTDIR}; pwd)
-SRCTOP=$(cd ${MYSCRIPTDIR}/../..; pwd)
-BUILDUTILS_DIR=${SRCTOP}/buildutils
+#==============================================================
+# Customizable execution function
+#==============================================================
+#
+# Get version from repository package
+#
+# [NOTE]
+# Set "REPOSITORY_PACKAGE_VERSION" environment
+#
+get_repository_package_version()
+{
+	REPOSITORY_PACKAGE_VERSION=""
+	return 0
+}
 
-MAKE_VAR_TOOL="${BUILDUTILS_DIR}/make_variables.sh"
-DOCKER_TEMPL_FILE=Dockerfile.templ
-DOCKER_FILE=Dockerfile
+#
+# Print custom variables
+#
+print_custom_variabels()
+{
+	return 0
+}
 
-#---------------------------------------------------------------------
-# Parse Options
-#---------------------------------------------------------------------
-echo "[INFO] ${PRGNAME} : Start the parsing of options."
+#
+# Preprocessing
+#
+run_preprocess()
+{
+	return 0
+}
 
-IMAGEVAR_FILE=
-DOCKER_IMAGE_INFO=
-DOCKER_HUB_ORG=
-IMAGE_NAMES=
-IMAGE_VERSION=
-FORCE_PUSH=
-DO_PUSH=
+#
+# Custom Dockerfile conversion
+#
+# $1	: Dockerfile path
+#
+custom_dockerfile_conversion()
+{
+	if [ -z "$1" ] || [ ! -f "$1" ]; then
+		PRNERR "Dockerfile path($1) is empty or not existed."
+		return 1
+	fi
+	return 0
+}
+
+#==========================================================
+# Parse options and check environments
+#==========================================================
+PRNTITLE "Parse options and check environments"
+
+OPT_IMAGEVAR_FILE=""
+OPT_DOCKER_IMAGE_INFO=""
+OPT_DOCKER_HUB_ORG=""
+OPT_IMAGE_NAMES=""
+OPT_IMAGE_VERSION=""
+OPT_GIT_URL=""
+OPT_FORCE_PUSH=""
 
 while [ $# -ne 0 ]; do
-	if [ "X$1" = "X" ]; then
+	if [ -z "$1" ]; then
 		break
 
-	elif [ "X$1" = "X-h" ] || [ "X$1" = "X-H" ] || [ "X$1" = "X--help" ] || [ "X$1" = "X--HELP" ]; then
-		func_usage $PRGNAME
+	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "X$1" = "X-f" ] || [ "X$1" = "X-F" ] || [ "X$1" = "X--imagetype-vars-file" ] || [ "X$1" = "X--IMAGETYPE-VARS-FILE" ]; then
-		if [ "X${IMAGEVAR_FILE}" != "X" ]; then
-			echo "[ERROR] ${PRGNAME} : already set \"--imagetype-vars-file(-f)\" option."
+	elif [ "$1" = "-f" ] || [ "$1" = "-F" ] || [ "$1" = "--imagetype-vars-file" ] || [ "$1" = "--IMAGETYPE-VARS-FILE" ]; then
+		if [ -n "${OPT_IMAGEVAR_FILE}" ]; then
+			PRNERR "already set \"--imagetype-vars-file(-f)\" option."
 			exit 1
 		fi
 		shift
 		if [ $# -eq 0 ]; then
-			echo "[ERROR] ${PRGNAME} : \"--imagetype-vars-file(-f)\" option is specified without parameter."
+			PRNERR "\"--imagetype-vars-file(-f)\" option is specified without parameter."
 			exit 1
 		fi
-		IMAGEVAR_FILE=$1
-
-		if [ ! -f ${IMAGEVAR_FILE} ]; then
-			if [ ! -f ${MYSCRIPTDIR}/${IMAGEVAR_FILE} ]; then
-				echo "[ERROR] ${PRGNAME} : Could not file : ${IMAGEVAR_FILE}."
+		if [ ! -f "$1" ]; then
+			if [ ! -f "${SCRIPTDIR}/$1" ]; then
+				PRNERR "Could not file : $1."
 				exit 1
-			else
-				IMAGEVAR_FILE=${MYSCRIPTDIR}/${IMAGEVAR_FILE}
 			fi
+			OPT_IMAGEVAR_FILE="${SCRIPTDIR}/$1"
+		else
+			OPT_IMAGEVAR_FILE="$1"
 		fi
 
-	elif [ "X$1" = "X-i" ] || [ "X$1" = "X-I" ] || [ "X$1" = "X--imageinfo" ] || [ "X$1" = "X--IMAGEINFO" ]; then
-		if [ "X${DOCKER_IMAGE_INFO}" != "X" ]; then
-			echo "[ERROR] ${PRGNAME} : already set \"--imageinfo(-i)\" option."
+	elif [ "$1" = "-i" ] || [ "$1" = "-I" ] || [ "$1" = "--imageinfo" ] || [ "$1" = "--IMAGEINFO" ]; then
+		if [ -n "${OPT_DOCKER_IMAGE_INFO}" ]; then
+			PRNERR "already set \"--imageinfo(-i)\" option."
 			exit 1
 		fi
 		shift
 		if [ $# -eq 0 ]; then
-			echo "[ERROR] ${PRGNAME} : \"--imageinfo(-i)\" option is specified without parameter."
+			PRNERR "\"--imageinfo(-i)\" option is specified without parameter."
 			exit 1
 		fi
-		DOCKER_IMAGE_INFO=$1
+		OPT_DOCKER_IMAGE_INFO="$1"
 
-	elif [ "X$1" = "X-o" ] || [ "X$1" = "X-O" ] || [ "X$1" = "X--organization" ] || [ "X$1" = "X--ORGANIZATION" ]; then
-		if [ "X${DOCKER_HUB_ORG}" != "X" ]; then
-			echo "[ERROR] ${PRGNAME} : already set \"--organization(-o)\" option."
+	elif [ "$1" = "-o" ] || [ "$1" = "-O" ] || [ "$1" = "--organization" ] || [ "$1" = "--ORGANIZATION" ]; then
+		if [ -n "${OPT_DOCKER_HUB_ORG}" ]; then
+			PRNERR "already set \"--organization(-o)\" option."
 			exit 1
 		fi
 		shift
 		if [ $# -eq 0 ]; then
-			echo "[ERROR] ${PRGNAME} : \"--organization(-o)\" option is specified without parameter."
+			PRNERR "\"--organization(-o)\" option is specified without parameter."
 			exit 1
 		fi
-		DOCKER_HUB_ORG=$1
+		OPT_DOCKER_HUB_ORG="$1"
 
-	elif [ "X$1" = "X-n" ] || [ "X$1" = "X-N" ] || [ "X$1" = "X--imagenames" ] || [ "X$1" = "X--IMAGENAMES" ]; then
-		if [ "X${IMAGE_NAMES}" != "X" ]; then
-			echo "[ERROR] ${PRGNAME} : already set \"--imagenames(-n)\" option."
+	elif [ "$1" = "-n" ] || [ "$1" = "-N" ] || [ "$1" = "--imagenames" ] || [ "$1" = "--IMAGENAMES" ]; then
+		if [ -n "${OPT_IMAGE_NAMES}" ]; then
+			PRNERR "already set \"--imagenames(-n)\" option."
 			exit 1
 		fi
 		shift
 		if [ $# -eq 0 ]; then
-			echo "[ERROR] ${PRGNAME} : \"--imagenames(-n)\" option is specified without parameter."
+			PRNERR "\"--imagenames(-n)\" option is specified without parameter."
 			exit 1
 		fi
-		IMAGE_NAMES=$1
+		OPT_IMAGE_NAMES="$1"
 
-	elif [ "X$1" = "X-v" ] || [ "X$1" = "X-V" ] || [ "X$1" = "X--imageversion" ] || [ "X$1" = "X--IMAGEVERSION" ]; then
-		if [ "X${IMAGE_VERSION}" != "X" ]; then
-			echo "[ERROR] ${PRGNAME} : already set \"--imageversion(-v)\" option."
+	elif [ "$1" = "-v" ] || [ "$1" = "-V" ] || [ "$1" = "--imageversion" ] || [ "$1" = "--IMAGEVERSION" ]; then
+		if [ -n "${OPT_IMAGE_VERSION}" ]; then
+			PRNERR "already set \"--imageversion(-v)\" option."
 			exit 1
 		fi
 		shift
 		if [ $# -eq 0 ]; then
-			echo "[ERROR] ${PRGNAME} : \"--imageversion(-v)\" option is specified without parameter."
+			PRNERR "\"--imageversion(-v)\" option is specified without parameter."
 			exit 1
 		fi
-		IMAGE_VERSION=$1
+		OPT_IMAGE_VERSION="$1"
 
-	elif [ "X$1" = "X-p" ] || [ "X$1" = "X-P" ] || [ "X$1" = "X--push" ] || [ "X$1" = "X--PUSH" ]; then
-		if [ "X${FORCE_PUSH}" != "X" ]; then
-			echo "[ERROR] ${PRGNAME} : already set \"--push(-p)\" or \"--notpush(-np)\" option."
+	elif [ "$1" = "-g" ] || [ "$1" = "-G" ] || [ "$1" = "--giturl" ] || [ "$1" = "--GITURL" ]; then
+		if [ -n "${OPT_GIT_URL}" ]; then
+			PRNERR "already set \"--giturl(-g)\" option."
 			exit 1
 		fi
-		FORCE_PUSH="true"
+		shift
+		if [ $# -eq 0 ]; then
+			PRNERR "\"--giturl(-g)\" option is specified without parameter."
+			exit 1
+		fi
+		OPT_GIT_URL="$1"
 
-	elif [ "X$1" = "X-np" ] || [ "X$1" = "X-NP" ] || [ "X$1" = "X--notpush" ] || [ "X$1" = "X--NOTPUSH" ]; then
-		if [ "X${FORCE_PUSH}" != "X" ]; then
-			echo "[ERROR] ${PRGNAME} : already set \"--push(-p)\" or \"--notpush(-np)\" option."
+	elif [ "$1" = "-p" ] || [ "$1" = "-P" ] || [ "$1" = "--push" ] || [ "$1" = "--PUSH" ]; then
+		if [ -n "${OPT_FORCE_PUSH}" ]; then
+			PRNERR "already set \"--push(-p)\" or \"--notpush(-np)\" option."
 			exit 1
 		fi
-		FORCE_PUSH="false"
+		OPT_FORCE_PUSH="true"
+
+	elif [ "$1" = "-np" ] || [ "$1" = "-NP" ] || [ "$1" = "--notpush" ] || [ "$1" = "--NOTPUSH" ]; then
+		if [ -n "${OPT_FORCE_PUSH}" ]; then
+			PRNERR "already set \"--push(-p)\" or \"--notpush(-np)\" option."
+			exit 1
+		fi
+		OPT_FORCE_PUSH="false"
 
 	else
-		echo "[ERROR] ${PRGNAME} : Unknown \"$1\" option."
+		PRNERR "Unknown \"$1\" option."
 		exit 1
 	fi
 	shift
 done
 
-#
-# Check options for default value
-#
-if [ "X${DOCKER_HUB_ORG}" = "X" ]; then
-	DOCKER_HUB_ORG="antpickax"
-fi
-
-if [ "X${IMAGE_NAMES}" = "X" ]; then
-	echo "[ERROR] ${PRGNAME} : The \"--imagenames(-n)\" option is required."
-	exit 1
-fi
-
-if [ "X${DOCKER_IMAGE_INFO}" = "X" ]; then
-	echo "[ERROR] ${PRGNAME} : The \"--imageinfo(-i)\" option is required."
-	exit 1
-else
-	#
-	# Parse inmage information
-	#
-	DOCKER_IMAGE_INFO=$(echo ${DOCKER_IMAGE_INFO} | sed -e 's#,# #g')
-	DOCKER_IMAGE_BASE=$(echo ${DOCKER_IMAGE_INFO} | awk '{print $1}')
-	DOCKER_IMAGE_DEV_BASE=$(echo ${DOCKER_IMAGE_INFO} | awk '{print $2}')
-	DOCKER_IMAGE_OSTYPE=$(echo ${DOCKER_IMAGE_INFO} | awk '{print $3}')
-	DOCKER_IMAGE_DEFAULT_TAG=$(echo ${DOCKER_IMAGE_INFO} | awk '{print $4}')
-
-	#
-	# DOCKER_IMAGE_BASE
-	#
-	if [ "X${DOCKER_IMAGE_BASE}" = "X" ] || [ "X${DOCKER_IMAGE_DEV_BASE}" = "X" ] ; then
-		echo "[ERROR] ${PRGNAME} : The \"--imageinfo(-i)\" option value does not have base image name."
+#----------------------------------------------------------
+# Check required options
+#----------------------------------------------------------
+if [ -z "${OPT_IMAGE_NAMES}" ]; then
+	if [ -z "${ENV_IMAGE_NAMES}" ]; then
+		PRNERR "The \"--imagenames(-n)\" option or \"ENV_IMAGE_NAMES\" environment is required."
 		exit 1
 	fi
-
-	#
-	# DOCKER_IMAGE_OSTYPE / DOCKER_IMAGE_OSTYPE_TAG
-	#
-	if [ "X${DOCKER_IMAGE_OSTYPE}" = "X" ]; then
-		#
-		# Get os type from base image name
-		#
-		DOCKER_IMAGE_OSTYPE=$(echo ${DOCKER_IMAGE_BASE} | sed -e 's#^.*/##g' -e 's#:.*$##g')
-		if [ "X${DOCKER_IMAGE_OSTYPE}" = "X" ]; then
-			echo "[ERROR] ${PRGNAME} : The \"--imageinfo(-i)\" option value does not have image os type."
-			exit 1
-		fi
-		echo "[WARNING] ${PRGNAME} : The \"--imageinfo(-i)\" option value does not have image os type, but get it from base image name."
-	fi
-	DOCKER_IMAGE_OSTYPE_TAG="-${DOCKER_IMAGE_OSTYPE}"
-
-	#
-	# DEFAULT_IMAGE_TAGGING
-	#
-	if [ "X${DOCKER_IMAGE_DEFAULT_TAG}" = "Xdefault" ]; then
-		DEFAULT_IMAGE_TAGGING=1
-	else
-		DEFAULT_IMAGE_TAGGING=0
-	fi
-fi
-
-#
-# Version
-#
-TAGGED_VERSION=
-if [ "X${GITHUB_REF}" != "X" ]; then
-	echo ${GITHUB_REF} | grep 'refs/tags/' >/dev/null 2>&1
-	if [ $? -eq 0 ]; then
-		TAGGED_VERSION=$(echo ${GITHUB_REF} | sed -e 's#refs/tags/v##g' -e 's#refs/tags/##g')
-	fi
-fi
-if [ "X${IMAGE_VERSION}" = "X" ]; then
-	if [ "X${TAGGED_VERSION}" != "X" ]; then
-		#
-		# From Github ref
-		#
-		IMAGE_VERSION=${TAGGED_VERSION}
-	else
-		#
-		# From RELEASE_VERSION file
-		#
-		cd ${SRCTOP}
-		./autogen.sh
-
-		IMAGE_VERSION=$(${MAKE_VAR_TOOL} -pkg_version)
-		if [ "X${IMAGE_VERSION}" = "X" ]; then
-			IMAGE_VERSION="0.0.0"
-		fi
-	fi
-fi
-
-#
-# Push mode
-#
-if [ "X${FORCE_PUSH}" = "Xtrue" ]; then
-	#
-	# FORCE PUSH
-	#
-	if [ "X${GITHUB_EVENT_NAME}" = "Xschedule" ]; then
-		echo "[WARNING] ${PRGNAME} : specified \"--push(-p)\" option, but not push images because this process is kicked by scheduler."
-		DO_PUSH=0
-	else
-		DO_PUSH=1
-	fi
-elif [ "X${FORCE_PUSH}" = "Xfalse" ]; then
-	#
-	# FORCE NOT PUSH
-	#
-	DO_PUSH=0
+	CI_IMAGE_NAMES="${ENV_IMAGE_NAMES}"
 else
-	if [ "X${GITHUB_EVENT_NAME}" = "Xschedule" ]; then
-		DO_PUSH=0
+	CI_IMAGE_NAMES="${OPT_IMAGE_NAMES}"
+fi
+
+if [ -z "${OPT_DOCKER_IMAGE_INFO}" ]; then
+	if [ -z "${ENV_DOCKER_IMAGE_INFO}" ]; then
+		PRNERR "The \"--imageinfo(-i)\" option or \"ENV_DOCKER_IMAGE_INFO\" environment is required."
+		exit 1
+	fi
+	CI_DOCKER_IMAGE_INFO="${ENV_DOCKER_IMAGE_INFO}"
+else
+	CI_DOCKER_IMAGE_INFO="${OPT_DOCKER_IMAGE_INFO}"
+fi
+
+#----------------------------------------------------------
+# Variables from image inforamtion
+#----------------------------------------------------------
+#
+# Parse image information
+#
+CI_DOCKER_IMAGE_INFO_TMP="$(echo    "${CI_DOCKER_IMAGE_INFO}"     | sed -e 's#,# #g' | tr -d '\n')"
+CI_DOCKER_IMAGE_BASE="$(echo        "${CI_DOCKER_IMAGE_INFO_TMP}" | awk '{print $1}' | tr -d '\n')"
+CI_DOCKER_IMAGE_DEV_BASE="$(echo    "${CI_DOCKER_IMAGE_INFO_TMP}" | awk '{print $2}' | tr -d '\n')"
+CI_DOCKER_IMAGE_OSTYPE="$(echo      "${CI_DOCKER_IMAGE_INFO_TMP}" | awk '{print $3}' | tr -d '\n')"
+CI_DOCKER_IMAGE_DEFAULT_TAG="$(echo "${CI_DOCKER_IMAGE_INFO_TMP}" | awk '{print $4}' | tr -d '\n')"
+
+#
+# Check CI_DOCKER_IMAGE_{DEV_}_BASE
+#
+if [ -z "${CI_DOCKER_IMAGE_BASE}" ] || [ -z "${CI_DOCKER_IMAGE_DEV_BASE}" ]; then
+	PRNERR "The \"--imageinfo(-i)\" option value does not have base image name."
+	exit 1
+fi
+
+#
+# Check CI_DOCKER_IMAGE_OSTYPE{_TAG}
+#
+if [ -z "${CI_DOCKER_IMAGE_OSTYPE}" ]; then
+	#
+	# Instead of OS type from base image name
+	#
+	CI_DOCKER_IMAGE_OSTYPE="$(echo "${CI_DOCKER_IMAGE_BASE}" | sed -e 's#^.*/##g' -e 's#:.*$##g' | tr -d '\n')"
+	if [ -z "${CI_DOCKER_IMAGE_OSTYPE}" ]; then
+		PRNERR "The \"--imageinfo(-i)\" option value does not have image os type."
+		exit 1
+	fi
+	PRNWARN "The \"--imageinfo(-i)\" option value does not have image os type, but get it from base image name."
+fi
+CI_DOCKER_IMAGE_OSTYPE_TAG="-${CI_DOCKER_IMAGE_OSTYPE}"
+
+#
+# Check CI_DEFAULT_IMAGE_TAGGING
+#
+if [ -n "${CI_DOCKER_IMAGE_DEFAULT_TAG}" ] && [ "${CI_DOCKER_IMAGE_DEFAULT_TAG}" = "default" ]; then
+	CI_DEFAULT_IMAGE_TAGGING=1
+else
+	CI_DEFAULT_IMAGE_TAGGING=0
+fi
+
+PRNSUCCESS "Parsed options and checked environments"
+
+#==========================================================
+# Load variables from custom file
+#==========================================================
+PRNTITLE "Load variables from custom file"
+
+#
+# The file for customization
+#
+if [ -n "${OPT_IMAGEVAR_FILE}" ]; then
+	CI_IMAGEVAR_FILE="${OPT_IMAGEVAR_FILE}"
+elif [ -n "${ENV_IMAGEVAR_FILE}" ]; then
+	if [ ! -f "${ENV_IMAGEVAR_FILE}" ]; then
+		PRNERR "The \"ENV_IMAGEVAR_FILE\" environment value(${ENV_IMAGEVAR_FILE}) is not existed file path."
+		exit 1
+	fi
+	CI_IMAGEVAR_FILE="${ENV_IMAGEVAR_FILE}"
+elif [ -f "${SCRIPTDIR}/imagetypevars.sh" ]; then
+	CI_IMAGEVAR_FILE="${SCRIPTDIR}/imagetypevars.sh"
+else
+	CI_IMAGEVAR_FILE=""
+fi
+
+#
+# Load variables from custom file
+#
+if [ -n "${CI_IMAGEVAR_FILE}" ] && [ -f "${CI_IMAGEVAR_FILE}" ]; then
+	PRNINFO "Load ${CI_IMAGEVAR_FILE} for local variables."
+	. "${CI_IMAGEVAR_FILE}"
+fi
+
+PRNSUCCESS "Loaded variables from custom file"
+
+#==========================================================
+# Check options for default value
+#==========================================================
+PRNTITLE "Check options for default value"
+
+#
+# Information about github url
+#
+if [ -n "${OPT_GIT_URL}" ]; then
+	CI_GIT_URL="${OPT_GIT_URL}"
+elif [ -n "${ENV_GIT_URL}" ]; then
+	CI_GIT_URL="${ENV_GIT_URL}"
+elif [ -n "${GITHUB_SERVER_URL}" ]; then
+	CI_GIT_URL="${GITHUB_SERVER_URL}"
+else
+	CI_GIT_URL="https://github.com"
+fi
+
+#
+# Infomration about Docker hub
+#
+if [ -n "${OPT_DOCKER_HUB_ORG}" ]; then
+	CI_DOCKER_HUB_ORG="${OPT_DOCKER_HUB_ORG}"
+elif [ -n "${ENV_DOCKER_HUB_ORG}" ]; then
+	CI_DOCKER_HUB_ORG="${ENV_DOCKER_HUB_ORG}"
+else
+	CI_DOCKER_HUB_ORG="antpickax"
+fi
+
+#
+# Set "REPOSITORY_PACKAGE_VERSION" variable
+#
+if ! get_repository_package_version; then
+	PRNERR "Failed to run get_repository_package_version function."
+	exit 1
+fi
+
+#
+# GITHUB_REF Environments
+#
+if [ -n "${GITHUB_REF}" ] && echo "${GITHUB_REF}" | grep -q 'refs/tags/'; then
+	TAGGED_VERSION="$(echo "${GITHUB_REF}" | sed -e 's#refs/tags/v##g' -e 's#refs/tags/##g' | tr -d '\n')"
+else
+	TAGGED_VERSION=""
+fi
+
+#
+# image version
+#
+if [ -n "${OPT_IMAGE_VERSION}" ]; then
+	CI_IMAGE_VERSION="${OPT_IMAGE_VERSION}"
+elif [ -n "${ENV_IMAGE_VERSION}" ]; then
+	CI_IMAGE_VERSION="${ENV_IMAGE_VERSION}"
+else
+	#
+	# Default image version from github tag or package.json
+	#
+	if [ -n "${TAGGED_VERSION}" ]; then
+		CI_IMAGE_VERSION=${TAGGED_VERSION}
 	else
-		if [ "X${TAGGED_VERSION}" != "X" ]; then
-			DO_PUSH=1
+		if [ -n "${REPOSITORY_PACKAGE_VERSION}" ]; then
+			CI_IMAGE_VERSION="${REPOSITORY_PACKAGE_VERSION}"
 		else
-			DO_PUSH=0
+			#
+			# Not found image version
+			#
+			PRNWARN "Not found image version thus use default image version(0.0.0)."
+			CI_IMAGE_VERSION="0.0.0"
 		fi
 	fi
 fi
 
-#
+if [ -n "${OPT_FORCE_PUSH}" ]; then
+	CI_FORCE_PUSH="${OPT_FORCE_PUSH}"
+elif [ -n "${ENV_FORCE_PUSH}" ]; then
+	if echo "${ENV_FORCE_PUSH}" | grep -q -i '^true$'; then
+		CI_FORCE_PUSH="true"
+	elif echo "${ENV_FORCE_PUSH}" | grep -q -i '^false$'; then
+		CI_FORCE_PUSH="false"
+	else
+		PRNERR "\"ENV_FORCE_PUSH\" value is wrong."
+		exit 1
+	fi
+else
+	CI_FORCE_PUSH=""
+fi
+
+#----------------------------------------------------------
 # Base Repository/SHA1 for creating Docker images
-#
-if [ "X${GITHUB_EVENT_NAME}" = "Xpull_request" ]; then
+#----------------------------------------------------------
+if [ -n "${GITHUB_EVENT_NAME}" ] && [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
 	# [NOTE]
 	# In the PR case, GITHUB_REPOSITORY and GITHUB_REF cannot be used
 	# because they are the information on the merging side.
@@ -318,142 +567,189 @@ if [ "X${GITHUB_EVENT_NAME}" = "Xpull_request" ]; then
 	#		  },
 	#		}
 	#
-	if [ ! -f ${GITHUB_EVENT_PATH} ]; then
-		echo "[ERROR] ${PRGNAME} : \"GITHUB_EVENT_PATH\" environment is empty or not file path."
+	if [ ! -f "${GITHUB_EVENT_PATH}" ]; then
+		PRNERR "\"GITHUB_EVENT_PATH\" environment is empty or not file path."
 		exit 1
 	fi
 
 	# [NOTE]
-	# we need "jq" for parsing json
+	# we use "jq" for parsing json, it is installed on default github actions runner.
 	#
-	PR_GITHUB_REPOSITORY=$(jq -r '.pull_request.head.repo.full_name' ${GITHUB_EVENT_PATH})
-	DOCKER_GIT_ORGANIZATION=$(echo ${PR_GITHUB_REPOSITORY} | sed 's#/# #g' | awk '{print $1}')
-	DOCKER_GIT_REPOSITORY=$(echo ${PR_GITHUB_REPOSITORY} | sed 's#/# #g' | awk '{print $2}')
-	DOCKER_GIT_BRANCH=$(jq -r '.pull_request.head.sha' ${GITHUB_EVENT_PATH})
-
+	PR_GITHUB_REPOSITORY="$(jq -r '.pull_request.head.repo.full_name' "${GITHUB_EVENT_PATH}" | tr -d '\n')"
+	CI_DOCKER_GIT_ORGANIZATION="$(echo "${PR_GITHUB_REPOSITORY}" | sed 's#/# #g' | awk '{print $1}' | tr -d '\n')"
+	CI_DOCKER_GIT_REPOSITORY="$(echo "${PR_GITHUB_REPOSITORY}" | sed 's#/# #g' | awk '{print $2}' | tr -d '\n')"
+	CI_DOCKER_GIT_BRANCH="$(jq -r '.pull_request.head.sha' "${GITHUB_EVENT_PATH}" | tr -d '\n')"
 else
-	DOCKER_GIT_ORGANIZATION=$(echo ${GITHUB_REPOSITORY} | sed 's#/# #g' | awk '{print $1}')
-	DOCKER_GIT_REPOSITORY=$(echo ${GITHUB_REPOSITORY} | sed 's#/# #g' | awk '{print $2}')
-	DOCKER_GIT_BRANCH=$(echo ${GITHUB_REF} | sed 's#^refs/.*/##g')
+	CI_DOCKER_GIT_ORGANIZATION="$(echo "${GITHUB_REPOSITORY}" | sed 's#/# #g' | awk '{print $1}' | tr -d '\n')"
+	CI_DOCKER_GIT_REPOSITORY="$(echo "${GITHUB_REPOSITORY}" | sed 's#/# #g' | awk '{print $2}' | tr -d '\n')"
+	CI_DOCKER_GIT_BRANCH="$(echo "${GITHUB_REF}" | sed 's#^refs/.*/##g' | tr -d '\n')"
 fi
-if [ "X${DOCKER_GIT_ORGANIZATION}" = "X" ] || [ "X${DOCKER_GIT_REPOSITORY}" = "X" ] || [ "X${DOCKER_GIT_BRANCH}" = "X" ]; then
-	echo "[ERROR] ${PRGNAME} : Not found Organization/Repository/branch(or SHA1)."
+if [ "${CI_DOCKER_GIT_ORGANIZATION}" = "" ] || [ "${CI_DOCKER_GIT_REPOSITORY}" = "" ] || [ "${CI_DOCKER_GIT_BRANCH}" = "" ]; then
+	PRNERR "Not found Organization/Repository/branch(or SHA1)."
 	exit 1
 fi
 
-#
-# Load variables file
-#
-if [ "X${IMAGEVAR_FILE}" = "X" ]; then
-	IMAGEVAR_FILE="${MYSCRIPTDIR}/imagetypevars.sh"
-fi
-if [ -f ${IMAGEVAR_FILE} ]; then
-	echo "[INFO] ${PRGNAME} : Load ${IMAGEVAR_FILE} for local variables."
-	. ${IMAGEVAR_FILE}
+#----------------------------------------------------------
+# Push mode
+#----------------------------------------------------------
+if [ -n "${CI_FORCE_PUSH}" ] && [ "${CI_FORCE_PUSH}" = "true" ]; then
+	#
+	# FORCE PUSH
+	#
+	if [ -n "${GITHUB_EVENT_NAME}" ] && [ "${GITHUB_EVENT_NAME}" = "schedule" ]; then
+		PRNWARN "specified \"--push(-p)\" option or \"ENV_FORCE_PUSH=true\" environment, but not push images because this process is kicked by scheduler."
+		CI_DO_PUSH=0
+	else
+		CI_DO_PUSH=1
+	fi
+elif [ -n "${CI_FORCE_PUSH}" ] && [ "${CI_FORCE_PUSH}" = "false" ]; then
+	#
+	# FORCE NOT PUSH
+	#
+	CI_DO_PUSH=0
+else
+	if [ -n "${GITHUB_EVENT_NAME}" ] && [ "${GITHUB_EVENT_NAME}" = "schedule" ]; then
+		CI_DO_PUSH=0
+	else
+		if [ -z "${TAGGED_VERSION}" ]; then
+			CI_DO_PUSH=0
+		else
+			CI_DO_PUSH=1
+		fi
+	fi
 fi
 
-#---------------------------------------------------------------------
+PRNSUCCESS "Check options for default value"
+
+#==========================================================
 # Print information
-#---------------------------------------------------------------------
-echo "[INFO] ${PRGNAME} : All local variables."
-echo "  PRGNAME                  = ${PRGNAME}"
-echo "  MYSCRIPTDIR              = ${MYSCRIPTDIR}"
-echo "  BUILDUTILS_DIR           = ${BUILDUTILS_DIR}"
-echo "  MAKE_VAR_TOOL            = ${MAKE_VAR_TOOL}"
-echo "  DOCKER_TEMPL_FILE        = ${DOCKER_TEMPL_FILE}"
-echo "  DOCKER_FILE              = ${DOCKER_FILE}"
-echo "  IMAGEVAR_FILE            = ${IMAGEVAR_FILE}"
-echo "  DOCKER_IMAGE_INFO        = ${DOCKER_IMAGE_INFO}"
-echo "  DOCKER_IMAGE_BASE        = ${DOCKER_IMAGE_BASE}"
-echo "  DOCKER_IMAGE_DEV_BASE    = ${DOCKER_IMAGE_DEV_BASE}"
-echo "  DOCKER_IMAGE_OSTYPE      = ${DOCKER_IMAGE_OSTYPE}"
-echo "  DOCKER_GIT_ORGANIZATION  = ${DOCKER_GIT_ORGANIZATION}"
-echo "  DOCKER_GIT_REPOSITORY    = ${DOCKER_GIT_REPOSITORY}"
-echo "  DOCKER_GIT_BRANCH        = ${DOCKER_GIT_BRANCH}"
-echo "  DEFAULT_IMAGE_TAGGING    = ${DEFAULT_IMAGE_TAGGING}"
-echo "  DOCKER_HUB_ORG           = ${DOCKER_HUB_ORG}"
-echo "  IMAGE_NAMES              = ${IMAGE_NAMES}"
-echo "  IMAGE_VERSION            = ${IMAGE_VERSION}"
-echo "  FORCE_PUSH               = ${FORCE_PUSH}"
-echo "  DO_PUSH                  = ${DO_PUSH}"
-echo "  PKGMGR_NAME              = ${PKGMGR_NAME}"
-echo "  PKGMGR_UPDATE_OPT        = ${PKGMGR_UPDATE_OPT}"
-echo "  PKGMGR_INSTALL_OPT       = ${PKGMGR_INSTALL_OPT}"
-echo "  PKG_INSTALL_LIST_BUILDER = ${PKG_INSTALL_LIST_BUILDER}"
-echo "  PKG_INSTALL_LIST_BIN     = ${PKG_INSTALL_LIST_BIN}"
-echo "  BUILDER_CONFIGURE_FLAG   = ${BUILDER_CONFIGURE_FLAG}"
-echo "  BUILDER_MAKE_FLAGS       = ${BUILDER_MAKE_FLAGS}"
-echo "  BUILDER_ENVIRONMENT      = ${BUILDER_ENVIRONMENT}"
-echo "  UPDATE_LIBPATH           = ${UPDATE_LIBPATH}"
-echo "  RUNNER_INSTALL_PACKAGES  = ${RUNNER_INSTALL_PACKAGES}"
+#==========================================================
+PRNTITLE "Print all local variables"
 
-#---------------------------------------------------------------------
+echo "  PRGNAME                     = ${PRGNAME}"
+echo "  SCRIPTDIR                   = ${SCRIPTDIR}"
+echo "  SRCTOP                      = ${SRCTOP}"
+echo ""
+echo "  DOCKER_TEMPL_FILE           = ${DOCKER_TEMPL_FILE}"
+echo "  DOCKER_FILE                 = ${DOCKER_FILE}"
+echo ""
+echo "  REPOSITORY_PACKAGE_VERSION  = ${REPOSITORY_PACKAGE_VERSION}"
+echo ""
+echo "  CI_IMAGEVAR_FILE            = ${CI_IMAGEVAR_FILE}"
+echo "  CI_DOCKER_IMAGE_INFO        = ${CI_DOCKER_IMAGE_INFO}"
+echo "  CI_DOCKER_HUB_ORG           = ${CI_DOCKER_HUB_ORG}"
+echo "  CI_IMAGE_NAMES              = ${CI_IMAGE_NAMES}"
+echo "  CI_IMAGE_VERSION            = ${CI_IMAGE_VERSION}"
+echo "  CI_DOCKER_IMAGE_BASE        = ${CI_DOCKER_IMAGE_BASE}"
+echo "  CI_DOCKER_IMAGE_DEV_BASE    = ${CI_DOCKER_IMAGE_DEV_BASE}"
+echo "  CI_DOCKER_IMAGE_OSTYPE      = ${CI_DOCKER_IMAGE_OSTYPE}"
+echo "  CI_GIT_URL                  = ${CI_GIT_URL}"
+echo "  CI_DOCKER_GIT_ORGANIZATION  = ${CI_DOCKER_GIT_ORGANIZATION}"
+echo "  CI_DOCKER_GIT_REPOSITORY    = ${CI_DOCKER_GIT_REPOSITORY}"
+echo "  CI_DOCKER_GIT_BRANCH        = ${CI_DOCKER_GIT_BRANCH}"
+echo "  CI_DEFAULT_IMAGE_TAGGING    = ${CI_DEFAULT_IMAGE_TAGGING}"
+echo "  CI_FORCE_PUSH               = ${CI_FORCE_PUSH}"
+echo "  CI_DO_PUSH                  = ${CI_DO_PUSH}"
+echo ""
+echo "  DOCKERFILE_TEMPL_SUBDIR     = ${DOCKERFILE_TEMPL_SUBDIR}"
+echo "  PKGMGR_NAME                 = ${PKGMGR_NAME}"
+echo "  PKGMGR_UPDATE_OPT           = ${PKGMGR_UPDATE_OPT}"
+echo "  PKGMGR_INSTALL_OPT          = ${PKGMGR_INSTALL_OPT}"
+echo "  PKG_INSTALL_LIST_BUILDER    = ${PKG_INSTALL_LIST_BUILDER}"
+echo "  PKG_INSTALL_LIST_BIN        = ${PKG_INSTALL_LIST_BIN}"
+echo "  BUILDER_ENVIRONMENT         = ${BUILDER_ENVIRONMENT}"
+echo "  UPDATE_LIBPATH              = ${UPDATE_LIBPATH}"
+echo "  RUNNER_INSTALL_PACKAGES     = ${RUNNER_INSTALL_PACKAGES}"
+
+#
+# Printing additional custom variables
+#
+print_custom_variabels
+
+PRNSUCCESS "Printed all local variables"
+
+#==========================================================
 # Initialize Runner for creating Dockerfile
-#---------------------------------------------------------------------
+#==========================================================
 # [NOTE]
 # Github Actions Runner uses Ubuntu to create Docker images.
-# Therefore, the below code is written here assuming that Ubuntu is used.
+# Therefore, the below code is written here assuming that
+# Ubuntu is used.
 #
+PRNTITLE "Initialize Runner for creating Dockerfile"
 
 #
 # Update pacakges
 #
-echo "[INFO] ${PRGNAME} : Update local packages and caches"
+PRNINFO "Update local packages and caches"
 
-export DEBIAN_FRONTEND=noninteractive 
-sudo apt-get update -y -qq
+export DEBIAN_FRONTEND="noninteractive"
+if ({ RUNCMD sudo apt-get update -y -q || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+	PRNERR "Failed to update packages"
+	exit 1
+fi
+
+#
+# Check and install curl
+#
+if ! CURLCMD=$(command -v curl); then
+	PRNINFO "Install curl command"
+	if ({ RUNCMD sudo apt-get install -y -q curl || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+		PRNERR "Failed to install curl command"
+		exit 1
+	fi
+	if ! CURLCMD=$(command -v curl); then
+		PRNERR "Not found curl command"
+		exit 1
+	fi
+else
+	PRNINFO "Already curl is insatlled."
+fi
 
 #
 # Setup packagecloud.io repository
 #
-echo "[INFO] ${PRGNAME} : Setup packagecloud.io repository."
+PRNINFO "Setup packagecloud.io repository."
 
-curl --version >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-	sudo apt-get install -y -qq curl
-fi
-
-sudo /bin/sh -c "curl -s https://packagecloud.io/install/repositories/antpickax/stable/script.deb.sh | bash"
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : could not add packagecloud.io repository."
+if ({ RUNCMD "${CURLCMD} -s https://packagecloud.io/install/repositories/antpickax/stable/script.deb.sh | sudo bash" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+	PRNERR "Failed to download script or setup packagecloud.io reposiory"
 	exit 1
 fi
 
 #
 # Install packages
 #
-echo "[INFO] ${PRGNAME} : Install packages for Github Actions Runner."
-if [ "X${RUNNER_INSTALL_PACKAGES}" != "X" ]; then
-	sudo apt-get install -y -qq ${RUNNER_INSTALL_PACKAGES}
+PRNINFO "Install packages for Github Actions Runner."
+if [ -n "${RUNNER_INSTALL_PACKAGES}" ]; then
+	if ({ RUNCMD "sudo apt-get install -y -q ${RUNNER_INSTALL_PACKAGES}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+		PRNERR "Failed to install packages"
+		exit 1
+	fi
 fi
 
-#---------------------------------------------------------------------
+PRNSUCCESS "Initialized Runner for creating Dockerfile"
+
+#==========================================================
 # Create Dockerfile from template
-#---------------------------------------------------------------------
-cd ${SRCTOP}
+#==========================================================
+PRNTITLE "Create Dockerfile from template"
+
+cd "${SRCTOP}" || exit 1
 
 #
-# For generating Dockerfile.templ
+# Preprocessing
 #
-echo "[INFO] ${PRGNAME} : Initialize repository files"
-
-./autogen.sh
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : Failed to run autogen.sh."
-	exit 1
-fi
-./configure
-if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : Failed to run configure."
+if ! run_preprocess; then
+	PRNERR "Failed to run run_preprocess function."
 	exit 1
 fi
 
 #
 # Create each Dockerfile
 #
-echo "[INFO] ${PRGNAME} : Create Dockerfile from ${DOCKER_TEMPL_FILE}"
+PRNINFO "Create Dockerfile from ${DOCKER_TEMPL_FILE}"
 
-if [ "X${PKG_INSTALL_LIST_BUILDER}" != "X" ]; then
+if [ -n "${PKG_INSTALL_LIST_BUILDER}" ]; then
 	PKG_INSTALL_BUILDER_COMMAND="${PKGMGR_NAME} ${PKGMGR_INSTALL_OPT} ${PKG_INSTALL_LIST_BUILDER}"
 else
 	#
@@ -462,7 +758,7 @@ else
 	PKG_INSTALL_BUILDER_COMMAND=":"
 fi
 
-if [ "X${PKG_INSTALL_LIST_BIN}" != "X" ]; then
+if [ -n "${PKG_INSTALL_LIST_BIN}" ]; then
 	PKG_INSTALL_BIN_COMMAND="${PKGMGR_NAME} ${PKGMGR_INSTALL_OPT} ${PKG_INSTALL_LIST_BIN}"
 else
 	#
@@ -471,111 +767,130 @@ else
 	PKG_INSTALL_BIN_COMMAND=":"
 fi
 
-if [ "X${UPDATE_LIBPATH}" = "X" ]; then
+if [ -z "${UPDATE_LIBPATH}" ]; then
 	#
 	# Set no-operation command
 	#
 	UPDATE_LIBPATH=":"
 fi
 
-cat ${BUILDUTILS_DIR}/${DOCKER_TEMPL_FILE} |							\
-	sed -e "s#%%DOCKER_IMAGE_BASE%%#${DOCKER_IMAGE_BASE}#g"				\
-		-e "s#%%DOCKER_IMAGE_DEV_BASE%%#${DOCKER_IMAGE_DEV_BASE}#g"		\
-		-e "s#%%DOCKER_GIT_ORGANIZATION%%#${DOCKER_GIT_ORGANIZATION}#g"	\
-		-e "s#%%DOCKER_GIT_REPOSITORY%%#${DOCKER_GIT_REPOSITORY}#g"		\
-		-e "s#%%DOCKER_GIT_BRANCH%%#${DOCKER_GIT_BRANCH}#g"				\
-		-e "s#%%PKG_UPDATE%%#${PKGMGR_NAME} ${PKGMGR_UPDATE_OPT}#g"		\
-		-e "s#%%PKG_INSTALL_BUILDER%%#${PKG_INSTALL_BUILDER_COMMAND}#g"	\
-		-e "s#%%PKG_INSTALL_BIN%%#${PKG_INSTALL_BIN_COMMAND}#g"			\
-		-e "s#%%CONFIGURE_FLAG%%#${BUILDER_CONFIGURE_FLAG}#g"			\
-		-e "s#%%BUILD_FLAGS%%#${BUILDER_MAKE_FLAGS}#g"					\
-		-e "s#%%UPDATE_LIBPATH%%#${UPDATE_LIBPATH}#g"					\
-		-e "s#%%BUILD_ENV%%#${BUILDER_ENVIRONMENT}#g"					> ${SRCTOP}/${DOCKER_FILE}
+#
+# Create dockerfile from template(Common conversion)
+#
+sed -e "s#%%GIT_DOMAIN_URL%%#${CI_GIT_URL}#g"							\
+	-e "s#%%DOCKER_IMAGE_BASE%%#${CI_DOCKER_IMAGE_BASE}#g"				\
+	-e "s#%%DOCKER_IMAGE_DEV_BASE%%#${CI_DOCKER_IMAGE_DEV_BASE}#g"		\
+	-e "s#%%DOCKER_GIT_ORGANIZATION%%#${CI_DOCKER_GIT_ORGANIZATION}#g"	\
+	-e "s#%%DOCKER_GIT_REPOSITORY%%#${CI_DOCKER_GIT_REPOSITORY}#g"		\
+	-e "s#%%DOCKER_GIT_BRANCH%%#${CI_DOCKER_GIT_BRANCH}#g"				\
+	-e "s#%%PKG_UPDATE%%#${PKGMGR_NAME} ${PKGMGR_UPDATE_OPT}#g"			\
+	-e "s#%%PKG_INSTALL_BUILDER%%#${PKG_INSTALL_BUILDER_COMMAND}#g"		\
+	-e "s#%%PKG_INSTALL_BIN%%#${PKG_INSTALL_BIN_COMMAND}#g"				\
+	-e "s#%%UPDATE_LIBPATH%%#${UPDATE_LIBPATH}#g"						\
+	-e "s#%%BUILD_ENV%%#${BUILDER_ENVIRONMENT}#g"						\
+	"${SRCTOP}/${DOCKERFILE_TEMPL_SUBDIR}/${DOCKER_TEMPL_FILE}"			> "${SRCTOP}/${DOCKER_FILE}"
+
+# shellcheck disable=SC2181
 if [ $? -ne 0 ]; then
-	echo "[ERROR] ${PRGNAME} : Failed to creating ${DOCKER_FILE} from ${DOCKER_TEMPL_FILE}."
+	PRNERR "Failed to creating ${DOCKER_FILE} from ${DOCKER_TEMPL_FILE} (Common conversion)."
 	exit 1
 fi
 
-echo "[INFO] ${PRGNAME} : Success to create ${SRCTOP}/${DOCKER_FILE}"
+#
+# Custom dockerfile conversion
+#
+if ! custom_dockerfile_conversion "${SRCTOP}/${DOCKER_FILE}"; then
+	PRNERR "Failed to custom dockerfile(${SRCTOP}/${DOCKER_FILE}) conversion."
+	exit 1
+fi
+
+PRNINFO "Dockerfile : ${SRCTOP}/${DOCKER_FILE}"
 echo ""
-cat ${SRCTOP}/${DOCKER_FILE}
+sed -e 's/^/    /g' "${SRCTOP}/${DOCKER_FILE}"
 echo ""
 
-#---------------------------------------------------------------------
-# Build Docker Images and Tagging
-#---------------------------------------------------------------------
-echo "[INFO] ${PRGNAME} : Build docker images"
+PRNSUCCESS "Create Dockerfile from template"
 
-IMAGE_NAMES=$(echo ${IMAGE_NAMES} | sed -e 's/,/ /g')
+#==========================================================
+# Build docker images
+#==========================================================
+PRNTITLE "Build Docker Images"
 
-for ONE_IMAGE_NAME in ${IMAGE_NAMES}; do
-	echo "[INFO] ${PRGNAME} : Build docker image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG}, ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG} from ${ONE_IMAGE_NAME}"
+CI_IMAGE_NAMES="$(echo "${CI_IMAGE_NAMES}" | sed -e 's/,/ /g' | tr '\n' ' ')"
 
-	if [ ${DEFAULT_IMAGE_TAGGING} -eq 1 ]; then
-		docker image build -f ${SRCTOP}/${DOCKER_FILE} --target ${ONE_IMAGE_NAME} -t ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG} -t ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG} -t ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION} -t ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest .
+for ONE_IMAGE_NAME in ${CI_IMAGE_NAMES}; do
+	PRNINFO "Build docker image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}, ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG} from ${ONE_IMAGE_NAME}"
+
+	if [ "${CI_DEFAULT_IMAGE_TAGGING}" -eq 1 ]; then
+		if ({ RUNCMD docker image build -f "${SRCTOP}/${DOCKER_FILE}" --target "${ONE_IMAGE_NAME}" -t "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}" -t "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG}" -t "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}" -t "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest" . || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+			PRNERR "Failed to build image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}, ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG} from ${ONE_IMAGE_NAME}"
+			exit 1
+		fi
 	else
-		docker image build -f ${SRCTOP}/${DOCKER_FILE} --target ${ONE_IMAGE_NAME} -t ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG} -t ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG} .
+		if ({ RUNCMD docker image build -f "${SRCTOP}/${DOCKER_FILE}" --target "${ONE_IMAGE_NAME}" -t "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}" -t "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG}" . || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+			PRNERR "Failed to build image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}, ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG} from ${ONE_IMAGE_NAME}"
+			exit 1
+		fi
 	fi
-	if [ $? -ne 0 ]; then
-		echo "[ERROR] ${PRGNAME} : Failed to build image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG}, ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG} from ${ONE_IMAGE_NAME}"
-		exit 1
-	fi
-	echo "[INFO] ${PRGNAME} : Success to build image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG}, ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG}"
+	PRNINFO "Success to build image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}, ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG}"
+	echo ""
 done
 
-#---------------------------------------------------------------------
-# Push Docker Images
-#---------------------------------------------------------------------
-if [ ${DO_PUSH} -eq 1 ]; then
-	echo "[INFO] ${PRGNAME} : Push docker images."
+PRNSUCCESS "Built Docker Images"
 
-	for ONE_IMAGE_NAME in ${IMAGE_NAMES}; do
+#==========================================================
+# Push Docker Images
+#==========================================================
+PRNTITLE "Push Docker Images"
+
+if [ "${CI_DO_PUSH}" -eq 1 ]; then
+
+	for ONE_IMAGE_NAME in ${CI_IMAGE_NAMES}; do
 		#
 		# Push images
 		#
-		echo "[INFO] ${PRGNAME} : Push docker image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG}"
-		docker push ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG}
-		if [ $? -ne 0 ]; then
-			echo "[ERROR] ${PRGNAME} : Failed to push image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG}"
+		PRNINFO "Push docker image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}"
+		if ({ RUNCMD docker push "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+			PRNERR "Failed to push image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}"
 			exit 1
 		fi
 
-		echo "[INFO] ${PRGNAME} : Push docker image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG}"
-		docker push ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG}
-		if [ $? -ne 0 ]; then
-			echo "[ERROR] ${PRGNAME} : Failed to push image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG}"
+		PRNINFO "Push docker image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG}"
+		if ({ RUNCMD docker push "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+			PRNERR "Failed to push image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG}"
 			exit 1
 		fi
 
 		#
 		# Push image as default tag
 		#
-		if [ ${DEFAULT_IMAGE_TAGGING} -eq 1 ]; then
-			echo "[INFO] ${PRGNAME} : Push docker image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}"
-			docker push ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}
-			if [ $? -ne 0 ]; then
-				echo "[ERROR] ${PRGNAME} : Failed to push image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}"
+		if [ "${CI_DEFAULT_IMAGE_TAGGING}" -eq 1 ]; then
+			PRNINFO "Push docker image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}"
+			if ({ RUNCMD docker push "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+				PRNERR "Failed to push image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}"
 				exit 1
 			fi
 
-			echo "[INFO] ${PRGNAME} : Push docker image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest"
-			docker push ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest
-			if [ $? -ne 0 ]; then
-				echo "[ERROR] ${PRGNAME} : Failed to push image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest"
+			PRNINFO "Push docker image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest"
+			if ({ RUNCMD docker push "${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+				PRNERR "Failed to push image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest"
 				exit 1
 			fi
-
-			echo "[INFO] ${PRGNAME} : Success to build image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG}, ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG}, ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}, ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest"
+			PRNINFO "Success to build image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}, ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG}, ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}, ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest"
 		else
-			echo "[INFO] ${PRGNAME} : Success to build image : ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${IMAGE_VERSION}${DOCKER_IMAGE_OSTYPE_TAG}, ${DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${DOCKER_IMAGE_OSTYPE_TAG}"
+			PRNINFO "Success to build image : ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:${CI_IMAGE_VERSION}${CI_DOCKER_IMAGE_OSTYPE_TAG}, ${CI_DOCKER_HUB_ORG}/${ONE_IMAGE_NAME}:latest${CI_DOCKER_IMAGE_OSTYPE_TAG}"
 		fi
+		echo ""
 	done
+
+	PRNSUCCESS "Pushed docker images"
+else
+	PRNSUCCESS "Do not push docker images"
 fi
 
 #---------------------------------------------------------------------
 # Finish
 #---------------------------------------------------------------------
-echo "[SUCCESS] ${PRGNAME} : Finished without error."
 exit 0
 
 #

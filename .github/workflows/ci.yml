@@ -64,9 +64,9 @@ jobs:
       # is created, including the OS that will end support soon.
       # The new version will support the following OS, and these OS list
       # will replace current matrix.
-      #    ubuntu:jammy
-      #    ubuntu:focal
-      #    ubuntu:bionic
+      #    ubuntu:22.04
+      #    ubuntu:20.04
+      #    ubuntu:18.04
       #    debian:bullseye
       #    debian:buster
       #    centos:centos7
@@ -172,27 +172,12 @@ jobs:
     #
     # Run building and pushing helper
     #
-    # [NOTE] Secrets and Environments
-    # When passing parameters to docker_helper.sh in build and pusing,
-    # use Secret of organization or repository.
-    # 
-    # By setting the correct values for the following variable names,
-    # they will be passed as parameters in docker_helper.sh.
-    #  * DOCKER_HUB_USERNAME        : Docker Hub username to read/push the docker images
-    #  * DOCKER_HUB_ACCESSTOKEN     : Docker Hub user's Access Token
-    #    DOCKER_HUB_ORG             : Docker Hub organization to push(ex. "antpickax")
-    #    IMAGETYPE_VARS_FILE        : specify custom variables file
-    #    FORCE_DOCKER_PUSH          : specify force push(true) or not push(false)
-    #
-    # [REQUIRED]
-    # DOCKER_HUB_USERNAME and DOCKER_HUB_ACCESSTOKEN is required to read and push docker images!
-    #
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       #
       # Login to avoid the Docker Hub rate limit
@@ -211,21 +196,38 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESSTOKEN }}
 
-      - name: Build and Push to Docker Hub
-        env:
-          TMP_CI_DOCKER_IMAGE_INFO:     ${{ matrix.imageinfo }}
-          TMP_CI_DOCKER_IMAGE_NAMES:    "k2hash,k2hash-dev"
-          TMP_CI_IMAGETYPE_VARS_FILE:   ${{ secrets.IMAGETYPE_VARS_FILE }}
-          TMP_CI_DOCKER_HUB_ORG:        ${{ secrets.DOCKER_HUB_ORG }}
-          TMP_CI_FORCE_DOCKER_PUSH:     ${{ secrets.FORCE_DOCKER_PUSH }}
-
+      #
+      # Set environments from secrets
+      #
+      # [NOTE] Secrets
+      # When passing parameters to docker_helper.sh in build and pusing,
+      # use Secret of organization or repository.
+      # 
+      # By setting the correct values for the following variable names,
+      # they will be passed as parameters in docker_helper.sh.
+      #  * DOCKER_HUB_USERNAME        : Docker Hub username to read/push the docker images
+      #  * DOCKER_HUB_ACCESSTOKEN     : Docker Hub user's Access Token
+      #    DOCKER_HUB_ORG             : Docker Hub organization to push(ex. "antpickax")
+      #    IMAGETYPE_VARS_FILE        : specify custom variables file
+      #    FORCE_DOCKER_PUSH          : specify force push(true) or not push(false)
+      #
+      # [REQUIRED]
+      # DOCKER_HUB_USERNAME and DOCKER_HUB_ACCESSTOKEN is required to read and push docker images!
+      #
+      - name: Set docker image build environments from secrets
         run: |
-          OPT_CI_DOCKER_IMAGE_INFO="-i ${TMP_CI_DOCKER_IMAGE_INFO}";
-          OPT_CI_DOCKER_IMAGE_NAMES="-n ${TMP_CI_DOCKER_IMAGE_NAMES}"
-          if [ "X${TMP_CI_IMAGETYPE_VARS_FILE}" != "X" ]; then  OPT_CI_IMAGETYPE_VARS_FILE="-f ${TMP_CI_IMAGETYPE_VARS_FILE}";  fi
-          if [ "X${TMP_CI_DOCKER_HUB_ORG}" != "X" ]; then       OPT_CI_DOCKER_HUB_ORG="-o ${TMP_CI_DOCKER_HUB_ORG}";            fi
-          if [ "X${TMP_CI_FORCE_DOCKER_PUSH}" = "Xtrue" ]; then OPT_CI_FORCE_DOCKER_PUSH="-p";                                  elif [ "X${TMP_CI_FORCE_DOCKER_PUSH}" = "Xfalse" ]; then OPT_CI_FORCE_DOCKER_PUSH="-np"; fi
-          /bin/sh -c "${GITHUB_WORKSPACE}/.github/workflows/docker_helper.sh ${OPT_CI_DOCKER_IMAGE_INFO} ${OPT_CI_DOCKER_HUB_ORG} ${OPT_CI_DOCKER_IMAGE_NAMES} ${OPT_CI_FORCE_DOCKER_PUSH}"
+          echo "ENV_DOCKER_IMAGE_INFO=${{ matrix.imageinfo }}"        >> "${GITHUB_ENV}"
+          echo "ENV_IMAGE_NAMES=k2hash,k2hash-dev"                    >> "${GITHUB_ENV}"
+          echo "ENV_IMAGEVAR_FILE=${{ secrets.IMAGETYPE_VARS_FILE }}" >> "${GITHUB_ENV}"
+          echo "ENV_DOCKER_HUB_ORG=${{ secrets.DOCKER_HUB_ORG }}"     >> "${GITHUB_ENV}"
+          echo "ENV_FORCE_PUSH=${{ secrets.FORCE_DOCKER_PUSH }}"      >> "${GITHUB_ENV}"
+
+      #
+      # Run building and pushing
+      #
+      - name: Build and Push image to Docker Hub
+        run: |
+          ${GITHUB_WORKSPACE}/.github/workflows/docker_helper.sh
 
 #
 # Local variables:
