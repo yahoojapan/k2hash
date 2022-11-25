@@ -416,7 +416,7 @@ run_publish_package()
 			PRNERR "Token for uploading to packagecloud.io is not specified."
 			return 1
 		fi
-		if ! PACKAGECLOUD_TOKEN="${CI_PACKAGECLOUD_TOKEN}" /bin/sh -c "package_cloud push ${CI_PACKAGECLOUD_OWNER}/${CI_PACKAGECLOUD_PUBLISH_REPO}/${DIST_TAG} ${BUILD_SRCTOP}/${PKG_OUTPUT_DIR}/*.${PKG_EXT}"; then
+		if ! PACKAGECLOUD_TOKEN="${CI_PACKAGECLOUD_TOKEN}" /bin/sh -c "package_cloud push ${CI_PACKAGECLOUD_OWNER}/${CI_PACKAGECLOUD_PUBLISH_REPO}/${DIST_TAG} ${SRCTOP}/${PKG_OUTPUT_DIR}/*.${PKG_EXT}"; then
 			PRNERR "Failed to publish *.${PKG_EXT} packages to ${CI_PACKAGECLOUD_OWNER}/${CI_PACKAGECLOUD_PUBLISH_REPO}/${DIST_TAG}"
 			return 1
 		fi
@@ -1236,23 +1236,15 @@ PRNSUCCESS "Install shellcheck"
 # Processing
 #==============================================================
 #
-# Copy source code to temporary directory
-#
-PRNTITLE "Copy source code to temporary directory"
-if ! RUNCMD cp -rp "${SRCTOP}" /tmp; then
-	PRNERR "Failed to copy source code to temporary directory"
-	exit 1
-fi
-BUILD_SRCTOP="/tmp/$(basename "${SRCTOP}")"
-
-#
 # Change current directory
 #
-if ! RUNCMD cd "${BUILD_SRCTOP}"; then
-	PRNERR "Failed to chnage current directory to ${BUILD_SRCTOP}"
+PRNTITLE "Change current directory"
+
+if ! RUNCMD cd "${SRCTOP}"; then
+	PRNERR "Failed to chnage current directory to ${SRCTOP}"
 	exit 1
 fi
-PRNSUCCESS "Copy source code to temporary directory"
+PRNSUCCESS "Changed current directory"
 
 #--------------------------------------------------------------
 # Configuration
