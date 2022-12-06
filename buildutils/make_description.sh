@@ -179,7 +179,7 @@ while IFS= read -r ONE_LINE; do
 				echo " .${ESC_LF_CHAR}"
 			fi
 		else
-			if [ "X${ONE_LINE}" = "X${REVERTED_LINE}" ]; then
+			if [ -n "${ONE_LINE}" ] && [ "${ONE_LINE}" = "${REVERTED_LINE}" ]; then
 				#
 				# This is new section
 				#

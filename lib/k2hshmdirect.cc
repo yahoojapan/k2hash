@@ -146,7 +146,6 @@ PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, c
 				if(is_expire_check && attrman.IsExpire(*pAttr)){
 					// element is expired.
 					MSG_K2HPRN("the key is expired, so we do not write this element.");
-					// cppcheck-suppress unmatchedSuppression
 					// cppcheck-suppress identicalInnerCondition
 					K2H_Free(pElementBin);
 				}
@@ -180,13 +179,11 @@ PK2HBIN K2HShm::GetElementListToBinary(PELEMENT pRelElement, size_t* pdatacnt, c
 						if(need_check_start && pstartts && (mtime.tv_sec < pstartts->tv_sec || (mtime.tv_sec == pstartts->tv_sec && (mtime.tv_nsec < pstartts->tv_nsec)))){
 							// older than start time
 							MSG_K2HPRN("the element mtime is older then start time, so we do not write this element.");
-							// cppcheck-suppress unmatchedSuppression
 							// cppcheck-suppress identicalInnerCondition
 							K2H_Free(pElementBin);
 						}else if(pendts && (pendts->tv_sec < mtime.tv_sec || (pendts->tv_sec == mtime.tv_sec && (pendts->tv_nsec < mtime.tv_nsec)))){
 							// newer than end time
 							MSG_K2HPRN("the element mtime is newer then end time, so we do not write this element.");
-							// cppcheck-suppress unmatchedSuppression
 							// cppcheck-suppress identicalInnerCondition
 							K2H_Free(pElementBin);
 						}

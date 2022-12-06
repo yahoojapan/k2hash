@@ -76,7 +76,7 @@ TESTS = test.sh
 
 EXTRA_DIST = \
 test.sh \
-testtool.sh \
+test_tool.sh \
 test_linetool.sh \
 test_encrypt_keys \
 test_linetool.cmd \
@@ -90,7 +90,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/lib
 dist_bin_SCRIPTS = k2hedit
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
 #

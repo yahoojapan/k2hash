@@ -271,7 +271,6 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 
 		}else{
 			// could not open/create file
-			// cppcheck-suppress unmatchedSuppression
 			// cppcheck-suppress knownConditionTrueFalse
 			if(ENOENT != errno){
 				ERR_K2HPRN("Could not create/open file %s by errno(%d).", bup_monfile.c_str(), errno);
@@ -312,7 +311,6 @@ bool K2HFileMonitor::InitializeFileMonitor(PSFMONWRAP pfmonwrap, bool noupdate)
 			Unlock(OPEN_LOCK_POS);
 			CloseOnlyFile();
 
-			// cppcheck-suppress unmatchedSuppression
 			// cppcheck-suppress knownConditionTrueFalse
 			if(ENOENT != errno){
 				ERR_K2HPRN("Could not get stat for file %s by errno(%d).", bup_monfile.c_str(), errno);
@@ -604,7 +602,6 @@ bool K2HFileMonitor::SetMonitorFilePath(void)
 	}
 
 	// make hash code
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress internalAstError
 	k2h_hash_t	hash = K2H_HASH_FUNC(bup_shmfile.c_str(), bup_shmfile.length());
 

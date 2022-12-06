@@ -507,7 +507,6 @@ bool k2h_get_value_wp(k2h_h handle, const unsigned char* pkey, size_t keylength,
 		MSG_K2HPRN("Not found key or not have value.");
 		return false;
 	}
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	*pvallength = static_cast<size_t>(result);
 
@@ -561,7 +560,6 @@ bool k2h_get_value_np(k2h_h handle, const unsigned char* pkey, size_t keylength,
 		MSG_K2HPRN("Not found key or not have value.");
 		return false;
 	}
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	*pvallength = static_cast<size_t>(result);
 
@@ -635,7 +633,6 @@ bool k2h_get_value_wp_ext(k2h_h handle, const unsigned char* pkey, size_t keylen
 		MSG_K2HPRN("Not found key or not have value.");
 		return false;
 	}
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	*pvallength = static_cast<size_t>(result);
 
@@ -689,7 +686,6 @@ bool k2h_get_value_np_ext(k2h_h handle, const unsigned char* pkey, size_t keylen
 		MSG_K2HPRN("Not found key or not have value.");
 		return false;
 	}
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	*pvallength = static_cast<size_t>(result);
 
@@ -1028,7 +1024,6 @@ bool k2h_free_keyarray(char** pkeys)
 		return true;
 	}
 	for(char** ptmp = pkeys; *ptmp; ptmp++){
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress identicalInnerCondition
 		K2H_Free(*ptmp);
 	}
@@ -1693,7 +1688,6 @@ static bool k2h_find_get_ext(k2h_find_h findhandle, unsigned char** ppdata, size
 		ERR_K2HPRN("Could not get type(%d) data from k2h_find_h.", type);
 		return false;
 	}
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	*pdatalength = static_cast<size_t>(result);
 

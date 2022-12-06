@@ -19,118 +19,135 @@
 # REVISION:
 #
 
-##############
-# environment
-##############
-MYSCRIPTDIR=`dirname $0`
-if [ "X${TESTPROGDIR}" = "X" ]; then
-	TESTPROGDIR=`cd ${MYSCRIPTDIR}; pwd`
+#--------------------------------------------------------------
+# Common Variables
+#--------------------------------------------------------------
+#PRGNAME=$(basename "${0}")
+SCRIPTDIR=$(dirname "${0}")
+SCRIPTDIR=$(cd "${SCRIPTDIR}" || exit 1; pwd)
+#SRCTOP=$(cd "${SCRIPTDIR}/.." || exit 1; pwd)
+
+#
+# Environment
+#
+if [ -z "${TESTPROGDIR}" ]; then
+	TESTPROGDIR="${SCRIPTDIR}"
 fi
 
+#
+# Variables
+#
 PROCID=$$
 LINETOOL="${TESTPROGDIR}/k2hlinetool"
 K2HFILE="/tmp/k2hash_test_linetool.k2h"
-CMDFILE="${MYSCRIPTDIR}/test_linetool.cmd"
-DSAVECMDFILE="${MYSCRIPTDIR}/test_linetool_dsave.cmd"
-LOGFILE="/tmp/k2hash_test_linetool_$PROCID.log"
-LOGSUBFILE="/tmp/k2hash_test_linetool_$PROCID_noverinfo.log"
-MASTERLOGFILE="${MYSCRIPTDIR}/test_linetool.log"
+CMDFILE="${SCRIPTDIR}/test_linetool.cmd"
+DSAVECMDFILE="${SCRIPTDIR}/test_linetool_dsave.cmd"
+
+LOGFILE="/tmp/k2hash_test_linetool_${PROCID}.log"
+LOGSUBFILE="/tmp/k2hash_test_linetool_${PROCID}_noverinfo.log"
+MASTERLOGFILE="${SCRIPTDIR}/test_linetool.log"
 MASTERLOGSUBFILE="/tmp/test_linetool_noverinfo.log"
 
-rm -f ${K2HFILE}
-rm -f ${LOGFILE}
+#==============================================================
+# Run test
+#==============================================================
+rm -f "${K2HFILE}" "${LOGFILE}"
 
-#################
-# Initialize test
-#################
-${LINETOOL} -f ${K2HFILE} -init >> ${LOGFILE} 2>/dev/null
-if [ $? -ne 0 ]; then
-	exit 1
-fi
-
-#################
-# version test
-#################
-${LINETOOL} -libversion >> ${LOGFILE} 2>/dev/null
-if [ $? -ne 0 ]; then
-	exit 1
-fi
-
-#################
-# memory type test
-#################
-${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
-if [ $? -ne 0 ]; then
-	exit 1
-fi
-
-#### Test for CAPI
-${LINETOOL} -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -capi -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
-if [ $? -ne 0 ]; then
-	exit 1
-fi
-
-#################
-# tmp file type test
-#################
-rm -f ${K2HFILE}
-${LINETOOL} -t ${K2HFILE} -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
-if [ $? -ne 0 ]; then
-	exit 1
-fi
-
-#################
-# file type test
-#################
-rm -f ${K2HFILE}
-${LINETOOL} -f ${K2HFILE} -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run ${CMDFILE} >> ${LOGFILE} 2>/dev/null
-if [ $? -ne 0 ]; then
-	exit 1
-fi
-
-#################
-# test for direct save/load
-#################
-${LINETOOL} -m -mask 2 -cmask 2 -elementcnt 2 -fullmap -run ${DSAVECMDFILE} >> ${LOGFILE} 2>/dev/null
-if [ $? -ne 0 ]; then
-	exit 1
-fi
-
-#################
-# check result
-#################
-diff ${LOGFILE} ${MASTERLOGFILE} >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-	#
-	# Version number is difference
-	#
-	cat ${LOGFILE}       | grep -v '^[a-z][0-9]*[ ][0-9]*$' | grep -v 'K2HASH library Version' | grep -v 'FULLOCK Version' > ${LOGSUBFILE} 2>/dev/null
-	cat ${MASTERLOGFILE} | grep -v '^[a-z][0-9]*[ ][0-9]*$' | grep -v 'K2HASH library Version' | grep -v 'FULLOCK Version' > ${MASTERLOGSUBFILE} 2>/dev/null
-	diff ${LOGSUBFILE} ${MASTERLOGSUBFILE} >/dev/null 2>&1
-	if [ $? -ne 0 ]; then
-		echo "============================================"
-		echo "TEST LINETOOL IS FAILED"
-		echo "============================================"
-		echo "diff ${LOGFILE} ${MASTERLOGFILE} "
-		echo ""
-		diff ${LOGFILE} ${MASTERLOGFILE}
-		echo "============================================"
-		rm -f ${LOGFILE}
-		rm -f ${LOGSUBFILE}
-		rm -f ${MASTERLOGSUBFILE}
+{
+	#----------------------------------------------------------
+	# Initialize test
+	#----------------------------------------------------------
+	if ! "${LINETOOL}" -f "${K2HFILE}" -init; then
 		exit 1
 	fi
+
+	#----------------------------------------------------------
+	# version test
+	#----------------------------------------------------------
+	if ! "${LINETOOL}" -libversion; then
+		exit 1
+	fi
+
+	#----------------------------------------------------------
+	# memory type test
+	#----------------------------------------------------------
+	#
+	# Test for CPP API
+	#
+	if ! "${LINETOOL}" -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run "${CMDFILE}"; then
+		exit 1
+	fi
+	#
+	# Test for CAPI
+	#
+	if ! "${LINETOOL}" -m -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -capi -run "${CMDFILE}"; then
+		exit 1
+	fi
+
+	#----------------------------------------------------------
+	# tmp file type test
+	#----------------------------------------------------------
+	rm -f "${K2HFILE}"
+
+	if ! "${LINETOOL}" -t "${K2HFILE}" -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run "${CMDFILE}"; then
+		exit 1
+	fi
+
+	#----------------------------------------------------------
+	# file type test
+	#----------------------------------------------------------
+	rm -f "${K2HFILE}"
+
+	if ! "${LINETOOL}" -f "${K2HFILE}" -mask 4 -cmask 2 -elementcnt 32 -pagesize 128 -fullmap -run "${CMDFILE}"; then
+		exit 1
+	fi
+
+	#----------------------------------------------------------
+	# test for direct save/load
+	#----------------------------------------------------------
+	if ! "${LINETOOL}" -m -mask 2 -cmask 2 -elementcnt 2 -fullmap -run "${DSAVECMDFILE}"; then
+		exit 1
+	fi
+
+} > "${LOGFILE}" 2>/dev/null
+
+rm -f "${K2HFILE}"
+
+#==============================================================
+# Check result
+#==============================================================
+# [NOTE]
+# Exclude the version number as it may be different.
+#
+grep -v '^[a-z][0-9]*[ ][0-9]*$' "${LOGFILE}"       | grep -v 'K2HASH library Version' | grep -v 'FULLOCK Version' > "${LOGSUBFILE}"       2>/dev/null
+grep -v '^[a-z][0-9]*[ ][0-9]*$' "${MASTERLOGFILE}" | grep -v 'K2HASH library Version' | grep -v 'FULLOCK Version' > "${MASTERLOGSUBFILE}" 2>/dev/null
+
+if ! diff "${LOGSUBFILE}" "${MASTERLOGSUBFILE}" >/dev/null 2>&1; then
+	echo "==========================================================="
+	echo "[FAILED] TEST LINETOOL"
+	echo "-----------------------------------------------------------"
+	echo "Result : \"diff ${LOGFILE} ${MASTERLOGFILE}\""
+	echo "-----------------------------------------------------------"
+	diff "${LOGSUBFILE}" "${MASTERLOGSUBFILE}"
+	echo "-----------------------------------------------------------"
+
+	rm -f ${LOGFILE}
 	rm -f ${LOGSUBFILE}
 	rm -f ${MASTERLOGSUBFILE}
+	exit 1
 fi
 
-rm -f ${LOGFILE}
-rm -f ${K2HFILE}
+rm -f "${LOGFILE}"
+rm -f "${LOGSUBFILE}"
+rm -f "${MASTERLOGSUBFILE}"
 
 exit 0
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
 #

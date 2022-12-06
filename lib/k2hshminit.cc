@@ -159,24 +159,19 @@ bool K2HShm::InitializePageArray(int fd, off_t start, ssize_t pagesize, int coun
 		if(0 == pos){
 			wrap.pagehead.prev	= NULL;
 		}else{
-			// cppcheck-suppress unmatchedSuppression
 			// cppcheck-suppress unreadVariable
 			wrap.pagehead.prev	= reinterpret_cast<PPAGEHEAD>(cur - pagesize);
 		}
 		if(pos + 1 < count){
-			// cppcheck-suppress unmatchedSuppression
 			// cppcheck-suppress unreadVariable
 			wrap.pagehead.next	= reinterpret_cast<PPAGEHEAD>(cur + pagesize);
 		}else{
-			// cppcheck-suppress unmatchedSuppression
 			// cppcheck-suppress unreadVariable
 			wrap.pagehead.next	= pLastRelPage;
 		}
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress unreadVariable
 		wrap.pagehead.length	= 0UL;
 
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress unreadVariable
 		wrap.pagehead.data[0]	= 0;
 

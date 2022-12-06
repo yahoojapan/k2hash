@@ -321,7 +321,6 @@ K2HAttrs::iterator K2HAttrs::insert(const unsigned char* pkey, size_t keylength,
 	attr.vallength = vallength;
 	if(NULL == (attr.pkey = static_cast<unsigned char*>(malloc(attr.keylength)))){
 		ERR_K2HPRN("Could not allocate memory.");
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress memleak
 		return K2HAttrIterator(this, Attrs.end());
 	}
@@ -331,7 +330,6 @@ K2HAttrs::iterator K2HAttrs::insert(const unsigned char* pkey, size_t keylength,
 		if(NULL == (attr.pval = static_cast<unsigned char*>(malloc(attr.vallength)))){
 			ERR_K2HPRN("Could not allocate memory.");
 			K2H_Free(attr.pkey);
-			// cppcheck-suppress unmatchedSuppression
 			// cppcheck-suppress memleak
 			return K2HAttrIterator(this, Attrs.end());
 		}

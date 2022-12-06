@@ -267,7 +267,6 @@ fi
 #	RUN_POST_PACKAGE		0
 #	RUN_PUBLISH_PACKAGE		1
 #
-RUN_SHELLCHECK=0
 
 #---------------------------------------------------------------
 # Variables for each process

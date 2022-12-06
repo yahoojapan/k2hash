@@ -665,11 +665,9 @@ bool K2HShm::ReplacePageHead(PPAGEHEAD pLastRelPage, PPAGEHEAD pRelPtr, bool isS
 
 	PAGEWRAP	PageWrap;
 	{
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress unreadVariable
 		PageWrap.pagehead.prev		= isSetPrevPtr ? pRelPtr : NULL;
 
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress unreadVariable
 		PageWrap.pagehead.next		= isSetPrevPtr ? NULL : pRelPtr;
 	}
@@ -945,11 +943,9 @@ bool K2HShm::ArrangeToUpperKIndex(k2h_hash_t hash, k2h_hash_t mask) const
 	}
 
 	// CKey Indexes
-																	// cppcheck-suppress unmatchedSuppression
-																	// cppcheck-suppress nullPointerRedundantCheck
+	// cppcheck-suppress nullPointerRedundantCheck
 	PCKINDEX	pUpperCKIndex	= static_cast<PCKINDEX>(Abs(pUpperKIndex->ckey_list));
-																	// cppcheck-suppress unmatchedSuppression
-																	// cppcheck-suppress nullPointerRedundantCheck
+	// cppcheck-suppress nullPointerRedundantCheck
 	PCKINDEX	pLowerCKIndex	= static_cast<PCKINDEX>(Abs(pLowerKIndex->ckey_list));
 	if(!pUpperCKIndex || !pLowerCKIndex){
 		ERR_K2HPRN("FATAL: Upper CKeyIndex is %p or Lower CKeyIndex is %p", (pUpperKIndex ? pUpperKIndex : NULL), (pLowerKIndex ? pLowerKIndex : NULL));
@@ -1226,7 +1222,6 @@ PELEMENT K2HShm::GetElement(const unsigned char* byKey, size_t length, K2HLock& 
 		ERR_K2HPRN("Parameters is wrong.");
 		return NULL;
 	}
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress internalAstError
 	k2h_hash_t	hash	= K2H_HASH_FUNC(reinterpret_cast<const void*>(byKey), length);
 	k2h_hash_t	subhash	= K2H_2ND_HASH_FUNC(reinterpret_cast<const void*>(byKey), length);
@@ -2149,7 +2144,6 @@ bool K2HShm::Set(const unsigned char* byKey, size_t keylength, const unsigned ch
 			}
 			if(pUniqId){
 				parent_uid = pUniqId;
-				// cppcheck-suppress unmatchedSuppression
 				// cppcheck-suppress identicalInnerCondition
 				K2H_Free(pUniqId);
 			}

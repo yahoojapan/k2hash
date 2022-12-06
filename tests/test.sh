@@ -19,127 +19,131 @@
 # REVISION:
 #
 
-##############################################################
-## library path & programs path
-##
-MYSCRIPTDIR=`dirname $0`
-if [ "X${SRCTOP}" = "X" ]; then
-	SRCTOP=`cd ${MYSCRIPTDIR}/..; pwd`
-fi
-cd ${MYSCRIPTDIR}
-if [ "X${OBJDIR}" = "X" ]; then
-	LD_LIBRARY_PATH="${SRCTOP}/lib/.lib"
-	TESTPROGDIR=${MYSCRIPTDIR}
-else
-	LD_LIBRARY_PATH="${SRCTOP}/lib/${OBJDIR}"
-	TESTPROGDIR=${MYSCRIPTDIR}/${OBJDIR}
-fi
+#--------------------------------------------------------------
+# Common Variables
+#--------------------------------------------------------------
+#
+# Instead of pipefail(for shells not support "set -o pipefail")
+#
+PIPEFAILURE_FILE="/tmp/.pipefailure.$(od -An -tu4 -N4 /dev/random | tr -d ' \n')"
+
+#PRGNAME=$(basename "${0}")
+SCRIPTDIR=$(dirname "${0}")
+SCRIPTDIR=$(cd "${SCRIPTDIR}" || exit 1; pwd)
+SRCTOP=$(cd "${SCRIPTDIR}/.." || exit 1; pwd)
+
+#
+# Directories / Files
+#
+TESTDIR="${SRCTOP}/tests"
+LIBOBJDIR="${SRCTOP}/lib/.libs"
+#TESTOBJDIR="${TESTDIR}/.libs"
+
+TEST_TOOL="${TESTDIR}/test_tool.sh"
+TEST_LINETOOL="${TESTDIR}/test_linetool.sh"
+
+#
+# LD_LIBRARY_PATH / TESTPROGDIR
+#
+LD_LIBRARY_PATH="${LIBOBJDIR}"
 export LD_LIBRARY_PATH
+
+TESTPROGDIR="${TESTDIR}"
 export TESTPROGDIR
 
-##############################################################
-## variables
-##
-DATE=`date`
+#--------------------------------------------------------------
+# Variables
+#--------------------------------------------------------------
+DATE=$(date)
 PROCID=$$
-FILEPATH="/tmp/k2hash_test_$PROCID.k2h"
 
-if [ "X$1" = "X" ]; then
+TEST_FILEPATH="/tmp/k2hash_test_$PROCID.k2h"
+
+#--------------------------------------------------------------
+# Input Variables
+#--------------------------------------------------------------
+if [ -z "$1" ]; then
 	LOGFILE="/dev/null"
 #	LOGFILE="/tmp/k2hash_test_$PROCID.log"
 else
 	LOGFILE="$1"
 fi
 
-echo "================= $DATE ====================" > $LOGFILE
+#==============================================================
+# Main
+#==============================================================
+{
+	echo "================= ${DATE} ===================="
 
-##############################################################
-###
-### Memory test
-###
-echo "-- TEST Memory mode --" >> $LOGFILE
-echo "" >> $LOGFILE
-./testtool.sh -m memkey 100 >> $LOGFILE
+	#----------------------------------------------------------
+	# Memory test
+	#----------------------------------------------------------
+	echo "[TEST] Memory mode"
 
-if [ $? -ne 0 ]; then
-	echo "Memory mode test --->> ERROR" >> $LOGFILE
-	exit 1
-fi
-echo "Memory mode test --->> OK" >> $LOGFILE
+	if ({ "${TEST_TOOL}" -m memkey 100 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+		echo "    [Result] ERROR"
+		exit 1
+	fi
+	echo "    [Result] OK"
 
+	#----------------------------------------------------------
+	# Temp file test
+	#----------------------------------------------------------
+	echo "[TEST] Temp file mode"
 
-##############################################################
-###
-### Temp file test
-###
-echo "" >> $LOGFILE
-echo "-- TEST Temp file mode --" >> $LOGFILE
-echo "" >> $LOGFILE
-./testtool.sh -t $FILEPATH tkey 100 >> $LOGFILE
+	if ({ "${TEST_TOOL}" -t "${TEST_FILEPATH}" tkey 100 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+		echo "    [Result] ERROR"
+		exit 1
+	fi
+	echo "    [Result] OK"
 
-if [ $? -ne 0 ]; then
-	echo "Temp file mode test --->> ERROR" >> $LOGFILE
-	exit 1
-fi
-echo "Temp file mode test --->> OK" >> $LOGFILE
+	#----------------------------------------------------------
+	# Permanent file test
+	#----------------------------------------------------------
+	echo "[TEST] file mode"
 
+	if ({ "${TEST_TOOL}" -f "${TEST_FILEPATH}" tkey 100 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+		echo "    [Result] ERROR"
+		exit 1
+	fi
+	echo "    [Result] OK"
 
-##############################################################
-###
-### Permanent file test
-###
-echo "" >> $LOGFILE
-echo "-- TEST file mode --" >> $LOGFILE
-echo "" >> $LOGFILE
-./testtool.sh -f $FILEPATH tkey 100 >> $LOGFILE
+	#----------------------------------------------------------
+	# Dump file test
+	#----------------------------------------------------------
+	echo "[TEST] Dump - file mode"
 
-if [ $? -ne 0 ]; then
-	echo "File mode test --->> ERROR" >> $LOGFILE
-	exit 1
-fi
-echo "File mode test --->> OK" >> $LOGFILE
+	if ({ "${TEST_TOOL}" -r "${TEST_FILEPATH}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+		echo "    [Result] ERROR"
+		exit 1
+	fi
+	echo "    [Result] OK"
 
+	#----------------------------------------------------------
+	# API test by k2hlinetool
+	#----------------------------------------------------------
+	echo "[TEST] Run k2hlinetool"
 
-##############################################################
-###
-### Dump file test
-###
-echo "" >> $LOGFILE
-echo "-- DUMP file mode --" >> $LOGFILE
-echo "" >> $LOGFILE
-./testtool.sh -r $FILEPATH >> $LOGFILE
+	if ({ "${TEST_LINETOOL}" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+		echo "    [Result] ERROR"
+		exit 1
+	fi
+	echo "    [Result] OK"
 
-if [ $? -ne 0 ]; then
-	echo "Dump mode test --->> ERROR" >> $LOGFILE
-	exit 1
-fi
-echo "Dump mode test --->> OK" >> $LOGFILE
+	#----------------------------------------------------------
+	# Remove file
+	#----------------------------------------------------------
+	rm -f "${TEST_FILEPATH}"
 
-##############################################################
-###
-### API test by k2hlinetool
-###
-echo "" >> $LOGFILE
-echo "-- k2hlinetool test --" >> $LOGFILE
-echo "" >> $LOGFILE
-./test_linetool.sh >> $LOGFILE
-
-if [ $? -ne 0 ]; then
-	echo "API k2hlinetool test --->> ERROR" >> $LOGFILE
-	exit 1
-fi
-echo "API k2hlinetool test --->> OK" >> $LOGFILE
-
-##############################################################
-###
-### Remove file
-###
-rm -f $FILEPATH
+} | tee "${LOGFILE}"
 
 exit 0
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
 #
