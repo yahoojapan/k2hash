@@ -364,7 +364,6 @@ static void OptionParser(int argc, char** argv, optparams_t& optparams)
 						break;
 					}
 				}
-				// cppcheck-suppress unmatchedSuppression
 				// cppcheck-suppress knownConditionTrueFalse
 				if(param.is_number){
 					param.num_value = atoi(pparam);
@@ -911,10 +910,8 @@ static void* RunThread(void* param)
 	}
 
 	// set datas and ready flag
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	pThParam->pmycntl->threadid = gettid();
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	pThParam->pmycntl->is_ready = true;
 
@@ -970,7 +967,6 @@ static void* RunThread(void* param)
 	// set timespec and exit flag
 	get_nomotonic_time(pThParam->pmycntl->ts, start);
 
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	pThParam->pmycntl->is_exit = true;
 
@@ -1250,7 +1246,6 @@ int main(int argc, char** argv)
 		pexeccntl->is_suspend	= false;
 
 		// wait all children ready
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress knownConditionTrueFalse
 		if(!pexeccntl->is_exit){
 			// wait for all children is ready

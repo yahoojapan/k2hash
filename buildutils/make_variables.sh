@@ -224,7 +224,7 @@ elif [ "${PRGMODE}" = "DEBHELPER" ]; then
 			RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}, autotools-dev"
 
 		elif [ "${OS_ID_STRING}" = "ubuntu" ]; then
-			if [ ${DEBHELPER_MAJOR_VER} -lt 10 ]; then
+			if [ "${DEBHELPER_MAJOR_VER}" -lt 10 ]; then
 				RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}, autotools-dev"
 			else
 				RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}"

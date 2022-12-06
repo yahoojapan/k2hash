@@ -30,7 +30,6 @@ using namespace std;
 //---------------------------------------------------------
 // Class Methods
 //---------------------------------------------------------
-// cppcheck-suppress unmatchedSuppression
 // cppcheck-suppress constParameter
 bool K2HPageMem::GetData(const K2HShm* pk2hshm, PPAGEHEAD reladdr, unsigned char** ppPageData, size_t* pLength)
 {
@@ -48,13 +47,11 @@ bool K2HPageMem::GetData(const K2HShm* pk2hshm, PPAGEHEAD reladdr, unsigned char
 	}
 	if(NULL == (*ppPageData = static_cast<unsigned char*>(malloc(k2hpage_obj.DataLength)))){
 		ERR_K2HPRN("Could not allocation memory.");
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress memleak
 		return false;
 	}
 	memcpy(*ppPageData, k2hpage_obj.pPageData, k2hpage_obj.DataLength);
 
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress memleak
 	return true;
 }

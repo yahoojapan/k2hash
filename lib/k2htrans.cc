@@ -189,7 +189,6 @@ void* K2HTransManager::WorkerProc(void* param)
 			// call handler
 			PBCOM	pBinCom = reinterpret_cast<PBCOM>(pval);
 
-			// cppcheck-suppress unmatchedSuppression
 			// cppcheck-suppress internalAstError
 			if(!K2H_TRANS_FUNC(ptrparam->handle, pBinCom)){
 				ERR_K2HPRN("Something error occurred in transaction function(handler), try to recover(repush the data to queue)");
@@ -551,7 +550,6 @@ bool K2HTransManager::CheckFile(const K2HShm* pk2hshm)
 	MSG_K2HPRN("Need to reopen file.");
 	K2H_CLOSE(pFileInfo->arfd);
 
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress redundantAssignment
 	if(-1 == (pFileInfo->arfd = open(pFileInfo->filepath.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))){
 		ERR_K2HPRN("Could not reopen/create file: errno(%d)", errno);
@@ -712,7 +710,6 @@ bool K2HTransManager::CreateThreads(const K2HShm* pk2hshm)
 		pthpool->trparammap[tid] = pparam;
 	}
 
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress stlSize
 	if(0 == pthpool->trparammap.size()){
 		ERR_K2HPRN("Could not create any thread.");
@@ -819,7 +816,6 @@ bool K2HTransManager::ExitAllThreads(void)
 
 	// exit threads in thread pool
 	bool	bResult = true;
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress postfixOperator
 	for(std::map<const K2HShm*, bool>::const_iterator iter = k2htrmap.begin(); iter != k2htrmap.end(); iter++){
 		if(!ExitThreads(iter->first)){
@@ -839,7 +835,6 @@ bool K2HTransManager::SetThreadPool(int count)
 	}
 	while(!fullock::flck_trylock_noshared_mutex(&LockPool));	// no call sched_yield()
 
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress stlSize
 	if(0 < trpoolmap.size()){
 		// Now thread running

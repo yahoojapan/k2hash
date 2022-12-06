@@ -215,12 +215,10 @@ custom_dockerfile_conversion()
 	fi
 	_TMP_DOCKERFILE_PATH="$1"
 
-	sed -e "s#%%CONFIGURE_FLAG%%#${BUILDER_CONFIGURE_FLAG}#g"	\
-		-e "s#%%BUILD_FLAGS%%#${BUILDER_MAKE_FLAGS}#g"			\
-		-i "${_TMP_DOCKERFILE_PATH}"
+	if ! sed -e "s#%%CONFIGURE_FLAG%%#${BUILDER_CONFIGURE_FLAG}#g"	\
+			-e "s#%%BUILD_FLAGS%%#${BUILDER_MAKE_FLAGS}#g"			\
+			-i "${_TMP_DOCKERFILE_PATH}"; then
 
-	# shellcheck disable=SC2181
-	if [ $? -ne 0 ]; then
 		PRNERR "Failed to converting ${_TMP_DOCKERFILE_PATH}"
 		return 1
 	fi

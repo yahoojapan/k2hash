@@ -3141,7 +3141,6 @@ static bool QueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t& pa
 	}
 	string	strvalue = params[2];
 
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress unreadVariable
 	time_t		expire	= 0;
 	string		pass;
@@ -3851,7 +3850,6 @@ static bool KeyQueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t&
 	string	strkey	= params[2];
 	string	strvalue= params[3];
 
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress unreadVariable
 	time_t		expire	= 0;
 	string		pass;
@@ -4280,7 +4278,6 @@ static bool BultinAttrCommand(K2HShm& k2hash, params_t& params)
 	string		passfile;
 	bool		is_history	= true;
 
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress unreadVariable
 	time_t		expire		= 0;
 
@@ -4458,7 +4455,6 @@ static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const cha
 	if(!LineOptionParser(pCommand, opts)){
 		return true;	// for continue.
 	}
-	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress stlSize
 	if(0 == opts.size()){
 		return true;

@@ -309,7 +309,6 @@ K2HSubKeys::iterator K2HSubKeys::insert(const unsigned char* bySubkey, size_t le
 	subkey.length = length;
 	if(NULL == (subkey.pSubKey = static_cast<unsigned char*>(malloc(subkey.length)))){
 		ERR_K2HPRN("Could not allocate memory.");
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress memleak
 		return K2HSKIterator(this, SubKeys.end());
 	}

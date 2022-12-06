@@ -200,7 +200,6 @@ bool K2HDbgControl::SetDbgFile(const char* filepath)
 	FILE*	newfp;
 	if(NULL == (newfp = fopen(filepath, "a+"))){
 		ERR_K2HPRN("Could not open debug file(%s). errno = %d", filepath, errno);
-		// cppcheck-suppress unmatchedSuppression
 		// cppcheck-suppress resourceLeak
 		return false;
 	}

@@ -19,45 +19,103 @@
 # REVISION:
 #
 
-# k2hfile edit and save
+#--------------------------------------------------------------
+# Common Variables
+#--------------------------------------------------------------
+PRGNAME=$(basename "${0}")
 
-if [ "X$1" = "X" ]; then
-	echo "Error: k2hedit needs k2hash file parameter"
+#--------------------------------------------------------------
+# Input variables
+#--------------------------------------------------------------
+if [ -z "$1" ]; then
+	echo "[ERROR] k2hedit needs k2hash file parameter"
 	exit 1
-fi
-
-if [ "X$1" = "X-h" -o "X$1" = "X-H" ]; then
-	echo "Usage:"
-	echo "    k2hedit -h"
-	echo "    k2hedit <k2hash file>"
+elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+	echo "Usage : ${PRGNAME} --help(-h)"
+	echo "        ${PRGNAME} <k2hash file>"
 	echo ""
-	echo "* Default editor is vi. If EDITOR environment is set, k2hedit uses it."
+	echo " * Default editor is vi. If EDITOR environment is set, k2hedit uses it."
 	echo ""
 	exit 0
 fi
 
-if [ "X$EDITOR" != "X" ]; then
-	k2heditor=$EDITOR
+TARGET_K2HFILE="$1"
+
+#--------------------------------------------------------------
+# Variables
+#--------------------------------------------------------------
+K2HTOUCH_BIN="k2htouch"
+
+ORG_TEMPFILE="/tmp/.${PRGNAME}_$$.tmp"
+WORK_TEMPFILE="/tmp/.${PRGNAME}_$$.swp"
+DIFF_RESULT_FILE="/tmp/.${PRGNAME}_$$.diff"
+
+if [ -n "${EDITOR}" ]; then
+	EDITOR_BIN="${EDITOR}"
 else
-	k2heditor=vi
+	EDITOR_BIN="vi"
 fi
 
-k2hfile=$1
-orgfile=/tmp/k2hedittemp$$
-wrkfile=/tmp/k2hedittemp$$.wrk
-diffile=/tmp/k2hedittemp$$.dif
+#--------------------------------------------------------------
+# Main
+#--------------------------------------------------------------
+#
+# Get list and create list file
+#
+if ! "${K2HTOUCH_BIN}" "${TARGET_K2HFILE}" list | sort > "${ORG_TEMPFILE}"; then
+	echo "[ERROR] Failed to get list."
+	exit 1
+fi
 
-k2htouch $k2hfile list | sort > $orgfile
-cp $orgfile $wrkfile
-$k2heditor $wrkfile
-diff --new-line-format="%L" --unchanged-line-format="" --old-line-format="" $orgfile $wrkfile > $diffile
-cat $diffile | awk -F\\t '{system("k2htouch '$k2hfile' set "$1" "$2"")}'
-rm $orgfile $wrkfile $diffile
+#
+# Make temporary file for editing
+#
+if ! cp "${ORG_TEMPFILE}" "${WORK_TEMPFILE}"; then
+	echo "[ERROR] Could not open temporary file."
+	rm -f "${ORG_TEMPFILE}"
+	exit 1
+fi
+
+#
+# Call editor
+#
+if ! "${EDITOR_BIN}" "${WORK_TEMPFILE}"; then
+	echo "[ERROR] Something error occurred."
+	rm -f "${ORG_TEMPFILE}"
+	rm -f "${WORK_TEMPFILE}"
+	exit 1
+fi
+
+#
+# Check if edited
+#
+if ! diff --new-line-format="%L" --unchanged-line-format="" --old-line-format="" "${ORG_TEMPFILE}" "${WORK_TEMPFILE}" > "${DIFF_RESULT_FILE}"; then
+	echo "[ERROR] Could not compare original file and modified file."
+	rm -f "${ORG_TEMPFILE}"
+	rm -f "${WORK_TEMPFILE}"
+	exit 1
+fi
+
+AWK_PARAMETER="{system(\"${K2HTOUCH_BIN} ${TARGET_K2HFILE} set \"\$1\" \"\$2\"\")}"
+if ! awk -F\\t "${AWK_PARAMETER}" "${DIFF_RESULT_FILE}"; then
+	echo "[ERROR] Failed to set modified data to ${TARGET_K2HFILE}"
+	rm -f "${ORG_TEMPFILE}"
+	rm -f "${WORK_TEMPFILE}"
+	rm -f "${DIFF_RESULT_FILE}"
+	exit 1
+fi
+
+rm -f "${ORG_TEMPFILE}"
+rm -f "${WORK_TEMPFILE}"
+rm -f "${DIFF_RESULT_FILE}"
 
 exit 0
 
 #
-# VIM modelines
-#
-# vim:set ts=4 fenc=utf-8:
+# Local variables:
+# tab-width: 4
+# c-basic-offset: 4
+# End:
+# vim600: noexpandtab sw=4 ts=4 fdm=marker
+# vim<600: noexpandtab sw=4 ts=4
 #

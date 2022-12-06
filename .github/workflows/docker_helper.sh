@@ -777,21 +777,19 @@ fi
 #
 # Create dockerfile from template(Common conversion)
 #
-sed -e "s#%%GIT_DOMAIN_URL%%#${CI_GIT_URL}#g"							\
-	-e "s#%%DOCKER_IMAGE_BASE%%#${CI_DOCKER_IMAGE_BASE}#g"				\
-	-e "s#%%DOCKER_IMAGE_DEV_BASE%%#${CI_DOCKER_IMAGE_DEV_BASE}#g"		\
-	-e "s#%%DOCKER_GIT_ORGANIZATION%%#${CI_DOCKER_GIT_ORGANIZATION}#g"	\
-	-e "s#%%DOCKER_GIT_REPOSITORY%%#${CI_DOCKER_GIT_REPOSITORY}#g"		\
-	-e "s#%%DOCKER_GIT_BRANCH%%#${CI_DOCKER_GIT_BRANCH}#g"				\
-	-e "s#%%PKG_UPDATE%%#${PKGMGR_NAME} ${PKGMGR_UPDATE_OPT}#g"			\
-	-e "s#%%PKG_INSTALL_BUILDER%%#${PKG_INSTALL_BUILDER_COMMAND}#g"		\
-	-e "s#%%PKG_INSTALL_BIN%%#${PKG_INSTALL_BIN_COMMAND}#g"				\
-	-e "s#%%UPDATE_LIBPATH%%#${UPDATE_LIBPATH}#g"						\
-	-e "s#%%BUILD_ENV%%#${BUILDER_ENVIRONMENT}#g"						\
-	"${SRCTOP}/${DOCKERFILE_TEMPL_SUBDIR}/${DOCKER_TEMPL_FILE}"			> "${SRCTOP}/${DOCKER_FILE}"
+if ! sed -e "s#%%GIT_DOMAIN_URL%%#${CI_GIT_URL}#g"							\
+		-e "s#%%DOCKER_IMAGE_BASE%%#${CI_DOCKER_IMAGE_BASE}#g"				\
+		-e "s#%%DOCKER_IMAGE_DEV_BASE%%#${CI_DOCKER_IMAGE_DEV_BASE}#g"		\
+		-e "s#%%DOCKER_GIT_ORGANIZATION%%#${CI_DOCKER_GIT_ORGANIZATION}#g"	\
+		-e "s#%%DOCKER_GIT_REPOSITORY%%#${CI_DOCKER_GIT_REPOSITORY}#g"		\
+		-e "s#%%DOCKER_GIT_BRANCH%%#${CI_DOCKER_GIT_BRANCH}#g"				\
+		-e "s#%%PKG_UPDATE%%#${PKGMGR_NAME} ${PKGMGR_UPDATE_OPT}#g"			\
+		-e "s#%%PKG_INSTALL_BUILDER%%#${PKG_INSTALL_BUILDER_COMMAND}#g"		\
+		-e "s#%%PKG_INSTALL_BIN%%#${PKG_INSTALL_BIN_COMMAND}#g"				\
+		-e "s#%%UPDATE_LIBPATH%%#${UPDATE_LIBPATH}#g"						\
+		-e "s#%%BUILD_ENV%%#${BUILDER_ENVIRONMENT}#g"						\
+		"${SRCTOP}/${DOCKERFILE_TEMPL_SUBDIR}/${DOCKER_TEMPL_FILE}"			> "${SRCTOP}/${DOCKER_FILE}"; then
 
-# shellcheck disable=SC2181
-if [ $? -ne 0 ]; then
 	PRNERR "Failed to creating ${DOCKER_FILE} from ${DOCKER_TEMPL_FILE} (Common conversion)."
 	exit 1
 fi
