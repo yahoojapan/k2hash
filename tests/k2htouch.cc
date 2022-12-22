@@ -487,7 +487,7 @@ bool set()
 	if (!AttachK2File(&k2hash)) exit(EXIT_FAILURE) ;
 
 	if(!k2hash.Set(
-				reinterpret_cast<const unsigned char*>(argKey.c_str()), static_cast<size_t>(argKey.length() + 1), 
+				reinterpret_cast<const unsigned char*>(argKey.c_str()), static_cast<size_t>(argKey.length() + 1),
 				reinterpret_cast<const unsigned char*>(argValue.c_str()), static_cast<size_t>(argValue.length() + 1)
 				)){
 			answer = EXIT_FAILURE ;
@@ -856,7 +856,10 @@ int main(int argc, const char **argv)
 }
 
 /*
- * VIM modelines
- *
- * vim:set ts=4 fenc=utf-8:
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noexpandtab sw=4 ts=4 fdm=marker
+ * vim<600: noexpandtab sw=4 ts=4
  */

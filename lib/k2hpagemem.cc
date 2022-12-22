@@ -667,7 +667,10 @@ const unsigned char* K2HPageMem::GetData(const K2HShm* pk2hshm, PPAGEHEAD reladd
 }
 
 /*
- * VIM modelines
- *
- * vim:set ts=4 fenc=utf-8:
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noexpandtab sw=4 ts=4 fdm=marker
+ * vim<600: noexpandtab sw=4 ts=4
  */

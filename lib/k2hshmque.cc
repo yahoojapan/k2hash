@@ -1,7 +1,7 @@
 /*
  * K2HASH
  *
- * Copyright 2013-2015 Yahoo Japan Corporation.
+ * Copyright 2013 Yahoo Japan Corporation.
  *
  * K2HASH is key-valuew store base libraries.
  * K2HASH is made for the purpose of the construction of
@@ -1789,7 +1789,10 @@ K2HLowOpsQueue* K2HShm::GetLowOpsQueueObj(bool is_fifo, const unsigned char* pre
 }
 
 /*
- * VIM modelines
- *
- * vim:set ts=4 fenc=utf-8:
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noexpandtab sw=4 ts=4 fdm=marker
+ * vim<600: noexpandtab sw=4 ts=4
  */
