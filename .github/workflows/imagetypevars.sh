@@ -42,14 +42,25 @@
 #---------------------------------------------------------------------
 # Default values
 #---------------------------------------------------------------------
+# [NOTE]
+# If IMAGE_CMD_BASE(DEV) is set to empty, "['/bin/sh', '-c', 'tail -f /dev/null']"
+# will be set as the default value.
+#
 PKGMGR_NAME=
 PKGMGR_UPDATE_OPT=
 PKGMGR_INSTALL_OPT=
-PKG_INSTALL_LIST_BUILDER=
-PKG_INSTALL_LIST_BIN=
+PKGMGR_UNINSTALL_OPT=
+PRE_PROCESS=
+POST_PROCESS=
+IMAGE_CMD_BASE=
+IMAGE_CMD_DEV=
+PKG_INSTALL_CURL=
+PKG_INSTALL_BASE=
+PKG_INSTALL_DEV=
+PKG_UNINSTALL_BASE=
+PKG_UNINSTALL_DEV=
 BUILDER_CONFIGURE_FLAG=
-BUILDER_MAKE_FLAGS=
-BUILDER_ENVIRONMENT=
+SETUP_ENVIRONMENT=
 UPDATE_LIBPATH=
 
 #
@@ -74,28 +85,25 @@ elif [ "${CI_DOCKER_IMAGE_OSTYPE}" = "alpine" ]; then
 	PKGMGR_NAME="apk"
 	PKGMGR_UPDATE_OPT="update -q --no-progress"
 	PKGMGR_INSTALL_OPT="add -q --no-progress --no-cache"
-	PKG_INSTALL_LIST_BUILDER="git build-base openssl-dev libtool automake autoconf pkgconf procps"
-	PKG_INSTALL_LIST_BIN="libstdc++"
-
-	#
-	# Special build flags
-	#
-	BUILDER_MAKE_FLAGS="CXXFLAGS=-Wno-address-of-packed-member"
+	PKGMGR_UNINSTALL_OPT="del -q --purge --no-progress --no-cache"
+	PKG_INSTALL_CURL="curl"
+	PKG_INSTALL_BASE="k2hash"
+	PKG_INSTALL_DEV="k2hash k2hash-dev"
 
 elif [ "${CI_DOCKER_IMAGE_OSTYPE}" = "ubuntu" ]; then
 	PKGMGR_NAME="apt-get"
-	PKGMGR_UPDATE_OPT="update -qq -y"
-	PKGMGR_INSTALL_OPT="install -qq -y"
-	PKG_INSTALL_LIST_BUILDER="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config procps libgcrypt20-dev"
-	PKG_INSTALL_LIST_BIN=""
+	PKGMGR_UPDATE_OPT="update -q -y"
+	PKGMGR_INSTALL_OPT="install -q -y"
+	PKGMGR_UNINSTALL_OPT="purge --auto-remove -q -y"
+	PKG_INSTALL_CURL="curl"
+	PKG_INSTALL_BASE="k2hash"
+	PKG_INSTALL_DEV="k2hash-dev"
 	UPDATE_LIBPATH="ldconfig"
-
-	BUILDER_CONFIGURE_FLAG="--with-gcrypt"
 
 	#
 	# For installing tzdata with another package(ex. git)
 	#
-	BUILDER_ENVIRONMENT="ENV DEBIAN_FRONTEND=noninteractive"
+	SETUP_ENVIRONMENT="ENV DEBIAN_FRONTEND=noninteractive"
 fi
 
 #---------------------------------------------------------------
@@ -104,6 +112,10 @@ fi
 # [NOTE]
 # The following functions allow customization of processing.
 # You can write your own processing by overriding each function.
+#
+# set_custom_variables()
+#	This function sets common variables used in the following
+#	customizable functions.
 #
 # get_repository_package_version()
 #	Definition of a function that sets a variable to give the
@@ -122,108 +134,6 @@ fi
 # custom_dockerfile_conversion()
 #	Define this function when you need to modify your Dockerfile.
 #
-
-#
-# Variables in using following function
-#
-BUILDUTILS_DIR="${SRCTOP}/${DOCKERFILE_TEMPL_SUBDIR}"
-AUTOGEN_TOOL="${SRCTOP}/autogen.sh"
-CONFIGURE_TOOL="${SRCTOP}/configure"
-MAKE_VAR_TOOL="${BUILDUTILS_DIR}/make_variables.sh"
-
-#
-# Get version from repository package
-#
-# [NOTE]
-# Set "REPOSITORY_PACKAGE_VERSION" environment
-#
-# The following variables will be used, so please set them in advance:
-#	AUTOGEN_TOOL	: path to autogen.sh
-#	MAKE_VAR_TOOL	: path to configure
-#
-get_repository_package_version()
-{
-	if [ -z "${AUTOGEN_TOOL}" ] || [ ! -f "${AUTOGEN_TOOL}" ] || [ -z "${MAKE_VAR_TOOL}" ] || [ ! -f "${MAKE_VAR_TOOL}" ]; then
-		PRNERR "AUTOGEN_TOOL(${AUTOGEN_TOOL}) or MAKE_VAR_TOOL(${MAKE_VAR_TOOL}) file path is empty or not existed"
-		return 1
-	fi
-
-	_CURRENT_DIR=$(pwd)
-	cd "${SRCTOP}" || return 1
-
-	if ! "${AUTOGEN_TOOL}"; then
-		PRNERR "Failed to run ${AUTOGEN_TOOL} for creating RELEASE_VERSION file"
-		return 1
-	fi
-	if ! REPOSITORY_PACKAGE_VERSION="$("${MAKE_VAR_TOOL}" -pkg_version | tr -d '\n')"; then
-		PRNERR "Failed to run \"${MAKE_VAR_TOOL} -pkg_version\" for creating RELEASE_VERSION file"
-		return 1
-	fi
-	return 0
-}
-
-#
-# Print custom variables
-#
-print_custom_variabels()
-{
-	echo "  BUILDUTILS_DIR              = ${BUILDUTILS_DIR}"
-	echo "  BUILDER_CONFIGURE_FLAG      = ${BUILDER_CONFIGURE_FLAG}"
-	echo "  BUILDER_MAKE_FLAGS          = ${BUILDER_MAKE_FLAGS}"
-	return 0
-}
-
-#
-# Preprocessing
-#
-# The following variables will be used, so please set them in advance:
-#	AUTOGEN_TOOL	: path to autogen.sh
-#	MAKE_VAR_TOOL	: path to configure
-#
-run_preprocess()
-{
-	if [ -z "${AUTOGEN_TOOL}" ] || [ ! -f "${AUTOGEN_TOOL}" ] || [ -z "${MAKE_VAR_TOOL}" ] || [ ! -f "${MAKE_VAR_TOOL}" ]; then
-		PRNERR "AUTOGEN_TOOL(${AUTOGEN_TOOL}) or MAKE_VAR_TOOL(${MAKE_VAR_TOOL}) file path is empty or not existed"
-		return 1
-	fi
-
-	if ! "${AUTOGEN_TOOL}"; then
-		PRNERR "Failed to run ${AUTOGEN_TOOL} for preprocessing"
-		return 1
-	fi
-	if ! /bin/sh -c "${CONFIGURE_TOOL} ${BUILDER_CONFIGURE_FLAG}"; then
-		PRNERR "Failed to run \"${CONFIGURE_TOOL} ${BUILDER_CONFIGURE_FLAG}\" for preprocessing"
-		return 1
-	fi
-	return 0
-}
-
-#
-# Custom dockerfile conversion
-#
-# $1	: Dockerfile path
-#
-# The following variables will be used, so please set them in advance:
-#	BUILDER_CONFIGURE_FLAG
-#	BUILDER_MAKE_FLAGS
-#
-custom_dockerfile_conversion()
-{
-	if [ -z "$1" ] || [ ! -f "$1" ]; then
-		PRNERR "Dockerfile path($1) is empty or not existed."
-		return 1
-	fi
-	_TMP_DOCKERFILE_PATH="$1"
-
-	if ! sed -e "s#%%CONFIGURE_FLAG%%#${BUILDER_CONFIGURE_FLAG}#g"	\
-			-e "s#%%BUILD_FLAGS%%#${BUILDER_MAKE_FLAGS}#g"			\
-			-i "${_TMP_DOCKERFILE_PATH}"; then
-
-		PRNERR "Failed to converting ${_TMP_DOCKERFILE_PATH}"
-		return 1
-	fi
-	return 0
-}
 
 #
 # Local variables:

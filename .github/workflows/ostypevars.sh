@@ -40,6 +40,12 @@
 #                       packaging
 #   CONFIGURE_EXT_OPT : Options to specify when running configure
 #   INSTALLER_BIN     : Package management command
+#   UPDATE_CMD        : Update sub command for package management command
+#   UPDATE_CMD_ARG    : Update sub command arguments for package management command
+#   INSTALL_CMD       : Install sub command for package management command
+#   INSTALL_CMD_ARG   : Install sub command arguments for package management command
+#   INSTALL_AUTO_ARG  : No interaption arguments for package management command
+#   INSTALL_QUIET_ARG : Quiet arguments for package management command
 #   PKG_OUTPUT_DIR    : Set the directory path where the package will
 #                       be created relative to the top directory of the
 #                       source
@@ -64,6 +70,12 @@ DIST_TAG=""
 INSTALL_PKG_LIST=""
 CONFIGURE_EXT_OPT=""
 INSTALLER_BIN=""
+UPDATE_CMD=""
+UPDATE_CMD_ARG=""
+INSTALL_CMD=""
+INSTALL_CMD_ARG=""
+INSTALL_AUTO_ARG=""
+INSTALL_QUIET_ARG=""
 PKG_OUTPUT_DIR=""
 PKG_EXT=""
 
@@ -86,6 +98,11 @@ elif [ "${CI_OSTYPE}" = "ubuntu:22.04" ] || [ "${CI_OSTYPE}" = "ubuntu:jammy" ];
 	DIST_TAG="ubuntu/jammy"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
 	INSTALLER_BIN="apt-get"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-qq"
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
@@ -95,6 +112,11 @@ elif [ "${CI_OSTYPE}" = "ubuntu:20.04" ] || [ "${CI_OSTYPE}" = "ubuntu:focal" ];
 	DIST_TAG="ubuntu/focal"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
 	INSTALLER_BIN="apt-get"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-qq"
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
@@ -104,6 +126,11 @@ elif [ "${CI_OSTYPE}" = "ubuntu:18.04" ] || [ "${CI_OSTYPE}" = "ubuntu:bionic" ]
 	DIST_TAG="ubuntu/bionic"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
 	INSTALLER_BIN="apt-get"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-qq"
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
@@ -113,6 +140,11 @@ elif [ "${CI_OSTYPE}" = "debian:11" ] || [ "${CI_OSTYPE}" = "debian:bullseye" ];
 	DIST_TAG="debian/bullseye"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
 	INSTALLER_BIN="apt-get"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-qq"
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
@@ -122,6 +154,11 @@ elif [ "${CI_OSTYPE}" = "debian:10" ] || [ "${CI_OSTYPE}" = "debian:buster" ]; t
 	DIST_TAG="debian/buster"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
 	INSTALLER_BIN="apt-get"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-qq"
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
@@ -131,6 +168,11 @@ elif [ "${CI_OSTYPE}" = "rockylinux:9.0" ] || [ "${CI_OSTYPE}" = "rockylinux:9" 
 	DIST_TAG="el/9"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
 	INSTALLER_BIN="dnf"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-q"
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
@@ -140,6 +182,11 @@ elif [ "${CI_OSTYPE}" = "rockylinux:8.6" ] || [ "${CI_OSTYPE}" = "rockylinux:8" 
 	DIST_TAG="el/8"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
 	INSTALLER_BIN="dnf"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-q"
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
@@ -149,92 +196,57 @@ elif [ "${CI_OSTYPE}" = "centos:7" ] || [ "${CI_OSTYPE}" = "centos:centos7" ]; t
 	DIST_TAG="el/7"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
 	INSTALLER_BIN="yum"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-q"
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
 	IS_OS_CENTOS=1
+
+elif [ "${CI_OSTYPE}" = "fedora:37" ]; then
+	DIST_TAG="fedora/37"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+	INSTALLER_BIN="dnf"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
+	INSTALL_QUIET_ARG="-q"
+	PKG_OUTPUT_DIR="."
+	PKG_EXT="rpm"
+	IS_OS_FEDORA=1
 
 elif [ "${CI_OSTYPE}" = "fedora:36" ]; then
 	DIST_TAG="fedora/36"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
 	INSTALLER_BIN="dnf"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
 	INSTALL_QUIET_ARG="-q"
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
 	IS_OS_FEDORA=1
 
-elif [ "${CI_OSTYPE}" = "fedora:35" ]; then
-	DIST_TAG="fedora/35"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	INSTALLER_BIN="dnf"
+elif [ "${CI_OSTYPE}" = "alpine:3.17" ]; then
+	DIST_TAG="alpine/v3.17"
+	INSTALL_PKG_LIST="bash sudo alpine-sdk automake autoconf libtool groff util-linux-misc musl-locales ruby-dev procps libfullock libfullock-dev openssl-dev"
+	INSTALLER_BIN="apk"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG="--no-progress"
+	INSTALL_CMD="add"
+	INSTALL_CMD_ARG="--no-progress --no-cache"
+	INSTALL_AUTO_ARG=""
 	INSTALL_QUIET_ARG="-q"
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_FEDORA=1
-
-#
-# [NOTICE]
-# The OS from here onwards will be used until a new version is created, but we will drop support for it soon.
-# Newer versions will only support the OSes mentioned before this line.
-#
-elif [ "${CI_OSTYPE}" = "ubuntu:16.04" ] || [ "${CI_OSTYPE}" = "ubuntu:xenial" ]; then
-	DIST_TAG="ubuntu/xenial"
-	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	INSTALLER_BIN="apt-get"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_OUTPUT_DIR="debian_build"
-	PKG_EXT="deb"
-	IS_OS_UBUNTU=1
-
-elif [ "${CI_OSTYPE}" = "debian:9" ] || [ "${CI_OSTYPE}" = "debian:stretch" ]; then
-	DIST_TAG="debian/stretch"
-	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	INSTALLER_BIN="apt-get"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_OUTPUT_DIR="debian_build"
-	PKG_EXT="deb"
-	IS_OS_DEBIAN=1
-
-elif [ "${CI_OSTYPE}" = "centos:8" ] || [ "${CI_OSTYPE}" = "centos:centos8" ]; then
-	DIST_TAG="el/8"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	INSTALLER_BIN="dnf"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_CENTOS=1
-
-	#
-	# Change mirrorlist
-	#
-	sed -i -e 's|^mirrorlist|#mirrorlist|g' -e 's|^#baseurl=http://mirror|baseurl=http://vault|g' /etc/yum.repos.d/CentOS-*repo
-
-elif [ "${CI_OSTYPE}" = "fedora:32" ]; then
-	DIST_TAG="fedora/32"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	INSTALLER_BIN="dnf"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_FEDORA=1
-
-elif [ "${CI_OSTYPE}" = "fedora:31" ]; then
-	DIST_TAG="fedora/31"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	INSTALLER_BIN="dnf"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_FEDORA=1
-
-elif [ "${CI_OSTYPE}" = "fedora:30" ]; then
-	DIST_TAG="fedora/30"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	INSTALLER_BIN="dnf"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_FEDORA=1
+	PKG_OUTPUT_DIR="apk_build"
+	PKG_EXT="apk"
+	IS_OS_ALPINE=1
 fi
 
 #---------------------------------------------------------------

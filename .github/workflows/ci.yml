@@ -59,33 +59,19 @@ jobs:
       #
       # matrix for containers
       #
-      # [NOTICE]
-      # The current matrix(OS) will be used until launching a new version
-      # is created, including the OS that will end support soon.
-      # The new version will support the following OS, and these OS list
-      # will replace current matrix.
-      #    ubuntu:22.04
-      #    ubuntu:20.04
-      #    ubuntu:18.04
-      #    debian:bullseye
-      #    debian:buster
-      #    centos:centos7
-      #    rockylinux:9
-      #    rockylinux:8
-      #    fedora:36
-      #    fedora:35
-      #
       matrix:
         container:
+          - ubuntu:22.04
           - ubuntu:20.04
           - ubuntu:18.04
-          - ubuntu:16.04
+          - debian:bullseye
           - debian:buster
-          - debian:stretch
           - centos:centos7
-          - fedora:32
-          - fedora:31
-          - fedora:30
+          - rockylinux:9
+          - rockylinux:8
+          - fedora:37
+          - fedora:36
+          - alpine:3.17
 
     container:
       image: ${{ matrix.container }}
@@ -113,9 +99,9 @@ jobs:
       #    FORCE_PUBLISH              : true means force to publish packages, false means never publish
       #    USE_PACKAGECLOUD_REPO      : true means using pacakgecloud.io repo, false is not using
       #  * PACKAGECLOUD_TOKEN         : The token for publishing to packagcloud.io
-      #    PACKAGECLOUD_OWNER         : owner name as a pat of path to packagcloud.io for publishing/downloading
-      #    PACKAGECLOUD_PUBLISH_REPO  : repo name as a pat of path to packagcloud.io for publishing
-      #    PACKAGECLOUD_DOWNLOAD_REPO : repo name as a pat of path to packagcloud.io for downloading
+      #    PACKAGECLOUD_OWNER         : owner name as a part of path to packagcloud.io for publishing/downloading
+      #    PACKAGECLOUD_PUBLISH_REPO  : repo name as a part of path to packagcloud.io for publishing
+      #    PACKAGECLOUD_DOWNLOAD_REPO : repo name as a part of path to packagcloud.io for downloading
       #
       # "PACKAGECLOUD_TOKEN" is a required variable to publish the
       # package.
@@ -141,11 +127,8 @@ jobs:
           /bin/sh -c "$GITHUB_WORKSPACE/.github/workflows/build_helper.sh -os ${{ matrix.container }}"
 
   dockerimage:
-    # [NOTE]
-    # We plan to update to ubuntu-latest (22.04) soon.
-    # Right now I am forced to use 20.04 as there are no relevant packages yet.
-    #
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    needs: build
 
     #
     # build matrix for containers
@@ -214,17 +197,23 @@ jobs:
       #    DOCKER_HUB_ORG             : Docker Hub organization to push(ex. "antpickax")
       #    IMAGETYPE_VARS_FILE        : specify custom variables file
       #    FORCE_DOCKER_PUSH          : specify force push(true) or not push(false)
+      #    USE_PACKAGECLOUD_REPO      : true means using pacakgecloud.io repo, false is not using
+      #    PACKAGECLOUD_OWNER         : owner name as a part of path to packagcloud.io for publishing/downloading
+      #    PACKAGECLOUD_DOWNLOAD_REPO : repo name as a part of path to packagcloud.io for downloading
       #
       # [REQUIRED]
       # DOCKER_HUB_USERNAME and DOCKER_HUB_ACCESSTOKEN is required to read and push docker images!
       #
       - name: Set docker image build environments from secrets
         run: |
-          echo "ENV_DOCKER_IMAGE_INFO=${{ matrix.imageinfo }}"        >> "${GITHUB_ENV}"
-          echo "ENV_IMAGE_NAMES=k2hash,k2hash-dev"                    >> "${GITHUB_ENV}"
-          echo "ENV_IMAGEVAR_FILE=${{ secrets.IMAGETYPE_VARS_FILE }}" >> "${GITHUB_ENV}"
-          echo "ENV_DOCKER_HUB_ORG=${{ secrets.DOCKER_HUB_ORG }}"     >> "${GITHUB_ENV}"
-          echo "ENV_FORCE_PUSH=${{ secrets.FORCE_DOCKER_PUSH }}"      >> "${GITHUB_ENV}"
+          echo "ENV_DOCKER_IMAGE_INFO=${{ matrix.imageinfo }}"                            >> "${GITHUB_ENV}"
+          echo "ENV_IMAGE_NAMES=k2hash,k2hash-dev"                                        >> "${GITHUB_ENV}"
+          echo "ENV_IMAGEVAR_FILE=${{ secrets.IMAGETYPE_VARS_FILE }}"                     >> "${GITHUB_ENV}"
+          echo "ENV_DOCKER_HUB_ORG=${{ secrets.DOCKER_HUB_ORG }}"                         >> "${GITHUB_ENV}"
+          echo "ENV_FORCE_PUSH=${{ secrets.FORCE_DOCKER_PUSH }}"                          >> "${GITHUB_ENV}"
+          echo "ENV_USE_PACKAGECLOUD_REPO=${{ secrets.USE_PACKAGECLOUD_REPO }}"           >> "${GITHUB_ENV}"
+          echo "ENV_PACKAGECLOUD_OWNER=${{ secrets.PACKAGECLOUD_OWNER }}"                 >> "${GITHUB_ENV}"
+          echo "ENV_PACKAGECLOUD_DOWNLOAD_REPO=${{ secrets.PACKAGECLOUD_DOWNLOAD_REPO }}" >> "${GITHUB_ENV}"
 
       #
       # Run building and pushing

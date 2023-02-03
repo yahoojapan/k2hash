@@ -556,7 +556,7 @@ bool k2h_get_value_np(k2h_h handle, const unsigned char* pkey, size_t keylength,
 		return false;
 	}
 	ssize_t	result;
-	if(-1 == (result = pShm->Get(pkey, keylength, ppval, false, reinterpret_cast<const char*>(NULL)))){
+	if(-1 == (result = pShm->Get(pkey, keylength, ppval, false, static_cast<const char*>(NULL)))){
 		MSG_K2HPRN("Not found key or not have value.");
 		return false;
 	}

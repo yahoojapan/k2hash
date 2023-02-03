@@ -216,6 +216,7 @@ if [ -z "${PACKAGE_NAME}" ]; then
 	fi
 fi
 PACKAGE_DEV_NAME="${PACKAGE_NAME}-dev"
+PACKAGE_DBGSYM_NAME="${PACKAGE_NAME}-dbgsym"
 LIB_BASENAME="lib${PACKAGE_NAME}"
 
 if [ "${BUILD_NUMBER}" -eq 0 ]; then
@@ -550,10 +551,36 @@ fi
 # [NOTE] Check following files:
 #	${PACKAGE_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}*.deb
 #	${PACKAGE_DEV_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}*.deb
+#	${PACKAGE_DBGSYM_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}*.{deb,ddeb}
 #	lib${PACKAGE_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}*.deb
 #	lib${PACKAGE_DEV_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}*.deb
+#	lib${PACKAGE_DBGSYM_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}*.{deb,ddeb}
 #
-FOUND_DEB_PACKAGES=$(find "${BUILDDEBDIR}" -name \*"${PACKAGE_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}"\*.deb 2>/dev/null; find "${BUILDDEBDIR}" -name \*"${PACKAGE_DEV_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}"\*.deb 2>/dev/null)
+# [NOTICE] ddeb files
+# If the ".ddeb" files exist, those file is renamed the ".deb" file extension.
+# This is because packagecloud.io site and cli tool do not accept ".ddeb" file
+# extensions and treat dbgsym files as ".deb" file extensions.
+# In the future, once packagecloud.io supports the ".ddeb" file extension, we
+# will stop renaming it.
+# Currently we display a warning when renaming this file extension.
+#
+
+FOUND_DDEB_PACKAGES=$(find "${BUILDDEBDIR}" -name \*"${PACKAGE_DBGSYM_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}"\*.ddeb 2>/dev/null)
+
+if [ -n "${FOUND_DDEB_PACKAGES}" ]; then
+	echo ""
+	echo "[WARNING] Found \".ddeb\" files, these files will be changed to \".deb\" extension. Please stop this renaming once packagecloud.io supports the \".ddeb\" extension." 1>&2
+	echo ""
+fi
+for _one_pkg in ${FOUND_DDEB_PACKAGES}; do
+	_copied_pkg=$(echo "${_one_pkg}" | sed -e 's#\.ddeb$#\.deb#g')
+	if ! cp -p "${_one_pkg}" "${_copied_pkg}"; then
+		echo "[ERROR] Failed to copy ${_one_pkg} to ${_copied_pkg}" 1>&2
+		exit 1
+	fi
+done
+
+FOUND_DEB_PACKAGES=$(find "${BUILDDEBDIR}" -name \*"${PACKAGE_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}"\*.deb 2>/dev/null; find "${BUILDDEBDIR}" -name \*"${PACKAGE_DEV_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}"\*.deb 2>/dev/null; find "${BUILDDEBDIR}" -name \*"${PACKAGE_DBGSYM_NAME}_${PACKAGE_VERSION}-${BUILD_NUMBER}"\*.deb 2>/dev/null)
 
 if [ -z "${FOUND_DEB_PACKAGES}" ]; then
 	echo "[ERROR] No debian package in ${BUILDDEBDIR}." 1>&2

@@ -78,7 +78,7 @@ AC_FUNC_MALLOC
 AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_FUNC_FORK
-AC_CHECK_FUNCS([fdatasync ftruncate gettimeofday memset munmap realpath strcasecmp strncasecmp clock_gettime gethostname strdup])
+AC_CHECK_FUNCS([fdatasync ftruncate gettimeofday memset munmap realpath strcasecmp strncasecmp clock_gettime gethostname strdup gettid])
 
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -113,7 +113,7 @@ AC_SUBST([CONFIGURECUSTOM], "${configure_custom_file}")
 AC_SUBST([GIT_DOMAIN], "${custom_git_domain}")
 AC_SUBST([GIT_ORG], "${custom_git_org}")
 AC_SUBST([GIT_REPO], "${custom_git_repo}")
-AC_SUBST([CURRENTREV], "$($(pwd)/buildutils/make_commit_hash.sh -o "${custom_git_org}" -r "${custom_git_repo}" -ep "${custom_git_endpoint}" -s)")
+AC_SUBST([CURRENTREV], "$($(pwd)/buildutils/make_commit_hash.sh -o "${custom_git_org}" -r "${custom_git_repo}" -ep "${custom_git_endpoint}" -s 2>/dev/null)")
 AC_SUBST([DEV_EMAIL], "$(echo ${DEBEMAIL:-"${custom_dev_email}"})")
 AC_SUBST([DEV_NAME], "$(echo ${DEBFULLNAME:-"${custom_dev_name}"})")
 #
@@ -150,6 +150,7 @@ AS_IF([test "$PKG_CONFIG" = "no"], [AC_MSG_ERROR(You have to install pkg-config 
 # Option for crypt libraries
 #
 crypt_lib=openssl
+is_openssl3=no
 
 AC_MSG_CHECKING([for crypt library option with gcrypt(GnuTLS)])
 AC_ARG_WITH(gcrypt,
@@ -206,6 +207,20 @@ case "${crypt_lib}" in
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptopenssl.cc")
 		AC_SUBST([CONFIGUREWITHOPT], "--with-openssl")
 		AM_SUBST_NOTMAKE([CONFIGUREWITHOPT])
+
+		#
+		# Check openssl 3
+		#
+		AC_MSG_CHECKING([openssl 3.0 or later])
+		AC_COMPILE_IFELSE([
+			AC_LANG_PROGRAM([[
+				#include <openssl/opensslv.h>
+				#if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x30000000L
+				#error "found openssl is 3.0 or later(so compiling is stopped with error)"
+				#endif
+			]], [[]])],
+			[AC_MSG_RESULT(no)],
+			[AC_MSG_RESULT(yes); is_openssl3=yes])
 		;;
 	nss)
 		AC_MSG_RESULT(NSS)
@@ -243,6 +258,7 @@ AM_CONDITIONAL([CRYPT_LIB_OPENSSL],	[test "$crypt_lib" = openssl])
 AM_CONDITIONAL([CRYPT_LIB_NSS],		[test "$crypt_lib" = nss])
 AM_CONDITIONAL([CRYPT_LIB_NETTLE],	[test "$crypt_lib" = nettle])
 AM_CONDITIONAL([CRYPT_LIB_GCRYPT],	[test "$crypt_lib" = gcrypt])
+AM_CONDITIONAL([IS_OPENSSL3],		[test "$is_openssl3" = yes])
 
 #
 # Checking Libraries
@@ -315,7 +331,8 @@ AC_CONFIG_FILES([Makefile
 				buildutils/copyright
 				buildutils/rules
 				buildutils/k2hash.spec
-				buildutils/Dockerfile.templ])
+				buildutils/Dockerfile.templ
+				buildutils/APKBUILD.templ])
 
 AC_OUTPUT
 
