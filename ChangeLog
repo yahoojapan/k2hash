@@ -1,3 +1,24 @@
+k2hash (1.0.84) unstable; urgency=low
+
+  * Changed CI process flow/OSs and added Alpine OS - #81
+  * Updated header and footer in comment lines - #79
+  * Updated issue/pullrequest templates and README - #78
+  * Updated Makefile.am about cppcheck - #77
+  * Added ShellCheck processing and reviewed cppcheck - #76
+  * Eliminated unnecessary copies in build_helper.sh - #75
+  * Updated docker/login-action from v1 to v2 - #74
+  * Shared Docker image build logic with other products - #73
+  * Removed K2HATTR_ENC_TYPE environment for building - #72
+  * Updated github actions process and support os, and fixed bugs - #71
+  * Updated debian_build.sh for changing grep parameter - #70
+  * Updated common build scripts - #69
+  * Updated Antpickax common scripts and tools under the buildutils directory - #68
+  * Fixed errors reported by cppcheck 2.9 - #67
+  * Updated .gitignore configure.ac - #66
+  * Enabled external customization of configure.ac and fixed for building - #65
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 03 Feb 2023 18:00:41 +0900
+
 k2hash (1.0.83) unstable; urgency=low
 
   * Fixed Dockerfile template for calling ldconfig - #63
