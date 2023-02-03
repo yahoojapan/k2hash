@@ -240,7 +240,6 @@ int CheckParameter(int argc, const char **argv)
 #define MASK_BITCNT	10
 #define CMASK_BITCNT	8
 #define MAX_ELEMENT_CNT	512
-#define PAGESIZE	128
 #define _K2H_PAGESIZE	128
 
 // minisize attach parameter

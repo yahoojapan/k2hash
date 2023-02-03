@@ -275,7 +275,7 @@ bool basic_k2hstreambuf<CharT, Traits>::input_sync(off_t offset)
 	// Check EOF
 	if(EOF == pAccess->GetReadOffset()){
 		K2H_Free(pInputBuff);
-		streambuf_type::setg(reinterpret_cast<char_type*>(NULL), reinterpret_cast<char_type*>(NULL), reinterpret_cast<char_type*>(NULL));
+		streambuf_type::setg(static_cast<char_type*>(NULL), static_cast<char_type*>(NULL), static_cast<char_type*>(NULL));
 		return true;
 	}
 
@@ -292,7 +292,7 @@ bool basic_k2hstreambuf<CharT, Traits>::input_sync(off_t offset)
 		// EOF
 		K2H_Free(pInputTmp);
 		K2H_Free(pInputBuff);
-		streambuf_type::setg(reinterpret_cast<char_type*>(NULL), reinterpret_cast<char_type*>(NULL), reinterpret_cast<char_type*>(NULL));
+		streambuf_type::setg(static_cast<char_type*>(NULL), static_cast<char_type*>(NULL), static_cast<char_type*>(NULL));
 	}else{
 		K2H_Free(pInputBuff);
 		InputBase	= offset;
@@ -328,7 +328,7 @@ typename basic_k2hstreambuf<CharT, Traits>::int_type basic_k2hstreambuf<CharT, T
 		if(!input_sync(InputBase + offset)){
 			return traits_type::eof();
 		}
-		if(reinterpret_cast<char_type*>(NULL) == streambuf_type::eback() || reinterpret_cast<char_type*>(NULL) == streambuf_type::egptr()){
+		if(static_cast<char_type*>(NULL) == streambuf_type::eback() || static_cast<char_type*>(NULL) == streambuf_type::egptr()){
 			return traits_type::eof();
 		}
 
@@ -351,7 +351,7 @@ typename basic_k2hstreambuf<CharT, Traits>::int_type basic_k2hstreambuf<CharT, T
 		return traits_type::eof();
 	}
 	// Check EOF
-	if(reinterpret_cast<char_type*>(NULL) == streambuf_type::eback() || reinterpret_cast<char_type*>(NULL) == streambuf_type::egptr()){
+	if(static_cast<char_type*>(NULL) == streambuf_type::eback() || static_cast<char_type*>(NULL) == streambuf_type::egptr()){
 		return traits_type::eof();
 	}
 
@@ -417,7 +417,7 @@ typename basic_k2hstreambuf<CharT, Traits>::pos_type basic_k2hstreambuf<CharT, T
 			return pos_type(off_type(-1));
 		}
 		// Check EOF
-		if(reinterpret_cast<char_type*>(NULL) == streambuf_type::eback() || reinterpret_cast<char_type*>(NULL) == streambuf_type::egptr()){
+		if(static_cast<char_type*>(NULL) == streambuf_type::eback() || static_cast<char_type*>(NULL) == streambuf_type::egptr()){
 			return pos_type(off_type(-1));
 		}
 	}

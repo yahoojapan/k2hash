@@ -1,0 +1,109 @@
+#
+# K2HASH
+#
+# Utility tools for building configure/packages by AntPickax
+#
+# Copyright 2018 Yahoo Japan corporation.
+#
+# AntPickax provides utility tools for supporting autotools
+# builds.
+#
+# These tools retrieve the necessary information from the
+# repository and appropriately set the setting values of
+# configure, Makefile, spec,etc file and so on.
+# These tools were recreated to reduce the number of fixes and
+# reduce the workload of developers when there is a change in
+# the project configuration.
+#
+# For the full copyright and license information, please view
+# the license file that was distributed with this source code.
+#
+# AUTHOR:   Takeshi Nakatani
+# CREATE:   Feb, 2 Thu 2023
+# REVISION:
+#
+
+#---------------------------------------------------------------
+# Local varibales as antpickax template
+#---------------------------------------------------------------
+#
+# Set variables by configure
+#
+_git_domain="@GIT_DOMAIN@"
+_organization_name="@GIT_ORG@"
+_repository_name="@GIT_REPO@"
+
+#
+# Set variables by apk_build.sh
+#
+_package_revision=%%BUILD_NUMBER%%
+_configure_option=%%CONFIGUREOPT%%
+_source_archive_url=%%SOURCE_ARCHIVE_URL%%
+
+#---------------------------------------------------------------
+# Main variables for APKBUILD
+#---------------------------------------------------------------
+# Contributor: @DEV_NAME@ <@DEV_EMAIL@>
+# Maintainer: @DEV_NAME@ <@DEV_EMAIL@>
+
+pkgname="$_repository_name"
+pkgver=@PKG_VERSION@
+pkgrel=$_package_revision
+pkgdesc="@SHORTDESC@"
+
+url="https://k2hash.antpick.ax/"
+arch="x86_64"
+license="MIT"
+
+depends="
+	libfullock
+"
+depends_dev="
+	autoconf
+	automake
+	libtool
+	libfullock-dev
+"
+makedepends="$depends_dev"
+
+install=""
+subpackages="
+	$pkgname-dev
+	$pkgname-doc
+"
+
+source="$_repository_name-$pkgver.tar.gz%%SOURCE_ARCHIVE_URL%%"
+
+builddir="$srcdir/$_repository_name-$pkgver"
+
+#---------------------------------------------------------------
+# Build functions for APKBUILD
+#---------------------------------------------------------------
+prepare() {
+	default_prepare
+	# this function can be omitted if no extra steps are needed
+}
+
+unpack() {
+	default_unpack
+}
+
+build() {
+	if [ ! -f configure ]; then
+		./autogen.sh
+	fi
+	./configure --prefix=/usr $_configure_option
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+# [NOTE]
+# Subsequent lines print the checksum of the source archive.
+#

@@ -132,8 +132,14 @@ libk2hash_la_LIBADD	= $(fullock_LIBS) $(CRYPT_LIBS) -lrt -lpthread
 #
 AM_CFLAGS			= -DK2HASH -Wno-address-of-packed-member
 AM_CPPFLAGS			= -DK2HASH -Wno-address-of-packed-member
-
 ACLOCAL_AMFLAGS		= -I m4
+
+#
+# Check and Add flags for openssl 3.x
+#
+if IS_OPENSSL3
+    AM_CPPFLAGS += -DUSE_OPENSSL3
+endif
 
 ### version(commit hash)
 .PHONY:	k2hashversion

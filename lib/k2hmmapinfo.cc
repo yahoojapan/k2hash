@@ -777,7 +777,7 @@ bool K2HMmapInfo::AreaMsync(void* address) const
 
 	if(!SetInternalMmapInfo()){
 		K2HMmapInfo::GetMan().Unlock();
-		return NULL;
+		return false;
 	}
 
 	bool	result = true;

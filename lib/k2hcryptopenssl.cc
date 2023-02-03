@@ -59,6 +59,32 @@ bool k2h_crypt_lib_terminate(void)
 //---------------------------------------------------------
 // MD5
 //---------------------------------------------------------
+// [NOTE]
+// OpenSSL 3.0 should use the high-level EVP API instead of
+// the MD5_*** low-level cryptographic functions.
+//
+#ifdef USE_OPENSSL3
+
+string to_md5_string(const char* str)
+{
+	EVP_MD_CTX*		md5ctx		= EVP_MD_CTX_new();
+	unsigned int	md5_length	= EVP_MD_size(EVP_md5());
+	unsigned char	md5hex[md5_length];
+
+	// md5
+    EVP_DigestInit_ex(md5ctx, EVP_md5(), NULL);
+	for(size_t length = strlen(str); !ISEMPTYSTR(str) && 0 < length; length -= min(length, K2H_CVT_MD_PARTSIZE), str = &str[min(length, K2H_CVT_MD_PARTSIZE)]){
+        EVP_DigestUpdate(md5ctx, str, min(length, K2H_CVT_MD_PARTSIZE));
+	}
+    EVP_DigestFinal_ex(md5ctx, md5hex, &md5_length);
+    EVP_MD_CTX_free(md5ctx);
+
+	// base64
+	return to_base64(md5hex, md5_length);
+}
+
+#else	// USE_OPENSSL3
+
 string to_md5_string(const char* str)
 {
 	MD5_CTX			md5ctx;
@@ -74,6 +100,8 @@ string to_md5_string(const char* str)
 	// base64
 	return to_base64(md5hex, MD5_DIGEST_LENGTH);
 }
+
+#endif	// USE_OPENSSL3
 
 //---------------------------------------------------------
 // SHA256
