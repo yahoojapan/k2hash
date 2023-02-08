@@ -147,14 +147,14 @@ jobs:
         # Specify the "baseimage" in the following format:
         #    <base image tag>,<base dev image tag>,<OS tag name>(,<default tag flag>)
         #
-        # <base image tag>:     specify the Docker image name(ex. "libfullock:latest")
-        # <base dev image tag>: specify the Docker image name(ex. "libfullock-dev:latest")
+        # <base image tag>:     specify the Docker image name(ex. "alpine:latest")
+        # <base dev image tag>: specify the Docker image name(ex. "alpine:latest")
         # <OS tag name>:        OS tag attached to the created Docker image
         # <default tag flag>:   If you want to use the created Docker image as the default image, specify "default".
         #
         imageinfo:
-          - antpickax/libfullock:latest,antpickax/libfullock-dev:latest,alpine,default
-          - antpickax/libfullock:latest-ubuntu,antpickax/libfullock-dev:latest-ubuntu,ubuntu
+          - alpine:3.17,alpine:3.17,alpine,default
+          - ubuntu:22.04,ubuntu:22.04,ubuntu
 
     #
     # Run building and pushing helper
