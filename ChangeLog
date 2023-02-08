@@ -1,3 +1,9 @@
+k2hash (1.0.85) unstable; urgency=low
+
+  * Fixed package dependency and docker image for ALPINE - #83
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 08 Feb 2023 14:49:42 +0900
+
 k2hash (1.0.84) unstable; urgency=low
 
   * Changed CI process flow/OSs and added Alpine OS - #81
