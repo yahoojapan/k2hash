@@ -19,7 +19,7 @@
 #
 # AUTHOR:   Takeshi Nakatani
 # CREATE:   Mon, Oct 31 2022
-# REVISION:	1.2
+# REVISION:	1.3
 #
 
 #==============================================================
@@ -33,16 +33,18 @@ PIPEFAILURE_FILE="/tmp/.pipefailure.$(od -An -tu4 -N4 /dev/random | tr -d ' \n')
 #
 # For shellcheck
 #
-if locale -a | grep -q -i '^[[:space:]]*C.utf8[[:space:]]*$'; then
-	LANG=$(locale -a | grep -i '^[[:space:]]*C.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
-	LC_ALL="${LANG}"
-	export LANG
-	export LC_ALL
-elif locale -a | grep -q -i '^[[:space:]]*en_US.utf8[[:space:]]*$'; then
-	LANG=$(locale -a | grep -i '^[[:space:]]*en_US.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
-	LC_ALL="${LANG}"
-	export LANG
-	export LC_ALL
+if command -v locale >/dev/null 2>&1; then
+	if locale -a | grep -q -i '^[[:space:]]*C.utf8[[:space:]]*$'; then
+		LANG=$(locale -a | grep -i '^[[:space:]]*C.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+		LC_ALL="${LANG}"
+		export LANG
+		export LC_ALL
+	elif locale -a | grep -q -i '^[[:space:]]*en_US.utf8[[:space:]]*$'; then
+		LANG=$(locale -a | grep -i '^[[:space:]]*en_US.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+		LC_ALL="${LANG}"
+		export LANG
+		export LC_ALL
+	fi
 fi
 
 #==============================================================
