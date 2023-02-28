@@ -19,7 +19,7 @@
 #
 # AUTHOR:   Takeshi Nakatani
 # CREATE:   Fri, Jan 13 2023
-# REVISION:
+# REVISION: 1.2
 #
 
 #==============================================================
@@ -33,16 +33,18 @@ PIPEFAILURE_FILE="/tmp/.pipefailure.$(od -An -tu4 -N4 /dev/random | tr -d ' \n')
 #
 # For shellcheck
 #
-if locale -a | grep -q -i '^[[:space:]]*C.utf8[[:space:]]*$'; then
-	LANG=$(locale -a | grep -i '^[[:space:]]*C.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
-	LC_ALL="${LANG}"
-	export LANG
-	export LC_ALL
-elif locale -a | grep -q -i '^[[:space:]]*en_US.utf8[[:space:]]*$'; then
-	LANG=$(locale -a | grep -i '^[[:space:]]*en_US.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
-	LC_ALL="${LANG}"
-	export LANG
-	export LC_ALL
+if command -v locale >/dev/null 2>&1; then
+	if locale -a | grep -q -i '^[[:space:]]*C.utf8[[:space:]]*$'; then
+		LANG=$(locale -a | grep -i '^[[:space:]]*C.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+		LC_ALL="${LANG}"
+		export LANG
+		export LC_ALL
+	elif locale -a | grep -q -i '^[[:space:]]*en_US.utf8[[:space:]]*$'; then
+		LANG=$(locale -a | grep -i '^[[:space:]]*en_US.utf8[[:space:]]*$' | sed -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' | tr -d '\n')
+		LC_ALL="${LANG}"
+		export LANG
+		export LC_ALL
+	fi
 fi
 
 #
@@ -61,6 +63,9 @@ APKBUILD_TEMPLATE_FILE="${SRCTOP}/buildutils/APKBUILD.templ"
 APKBUILD_FILE="${APK_TOPDIR}/APKBUILD"
 APKBUILD_CONFIG_DIR="${HOME}/.abuild"
 MAKE_VARIABLES_TOOL="${SRCTOP}/buildutils/make_variables.sh"
+
+PRGNAME_NOEXT=$(echo "${PRGNAME}" | sed -e 's/[\.].*$//g' | tr -d '\n')
+EXTRA_COPY_FILES_CONF="${MYSCRIPTDIR}/${PRGNAME_NOEXT}_copy.conf"
 
 #---------------------------------------------------------------
 # Utility functions
@@ -376,6 +381,36 @@ else
 	echo "[SUCCEED] Source archive"
 	echo "    Source archive URL : ${SOURCE_ARCHIVE_URL}"
 	echo ""
+fi
+
+#---------------------------------------------------------------
+# Copy extra files
+#---------------------------------------------------------------
+# [NOTE]
+# If you have files to copy under "<package build to pdirectory>/apk_build" directory
+# (includes in your package), you can prepare "buildutils/alpine_build_copy.conf"
+# file and lists target files int it.
+# The file names in this configuration file list with relative paths from the source
+# top directory.
+#	ex)	src/myfile
+#		lib/mylib
+#
+if [ -f "${EXTRA_COPY_FILES_CONF}" ]; then
+	echo "[TITLE] Copy extra files"
+
+	EXTRA_COPY_FILES=$(sed -e 's/#.*$//g' -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g' -e '/^$/d' "${EXTRA_COPY_FILES_CONF}")
+	for _extra_file in ${EXTRA_COPY_FILES}; do
+		if [ ! -f "${SRCTOP}/${_extra_file}" ]; then
+			echo "[ERROR] Not found ${SRCTOP}/${_extra_file} file for extra copy." 1>&2
+			exit 1
+		fi
+		if ! cp -p "${SRCTOP}/${_extra_file}" "${APK_TOPDIR}"; then
+			echo "[ERROR] Failed to copy ${SRCTOP}/${_extra_file} file to ${APK_TOPDIR}." 1>&2
+			exit 1
+		fi
+	done
+
+	echo "[SUCCEED] Copied extra files"
 fi
 
 #---------------------------------------------------------------
