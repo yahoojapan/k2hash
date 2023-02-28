@@ -1,3 +1,9 @@
+k2hash (1.0.87) unstable; urgency=low
+
+  * Updated build helper scripts on CI process - #87
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 28 Feb 2023 17:38:13 +0900
+
 k2hash (1.0.86) unstable; urgency=low
 
   * Updated building/packaging logic for ALPINE - #85
