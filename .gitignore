@@ -92,6 +92,7 @@ Makefile.in
 Makefile
 Dockerfile
 buildutils/Dockerfile.templ
+buildutils/APKBUILD.templ
 
 #
 # archive files and backups
