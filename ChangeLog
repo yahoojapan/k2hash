@@ -1,3 +1,9 @@
+k2hash (1.0.88) unstable; urgency=low
+
+  * Fixed .gitignore to exclude APKBUILD.templ - #89
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Wed, 21 Jun 2023 09:54:46 +0900
+
 k2hash (1.0.87) unstable; urgency=low
 
   * Updated build helper scripts on CI process - #87
