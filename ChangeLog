@@ -1,3 +1,9 @@
+k2hash (1.0.89) unstable; urgency=low
+
+  * Updated tool scripts and support OSs - #91
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 28 Aug 2023 10:49:40 +0900
+
 k2hash (1.0.88) unstable; urgency=low
 
   * Fixed .gitignore to exclude APKBUILD.templ - #89
