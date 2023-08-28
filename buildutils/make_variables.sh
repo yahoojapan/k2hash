@@ -205,7 +205,7 @@ elif [ "${PRGMODE}" = "DEBHELPER" ]; then
 	# That string is depended debhelper package version and os etc.
 	# (if not ubuntu/debian os, returns default string)
 	#
-	OS_ID_STRING=$(grep '^ID[[:space:]]*=[[:space:]]*' /etc/os-release | sed -e 's|^ID[[:space:]]*=[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g')
+	OS_ID_STRING=$(grep '^ID[[:space:]]*=[[:space:]]*' /etc/os-release | sed -e 's|^ID[[:space:]]*=[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g' -e 's|"||g')
 
 	DEBHELPER_MAJOR_VER=$(apt-cache show debhelper 2>/dev/null | grep Version 2>/dev/null | awk '{print $2}' 2>/dev/null | sed -e 's/\..*/ /g' 2>/dev/null)
 
@@ -220,10 +220,10 @@ elif [ "${PRGMODE}" = "DEBHELPER" ]; then
 	fi
 
 	if [ -n "${OS_ID_STRING}" ]; then
-		if [ "${OS_ID_STRING}" = "debian" ]; then
+		if echo "${OS_ID_STRING}" | grep -q -i "debian"; then
 			RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}, autotools-dev"
 
-		elif [ "${OS_ID_STRING}" = "ubuntu" ]; then
+		elif echo "${OS_ID_STRING}" | grep -q -i "ubuntu"; then
 			if [ "${DEBHELPER_MAJOR_VER}" -lt 10 ]; then
 				RESULT="debhelper (>= 9.20160709)${DEB_WITH_SYSTEMD_STRING}, autotools-dev"
 			else
@@ -243,7 +243,7 @@ elif [ "${PRGMODE}" = "RPMGROUP" ]; then
 	# Fedora rpm does not need "Group" key in spec file.
 	# If not fedora, returns "NEEDRPMGROUP", and you must replace this string in configure.ac
 	#
-	if grep -q '^ID[[:space:]]*=[[:space:]]*["]*fedora["]*[[:space:]]*$' /etc/os-release; then
+	if grep -q -i '^ID[[:space:]]*=[[:space:]]*["]*fedora["]*[[:space:]]*$' /etc/os-release; then
 		RESULT=""
 	else
 		RESULT="NEEDRPMGROUP"
