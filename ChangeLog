@@ -1,3 +1,9 @@
+k2hash (1.0.90) unstable; urgency=low
+
+  * Changed support OS (fedora and ubuntu) and updated tool - #93
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 27 Oct 2023 12:34:51 +0900
+
 k2hash (1.0.89) unstable; urgency=low
 
   * Updated tool scripts and support OSs - #91
