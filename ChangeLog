@@ -1,3 +1,9 @@
+k2hash (1.0.91) unstable; urgency=low
+
+  * Fixed ostypevars.sh for packaging fedora/38 - #95
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 27 Oct 2023 16:08:01 +0900
+
 k2hash (1.0.90) unstable; urgency=low
 
   * Changed support OS (fedora and ubuntu) and updated tool - #93
