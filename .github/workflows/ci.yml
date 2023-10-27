@@ -63,15 +63,14 @@ jobs:
         container:
           - ubuntu:22.04
           - ubuntu:20.04
-          - ubuntu:18.04
           - debian:bookworm
           - debian:bullseye
           - debian:buster
           - rockylinux:9
           - rockylinux:8
           - centos:centos7
+          - fedora:38
           - fedora:37
-          - fedora:36
           - alpine:3.18
 
     container:
