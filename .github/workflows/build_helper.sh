@@ -1100,11 +1100,11 @@ if [ "${CI_DO_PUBLISH}" -eq 1 ]; then
 			PRNERR "Failed to install SCL packages"
 			exit 1
 		fi
-		if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" "${INSTALL_QUIET_ARG}" rh-ruby26 rh-ruby26-ruby-devel rh-ruby26-rubygem-rake || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+		if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" "${INSTALL_QUIET_ARG}" rh-ruby27 rh-ruby27-ruby-devel rh-ruby27-rubygem-rake || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 			PRNERR "Failed to install ruby packages"
 			exit 1
 		fi
-		. /opt/rh/rh-ruby26/enable
+		. /opt/rh/rh-ruby27/enable
 
 		if ({ RUNCMD "${GEM_BIN}" "${GEM_INSTALL_CMD}" package_cloud || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 			PRNERR "Failed to install packagecloud.io upload tools"
@@ -1132,16 +1132,16 @@ if [ "${CI_DO_PUBLISH}" -eq 1 ]; then
 			PRNERR "Failed to reset ruby module"
 			exit 1
 		fi
-		if ({ RUNCMD "${INSTALLER_BIN}" module "${INSTALL_AUTO_ARG}" install ruby:2.6 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install ruby 2.6 module"
+		if ({ RUNCMD "${INSTALLER_BIN}" module "${INSTALL_AUTO_ARG}" install ruby:2.7 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+			PRNERR "Failed to install ruby 2.7 module"
 			exit 1
 		fi
-		if ({ RUNCMD "${INSTALLER_BIN}" module "${INSTALL_AUTO_ARG}" enable ruby:2.6 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to enable ruby 2.6 module"
+		if ({ RUNCMD "${INSTALLER_BIN}" module "${INSTALL_AUTO_ARG}" enable ruby:2.7 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+			PRNERR "Failed to enable ruby 2.7 module"
 			exit 1
 		fi
-		if ({ RUNCMD "${INSTALLER_BIN}" module "${INSTALL_AUTO_ARG}" update ruby:2.6 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to update ruby 2.6 module"
+		if ({ RUNCMD "${INSTALLER_BIN}" module "${INSTALL_AUTO_ARG}" update ruby:2.7 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+			PRNERR "Failed to update ruby 2.7 module"
 			exit 1
 		fi
 
@@ -1159,10 +1159,10 @@ if [ "${CI_DO_PUBLISH}" -eq 1 ]; then
 		#
 
 		#
-		# Set RVM(Ruby Version Manager) and install Ruby 2.6 and package_cloud
+		# Set RVM(Ruby Version Manager) and install Ruby 2.7 and package_cloud
 		#
 		# [NOTE]
-		# Install Ruby2.6 using RVM tools.
+		# Install Ruby2.7 using RVM tools.
 		# Installation and running RVM tools must be done in Bash.
 		# This set of installations will create a Bash script and run it.
 		#
@@ -1175,7 +1175,7 @@ if [ "${CI_DO_PUBLISH}" -eq 1 ]; then
 		#	command curl -sSL https://rvm.io/mpapis.asc | sudo gpg --import -
 		#	command curl -sSL https://rvm.io/pkuczynski.asc | sudo gpg --import -
 		#
-		# After that, install RVM installation, RVM environment settings, Ruby2.6 installation, and package_cloud tools.
+		# After that, install RVM installation, RVM environment settings, Ruby2.7 installation, and package_cloud tools.
 		#
 		# [NOTE]
 		# The RVM installation requires running from a bash shell.
@@ -1211,12 +1211,12 @@ if [ "${CI_DO_PUBLISH}" -eq 1 ]; then
 			echo '	echo "Failed to add rvm user to root group."'
 			echo '	exit 1'
 			echo 'fi'
-			echo 'if ! rvm install ruby-2.6 2>&1; then'
-			echo '	echo "Failed to install ruby 2.6."'
+			echo 'if ! rvm install ruby-2.7 2>&1; then'
+			echo '	echo "Failed to install ruby 2.7."'
 			echo '	exit 1'
 			echo 'fi'
-			echo 'if ! rvm --default use ruby-2.6 2>&1; then'
-			echo '	echo "Failed to set ruby 2.6 as default."'
+			echo 'if ! rvm --default use ruby-2.7 2>&1; then'
+			echo '	echo "Failed to set ruby 2.7 as default."'
 			echo '	exit 1'
 			echo 'fi'
 			echo ''
@@ -1392,7 +1392,7 @@ if [ "${RUN_SHELLCHECK}" -eq 1 ]; then
 		#
 		# Rocky
 		#
-		if ! LATEST_SHELLCHECK_DOWNLOAD_URL=$("${CURLCMD}" -s -S https://api.github.com/repos/koalaman/shellcheck/releases/latest | grep '"browser_download_url"' | grep 'linux.x86_64' | sed -e 's|"||g' -e 's|^.*browser_download_url:[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g' | tr -d '\n'); then
+		if ! LATEST_SHELLCHECK_DOWNLOAD_URL=$("${CURLCMD}" -s -S https://api.github.com/repos/koalaman/shellcheck/releases/latest | tr '{' '\n' | tr '}' '\n' | tr '[' '\n' | tr ']' '\n' | tr ',' '\n' | grep '"browser_download_url"' | grep 'linux.x86_64' | sed -e 's|"||g' -e 's|^.*browser_download_url:[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g' | tr -d '\n'); then
 			PRNERR "Failed to get shellcheck download url path"
 			exit 1
 		fi
