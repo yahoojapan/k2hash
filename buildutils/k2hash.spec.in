@@ -56,8 +56,8 @@ License: @PKGLICENSE@
 @RPMPKG_GROUP@
 URL: https://@GIT_DOMAIN@/@GIT_ORG@/@PACKAGE_NAME@
 Source0: https://@GIT_DOMAIN@/@GIT_ORG@/@PACKAGE_NAME@/archive/%{gittag}/%{name}-%{version}.tar.gz
-Requires: libfullock%{?_isa} >= 1.0.55
-BuildRequires: git-core gcc-c++ make libtool libfullock-devel >= 1.0.55 nss-devel
+Requires: libfullock%{?_isa} >= 1.0.56
+BuildRequires: git-core gcc-c++ make libtool libfullock-devel >= 1.0.56 nss-devel
 
 %description
 @LONGDESC@
@@ -110,7 +110,7 @@ rm -rf %{buildroot}
 #
 %package devel
 Summary: @SHORTDESC@ (development)
-Requires: %{name}%{?_isa} = %{version}-%{release}, libfullock-devel%{?_isa} >= 1.0.55, nss-devel
+Requires: %{name}%{?_isa} = %{version}-%{release}, libfullock-devel%{?_isa} >= 1.0.56, nss-devel
 
 %description devel
 Development package for building with @PACKAGE_NAME@ shared library.
