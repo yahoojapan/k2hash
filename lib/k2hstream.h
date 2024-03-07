@@ -66,7 +66,7 @@ class basic_k2hstreambuf : public std::basic_streambuf<CharT, Traits>
 		bool input_sync(off_t offset);
 
 	public:
-		basic_k2hstreambuf(open_mode opmode = std::ios_base::in | std::ios_base::out) : pAccess(NULL), BuffSize(0UL), pInputBuff(NULL), pOutputBuff(NULL), InputBase(0L), OutputBase(0L) { }
+		explicit basic_k2hstreambuf(open_mode opmode = std::ios_base::in | std::ios_base::out) : pAccess(NULL), BuffSize(0UL), pInputBuff(NULL), pOutputBuff(NULL), InputBase(0L), OutputBase(0L) { }
 		basic_k2hstreambuf(K2HShm* pk2hshm, const char* pkey, open_mode opmode = std::ios_base::in | std::ios_base::out);
 		virtual ~basic_k2hstreambuf();
 
@@ -81,10 +81,14 @@ template<typename CharT, typename Traits>
 basic_k2hstreambuf<CharT, Traits>::basic_k2hstreambuf(K2HShm* pk2hshm, const char* pkey, open_mode opmode) : pAccess(NULL), BuffSize(0UL), pInputBuff(NULL), pOutputBuff(NULL), InputBase(0L), OutputBase(0L)
 {
 	if(!pk2hshm || !pkey){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("Parameters are wrong.");
 		return;
 	}
 	if(!init(pk2hshm, pkey, opmode)){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		WAN_K2HPRN("Parameters are something wrong");
 		return;
 	}
@@ -103,6 +107,8 @@ bool basic_k2hstreambuf<CharT, Traits>::reset(void)
 	//
 	if(pAccess && streambuf_type::pbase() < streambuf_type::pptr()){
 		if(!output_sync(false)){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress duplicateExpression
 			WAN_K2HPRN("Could not put left write buffer into.");
 		}
 	}
@@ -135,11 +141,15 @@ bool basic_k2hstreambuf<CharT, Traits>::init(K2HShm* pk2hshm, const char* pkey, 
 	}else if(opmode & std::ios_base::in){
 		access_mode = K2HDAccess::READ_ACCESS;
 	}else{
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("Parameter open_mode is unknown.");
 	}
 
 	// Get & Initialize K2HDAccess object
 	if(NULL == (pAccess = pk2hshm->GetDAccessObj(pkey, access_mode))){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("Could not initialize internal K2HDAccess object.");
 		reset();
 		return false;
@@ -151,6 +161,8 @@ bool basic_k2hstreambuf<CharT, Traits>::init(K2HShm* pk2hshm, const char* pkey, 
 	// Make buffer
 	if(opmode & std::ios_base::out){
 		if(NULL == (pOutputBuff = reinterpret_cast<unsigned char*>(malloc(BuffSize)))){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress duplicateExpression
 			ERR_K2HPRN("Could not allocate memory.");
 			reset();
 			return false;
@@ -160,6 +172,8 @@ bool basic_k2hstreambuf<CharT, Traits>::init(K2HShm* pk2hshm, const char* pkey, 
 	if(opmode & std::ios_base::in){
 		// loading initial data
 		if(!input_sync(0L)){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress duplicateExpression
 			ERR_K2HPRN("Could not allocate memory.");
 			reset();
 			return false;
@@ -172,6 +186,8 @@ template<typename CharT, typename Traits>
 bool basic_k2hstreambuf<CharT, Traits>::output_sync(bool check_input)
 {
 	if(!pAccess){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("This object did not initialized.");
 		return false;
 	}
@@ -186,6 +202,8 @@ bool basic_k2hstreambuf<CharT, Traits>::output_sync(bool check_input)
 	// set offset
 	if(pAccess->GetWriteOffset() != (OutputBase + wbuffoffset)){
 		if(!pAccess->SetWriteOffset(OutputBase + wbuffoffset)){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress duplicateExpression
 			ERR_K2HPRN("Could not set offset for writing.");
 			return false;
 		}
@@ -193,6 +211,8 @@ bool basic_k2hstreambuf<CharT, Traits>::output_sync(bool check_input)
 
 	// writing
 	if(!pAccess->Write(&pOutputBuff[wbuffoffset], length)){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("Failed writing.");
 		return false;
 	}
@@ -207,6 +227,8 @@ bool basic_k2hstreambuf<CharT, Traits>::output_sync(bool check_input)
 			// So input buffer has cached(loaded) some datas, it is needed to clear. 
 			//
 			if(!input_sync(InputBase + static_cast<off_t>(streambuf_type::gptr() - streambuf_type::eback()))){
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress duplicateExpression
 				WAN_K2HPRN("Failed resetting reading buffer and offset.");
 			}
 		}
@@ -223,10 +245,14 @@ template<typename CharT, typename Traits>
 int basic_k2hstreambuf<CharT, Traits>::sync(void)
 {
 	if(!pAccess){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("This object did not initialized.");
 		return -1;
 	}
 	if(!streambuf_type::pptr()){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("There is no current put pointer.");
 		return -1;
 	}
@@ -240,6 +266,8 @@ template<typename CharT, typename Traits>
 typename basic_k2hstreambuf<CharT, Traits>::int_type basic_k2hstreambuf<CharT, Traits>::overflow(int_type ch)
 {
 	if(!pAccess){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("This object did not initialized.");
 		return traits_type::eof();
 	}
@@ -260,6 +288,8 @@ template<typename CharT, typename Traits>
 bool basic_k2hstreambuf<CharT, Traits>::input_sync(off_t offset)
 {
 	if(!pAccess){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		MSG_K2HPRN("This object did not initialized or could not open key because of not existing.");
 		return false;
 	}
@@ -267,6 +297,8 @@ bool basic_k2hstreambuf<CharT, Traits>::input_sync(off_t offset)
 	// set offset
 	if(pAccess->GetReadOffset() != offset){
 		if(!pAccess->SetReadOffset(offset)){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress duplicateExpression
 			MSG_K2HPRN("Could not set offset for reading.");
 			return false;
 		}
@@ -283,6 +315,8 @@ bool basic_k2hstreambuf<CharT, Traits>::input_sync(off_t offset)
 	unsigned char*	pInputTmp = NULL;
 	size_t			InputSize = BuffSize;
 	if(!pAccess->Read(&pInputTmp, InputSize)){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("Could not load data.");
 		return false;
 	}
@@ -306,6 +340,8 @@ template<typename CharT, typename Traits>
 typename basic_k2hstreambuf<CharT, Traits>::int_type basic_k2hstreambuf<CharT, Traits>::pbackfail(int_type ch)
 {
 	if(!pAccess){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("This object did not initialized.");
 		return traits_type::eof();
 	}
@@ -364,10 +400,14 @@ template<typename CharT, typename Traits>
 typename basic_k2hstreambuf<CharT, Traits>::pos_type basic_k2hstreambuf<CharT, Traits>::seekoff(off_type offset, std::ios_base::seekdir bpostype, open_mode opmode)
 {
 	if(!(opmode & (std::ios_base::out | std::ios_base::in))){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("Parameter is wrong");
 		return pos_type(off_type(-1));
 	}
 	if(!pAccess){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplicateExpression
 		ERR_K2HPRN("This object did not initialized.");
 		return pos_type(off_type(-1));
 	}
@@ -387,12 +427,16 @@ typename basic_k2hstreambuf<CharT, Traits>::pos_type basic_k2hstreambuf<CharT, T
 		// (If opmode has std::ios_base::in, do not sync input buffer on any case.)
 		//
 		if(!output_sync((opmode & std::ios_base::in) ? false : true)){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress duplicateExpression
 			ERR_K2HPRN("Could not put data.");
 			return pos_type(off_type(-1));
 		}
 
 		// set buffers
 		if(!pAccess->SetWriteOffset(new_offset)){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress duplicateExpression
 			ERR_K2HPRN("Could not set offset for writing.");
 			return pos_type(off_type(-1));
 		}
@@ -413,6 +457,8 @@ typename basic_k2hstreambuf<CharT, Traits>::pos_type basic_k2hstreambuf<CharT, T
 		}
 
 		if(!input_sync(new_offset)){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress duplicateExpression
 			ERR_K2HPRN("Could not put data.");
 			return pos_type(off_type(-1));
 		}
@@ -451,7 +497,7 @@ class basic_ik2hstream : public std::basic_istream<CharT, Traits>
 		k2hstreambuf_type	k2hstreambuf;
 
 	protected:
-		basic_ik2hstream(open_mode opmode = std::ios_base::in) : istream_type(), k2hstreambuf(opmode | std::ios_base::in) { ios_type::init(&k2hstreambuf); }
+		explicit basic_ik2hstream(open_mode opmode = std::ios_base::in) : istream_type(), k2hstreambuf(opmode | std::ios_base::in) { ios_type::init(&k2hstreambuf); }
 
 	public:
 		basic_ik2hstream(K2HShm* pk2hshm, const char* pkey, open_mode opmode = std::ios_base::in) : istream_type(), k2hstreambuf(pk2hshm, pkey, opmode | std::ios_base::in) { ios_type::init(&k2hstreambuf); }
@@ -482,7 +528,7 @@ class basic_ok2hstream : public std::basic_ostream<CharT, Traits>
 		k2hstreambuf_type	k2hstreambuf;
 
 	protected:
-		basic_ok2hstream(open_mode opmode = std::ios_base::out) : ostream_type(), k2hstreambuf(opmode | std::ios_base::out) { ios_type::init(&k2hstreambuf); }
+		explicit basic_ok2hstream(open_mode opmode = std::ios_base::out) : ostream_type(), k2hstreambuf(opmode | std::ios_base::out) { ios_type::init(&k2hstreambuf); }
 
 	public:
 		basic_ok2hstream(K2HShm* pk2hshm, const char* pkey, open_mode opmode = std::ios_base::out) : ostream_type(), k2hstreambuf(pk2hshm, pkey, opmode | std::ios_base::out) { ios_type::init(&k2hstreambuf); }
@@ -513,7 +559,7 @@ class basic_k2hstream : public std::basic_iostream<CharT, Traits>
 		k2hstreambuf_type	k2hstreambuf;
 
 	protected:
-		basic_k2hstream(open_mode opmode = std::ios_base::out | std::ios_base::in) : iostream_type(), k2hstreambuf(opmode | std::ios_base::out | std::ios_base::in) { ios_type::init(&k2hstreambuf); }
+		explicit basic_k2hstream(open_mode opmode = std::ios_base::out | std::ios_base::in) : iostream_type(), k2hstreambuf(opmode | std::ios_base::out | std::ios_base::in) { ios_type::init(&k2hstreambuf); }
 
 	public:
 		basic_k2hstream(K2HShm* pk2hshm, const char* pkey, open_mode opmode = std::ios_base::out | std::ios_base::in) : iostream_type(), k2hstreambuf(pk2hshm, pkey, opmode | std::ios_base::out | std::ios_base::in) { ios_type::init(&k2hstreambuf); }

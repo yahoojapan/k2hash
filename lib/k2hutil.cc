@@ -47,7 +47,7 @@ strarr_t::size_type ParseStringArray(const char* pData, size_t length, strarr_t&
 	for(pos = 0, nullpos = -1, chcnt = 0; pos < static_cast<ssize_t>(length); pos++){
 		if(0x00 == pData[pos]){
 			if(0 < chcnt){
-				strarr.push_back(string((const char*)&pData[nullpos + 1], (chcnt + 1)));
+				strarr.push_back(string(reinterpret_cast<const char*>(&pData[nullpos + 1]), (chcnt + 1)));
 			}
 			nullpos	= pos;
 			chcnt	= 0;
@@ -56,7 +56,7 @@ strarr_t::size_type ParseStringArray(const char* pData, size_t length, strarr_t&
 		}
 	}
 	if(0 < chcnt){
-		string	strtmp((const char*)&pData[nullpos + 1], chcnt);
+		string	strtmp(reinterpret_cast<const char*>(&pData[nullpos + 1]), chcnt);
 		strtmp += '\0';
 		strarr.push_back(strtmp);
 	}

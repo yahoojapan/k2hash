@@ -123,7 +123,7 @@ bool DTORCOMMAND = false ;
 #define K2MODE_ON			"ON"
 #define K2MODE_OFF			"OFF"
 
-string k2htouch_get_value(K2HShm* k2hash, const char* pKey) ;
+string k2htouch_get_value(const K2HShm* k2hash, const char* pKey) ;
 // -------------------------------------------------------------------
 // Check command line parameter
 bool isExistOption(int argc, const char **argv, string target) 
@@ -250,7 +250,7 @@ int CheckParameter(int argc, const char **argv)
 // -------------------------------------------------------------------
 // attach the k2hash 
 // -------------------------------------------------------------------
-bool IsDTOR(K2HShm* k2hash)
+bool IsDTOR(const K2HShm* k2hash)
 {
 	bool answer = false ;
 	if (DTORCOMMAND) return false ;
@@ -264,7 +264,7 @@ bool IsDTOR(K2HShm* k2hash)
 	return answer ;
 }
 // -------------------------------------------------------------------
-bool ReadFlag(K2HShm* k2hash, const string& FlagKey)
+bool ReadFlag(const K2HShm* k2hash, const string& FlagKey)
 {
 	bool answer = false ;
 
@@ -279,19 +279,19 @@ bool ReadFlag(K2HShm* k2hash, const string& FlagKey)
 // -------------------------------------------------------------------
 bool AttrSet(K2HShm* k2hash)
 {
-	const strarr_t* pluginlibs = NULL ;
-	bool is_mtime     = ReadFlag(k2hash, K2MODE_ATTR_MTIME) ;
-	bool is_history   = ReadFlag(k2hash, K2MODE_ATTR_HISTORY) ;
+	const strarr_t*	pluginlibs	= NULL ;
+	bool			is_mtime	= ReadFlag(k2hash, K2MODE_ATTR_MTIME) ;
+	bool			is_history	= ReadFlag(k2hash, K2MODE_ATTR_HISTORY) ;
 
-	string expirestr  = k2htouch_get_value(k2hash, K2MODE_ATTR_EXPIRE) ;
-	time_t expiretime = (long)atoi(expirestr.c_str()) ; 
-	time_t *argExpire = NULL ;
-	if (expiretime) argExpire = &expiretime ;
+	string			expirestr	= k2htouch_get_value(k2hash, K2MODE_ATTR_EXPIRE) ;
+	time_t			expiretime	= (long)atoi(expirestr.c_str()) ; 
+	const time_t*	argExpire	= NULL ;
+	const char*		passfile	= ""; 
 
-	const char*	passfile = "" ; 
-
-	return k2hash->SetCommonAttribute(
-		&is_mtime, NULL, passfile, &is_history, argExpire, pluginlibs) ;
+	if(expiretime){
+		argExpire = &expiretime;
+	}
+	return k2hash->SetCommonAttribute(&is_mtime, NULL, passfile, &is_history, argExpire, pluginlibs);
 }
 
 bool AttrClear(K2HShm* k2hash)
@@ -407,9 +407,9 @@ static char* GetPrintableString(const unsigned char* byData, size_t length)
 // -------------------------------------------------------------------
 string GetPrintableDate(const unsigned char* byData, size_t length)
 {
-	const timespec* ts = reinterpret_cast<const timespec*>(byData);
-	struct tm *expiretm = localtime(&ts->tv_sec) ;
-	char time_str[0xff] ;
+	const timespec*		ts			= reinterpret_cast<const timespec*>(byData);
+	const struct tm*	expiretm	= localtime(&ts->tv_sec) ;
+	char				time_str[0xff] ;
 	strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S ", expiretm);
 
 	return time_str ;
@@ -461,7 +461,7 @@ bool k2htouch_get_value_attach()
 	return answer ;
 }
 
-string k2htouch_get_value(K2HShm* k2hash, const char* pKey)
+string k2htouch_get_value(const K2HShm* k2hash, const char* pKey)
 {
 	string answer = "" ;
 

@@ -70,7 +70,9 @@ static inline void DUMP_PRINT_NV(FILE* stream, int nest, const char* name_format
 	buff[0] = '\0';
 
 	if(NULL != name_format){
-		sprintf(&buff[0], name_format, name);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress wrongPrintfScanfArgNum
+		sprintf(buff, name_format, name);
 	}
 	for(int cnt = DUMP_NAME_CHAR_COUNT - strlen(&buff[0]); 0 < cnt; cnt--){
 		strcat(&buff[0], " ");
@@ -695,6 +697,8 @@ bool K2HShm::DumpQueue(FILE* stream, const unsigned char* byMark, size_t marklen
 
 		if(0 == k2hbincmp(bykey, keylen, &(pmarker->byData[pmarker->marker.endoff]), pmarker->marker.endlen)){
 			// reached end key
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress identicalInnerCondition
 			K2H_Free(bykey);
 			break;
 		}

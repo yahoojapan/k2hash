@@ -206,6 +206,20 @@ elif [ "${CI_OSTYPE}" = "centos:7" ] || [ "${CI_OSTYPE}" = "centos:centos7" ]; t
 	PKG_EXT="rpm"
 	IS_OS_CENTOS=1
 
+elif [ "${CI_OSTYPE}" = "fedora:39" ]; then
+	DIST_TAG="fedora/39"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+	INSTALLER_BIN="dnf"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
+	INSTALL_QUIET_ARG="-q"
+	PKG_OUTPUT_DIR="."
+	PKG_EXT="rpm"
+	IS_OS_FEDORA=1
+
 elif [ "${CI_OSTYPE}" = "fedora:38" ]; then
 	DIST_TAG="fedora/38"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
@@ -220,19 +234,19 @@ elif [ "${CI_OSTYPE}" = "fedora:38" ]; then
 	PKG_EXT="rpm"
 	IS_OS_FEDORA=1
 
-elif [ "${CI_OSTYPE}" = "fedora:37" ]; then
-	DIST_TAG="fedora/37"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	INSTALLER_BIN="dnf"
+elif [ "${CI_OSTYPE}" = "alpine:3.19" ]; then
+	DIST_TAG="alpine/v3.19"
+	INSTALL_PKG_LIST="bash sudo alpine-sdk automake autoconf libtool groff util-linux-misc musl-locales ruby-dev procps libfullock libfullock-dev openssl-dev"
+	INSTALLER_BIN="apk"
 	UPDATE_CMD="update"
-	UPDATE_CMD_ARG=""
-	INSTALL_CMD="install"
-	INSTALL_CMD_ARG=""
-	INSTALL_AUTO_ARG="-y"
+	UPDATE_CMD_ARG="--no-progress"
+	INSTALL_CMD="add"
+	INSTALL_CMD_ARG="--no-progress --no-cache"
+	INSTALL_AUTO_ARG=""
 	INSTALL_QUIET_ARG="-q"
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_FEDORA=1
+	PKG_OUTPUT_DIR="apk_build"
+	PKG_EXT="apk"
+	IS_OS_ALPINE=1
 
 elif [ "${CI_OSTYPE}" = "alpine:3.18" ]; then
 	DIST_TAG="alpine/v3.18"

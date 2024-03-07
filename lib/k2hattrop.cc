@@ -45,6 +45,8 @@ bool K2hAttrOpsBase::AddAttrOpArray(k2hattroplist_t& attroplist, K2hAttrOpsBase*
 		return false;
 	}
 	for(k2hattroplist_t::const_iterator iter = attroplist.begin(); iter != attroplist.end(); ++iter){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress useStlAlgorithm
 		if((*iter)->VerInfo == pattrop->VerInfo){
 			// found same attrop in list
 			ERR_K2HPRN("found same attribute operation object(%s) in list.", pattrop->VerInfo.c_str());

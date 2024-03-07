@@ -139,6 +139,7 @@ class K2HLowOpsQueue : public K2HQueue
 	protected:
 		virtual bool Read(unsigned char** ppdata, size_t& datalen, int pos = 0, const char* encpass = NULL) const;
 		virtual bool Push(const unsigned char* bydata, size_t datalen, K2HAttrs* pAttrs, const char* encpass, const time_t* expire);
+		virtual bool Pop(unsigned char** ppdata, size_t& datalen, K2HAttrs** ppAttrs, const char* encpass) { return K2HQueue::Pop(ppdata, datalen, ppAttrs, encpass); }
 
 		bool ReplaceTopQueueKey(const unsigned char* preplacekey, size_t replacekeylen);
 		unsigned char* GetEdgeQueueKey(size_t& keylen, bool is_top) const;
@@ -173,7 +174,11 @@ class K2HLowOpsQueue : public K2HQueue
 		// K2HQueue::GetMarkerName		: get marker name. this class method is inherited from base class.
 		// K2HQueue::GetUniqKey			: get uniq queue key name which can be used new queue key name. this method is inherited from base class.
 		//
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplInheritedMember
 		static unsigned char* GetMarkerName(const unsigned char* pref, size_t preflen, size_t& markerlength) { return K2HQueue::GetMarkerName(pref, preflen, markerlength); }
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress duplInheritedMember
 		unsigned char* GetUniqKey(size_t& keylen) { return K2HQueue::GetUniqKey(keylen); }
 };
 

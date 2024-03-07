@@ -385,8 +385,8 @@ bool K2HTransManager::Stop(const K2HShm* pk2hshm, bool is_remove_prefix)
 		fullock::flck_unlock_noshared_mutex(&LockVal);
 
 		// clear prefix
-		if(is_remove_prefix && !RemoveTransactionKeyPrefix(pk2hshm)){
-			ERR_K2HPRN("Could not remove prefix for target.");
+		if(is_remove_prefix){
+			RemoveTransactionKeyPrefix(pk2hshm);
 		}
 
 		// stop thread for target
@@ -412,9 +412,7 @@ bool K2HTransManager::Stop(const K2HShm* pk2hshm, bool is_remove_prefix)
 		fullock::flck_unlock_noshared_mutex(&LockVal);
 
 		// remove all prefix
-		if(!RemoveAllTransactionKeyPrefix()){
-			ERR_K2HPRN("Could not remove prefix for all.");
-		}
+		RemoveAllTransactionKeyPrefix();
 
 		// stop all threads.
 		if(!ExitAllThreads()){
@@ -809,8 +807,8 @@ bool K2HTransManager::ExitAllThreads(void)
 
 	// make target map
 	std::map<const K2HShm*, bool>	k2htrmap;
-	for(trpoolmap_t::const_iterator iter = trpoolmap.begin(); iter != trpoolmap.end(); ){
-		k2htrmap[iter->first] = true;
+	for(trpoolmap_t::const_iterator miter = trpoolmap.begin(); miter != trpoolmap.end(); ++miter){
+		k2htrmap[miter->first] = true;
 	}
 	fullock::flck_unlock_noshared_mutex(&LockPool);
 

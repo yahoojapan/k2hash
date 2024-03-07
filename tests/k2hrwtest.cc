@@ -45,7 +45,7 @@ using namespace std;
 //
 typedef std::map<std::string, std::string> params_t;
 
-static void Help(char* progname)
+static void Help(const char* progname)
 {
 	printf("Usage: %s [options] KEY [VALUE]\n", progname ? progname : "program");
 	printf("KEY                       Key string\n");

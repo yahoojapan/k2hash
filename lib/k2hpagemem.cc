@@ -157,7 +157,7 @@ bool K2HPageMem::LoadData(bool isPageHead, bool isAllPage)
 
 	// copy to inner memory
 	unsigned char*	pOneData = &(pPageHead->data[0]);	// so already load head
-	if(pOneData && 0UL != pPageHead->length){
+	if(0UL != pPageHead->length){
 		memcpy(pPageData, pOneData, pPageHead->length);
 		DataLength = pPageHead->length;
 	}
@@ -237,7 +237,7 @@ K2HPage* K2HPageMem::LoadData(off_t offset, size_t length, unsigned char** byDat
 			size_t	this_length = min((pTarget->length - offset), length);
 
 			// load data by offset and length
-			unsigned char*	pOffsetData = ADDPTR(&(pTarget->data[0]), offset);
+			const unsigned char* pOffsetData = ADDPTR(&(pTarget->data[0]), offset);
 			memcpy(byNext, pOffsetData, this_length);
 
 			length			-= this_length;

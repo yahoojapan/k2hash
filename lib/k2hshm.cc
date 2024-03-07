@@ -886,19 +886,23 @@ PKINDEX K2HShm::GetKIndex(k2h_hash_t hash, bool isMergeCurmask, bool is_need_loc
 			return NULL;
 		}
 
-		pKindex = CVT_ABS_PKINDEX(pHead->key_index_area, KIPtrArrayPos, KIArrayPos);
-		if(pKindex && KINDEX_ASSIGNED == pKindex->assign){
-			break;
-		}else if(pKindex && KINDEX_ASSIGNED != pKindex->assign && isMergeCurmask){
-			// Need to merge position for elements, because cur_mask is changed.
-			MSG_K2HPRN("Need to check and move hash(%" PRIu64 ") element.", hash);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
+		if(NULL != (pKindex = CVT_ABS_PKINDEX(pHead->key_index_area, KIPtrArrayPos, KIArrayPos))){
+			if(KINDEX_ASSIGNED == pKindex->assign){
+				break;
 
-			if(!ArrangeToUpperKIndex(hash, pHead->cur_mask)){
-				ERR_K2HPRN("Failed to arrange key index.");
-				return NULL;
+			}else if(KINDEX_ASSIGNED != pKindex->assign && isMergeCurmask){
+				// Need to merge position for elements, because cur_mask is changed.
+				MSG_K2HPRN("Need to check and move hash(%" PRIu64 ") element.", hash);
+
+				if(!ArrangeToUpperKIndex(hash, pHead->cur_mask)){
+					ERR_K2HPRN("Failed to arrange key index.");
+					return NULL;
+				}
+				// retry...
+				return GetKIndex(hash, false, false);
 			}
-			// retry...
-			return GetKIndex(hash, false, false);
 		}
 	}
 	return pKindex;
@@ -1661,6 +1665,8 @@ K2HPage* K2HShm::ReservePages(size_t length)
 	K2HPage*		pLastPage;
 	K2HPage*		pStartPage = NULL;
 	unsigned long	rpage_count;
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress uninitvar
 	for(pLastPage = GetPageObject(pHead->pfree_pages, false), rpage_count = 1; pLastPage; pLastPage = GetPageObject(LastPageHead.next, false), rpage_count++){
 		if(!pLastPage->GetPageHead(&LastPageHead)){
 			ERR_K2HPRN("Could not load(get) PAGEHEAD data");
@@ -1681,6 +1687,8 @@ K2HPage* K2HShm::ReservePages(size_t length)
 
 	// set prev/next pointer for reserving/new top page object.
 	K2HPage*	pNewFreeTopPage;
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress uninitvar
 	if(NULL != (pNewFreeTopPage = GetPageObject(LastPageHead.next, false))){
 		if(!pNewFreeTopPage->SetPageHead(K2HPage::SETHEAD_PREV, NULL)){
 			ERR_K2HPRN("Could not set prev pointer for new top page object");
@@ -1897,6 +1905,8 @@ ssize_t K2HShm::Get(const unsigned char* byKey, size_t length, unsigned char** b
 		K2hAttrOpsMan	attrman;
 		if(!attrman.Initialize(this, byKey, length, *byValue, static_cast<size_t>(vallen), encpass)){
 			ERR_K2HPRN("Something error occurred during initializing attributes manager class.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress identicalInnerCondition
 			K2H_Delete(pAttrs);
 			K2H_Free(*byValue);
 			return -1;
@@ -2826,6 +2836,8 @@ bool K2HShm::RemoveEx(const unsigned char* byKey, size_t keylength, bool isSubKe
 		string	uniqid;
 		result = RenameForHistory(byKey, keylength, &uniqid, ptranslist);
 		if(ppUniqid){
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress knownConditionTrueFalse
 			if(!uniqid.empty()){
 				*ppUniqid = strdup(uniqid.c_str());
 			}else{

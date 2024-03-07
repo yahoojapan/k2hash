@@ -116,15 +116,21 @@ bool k2h_trans_cntl(k2h_h handle, PTRANSOPT pOpt)
 
 	printf("Call transaction control.\n");
 	printf("  k2h handle    = %lu\n", handle);
-	printf("  file path     = %s\n", pOpt ? pOpt->szFilePath : "null");
-	printf("  control       = %s\n", !pOpt ? "null" : pOpt->isEnable ? "enable" : "disable");
-	printf("  prefix        = (string)%s\n", !pOpt ? "null" : reinterpret_cast<const char*>(pOpt->byTransPrefix));
-	printf("  prefix length = %zd\n", !pOpt ? 0 : pOpt->PrefixLength);
-
 	if(!pOpt){
+		printf("  file path     = null\n");
+		printf("  control       = null\n");
+		printf("  prefix        = (string)null\n");
+		printf("  prefix length = 0\n");
+
 		fprintf(stderr, "[ERR] Trans Control Function: Parameters are wrong.\n");
 		return false;
+	}else{
+		printf("  file path     = %s\n",		pOpt->szFilePath);
+		printf("  control       = %s\n",		pOpt->isEnable ? "enable" : "disable");
+		printf("  prefix        = (string)%s\n", reinterpret_cast<const char*>(pOpt->byTransPrefix));
+		printf("  prefix length = %zu\n",		pOpt->PrefixLength);
 	}
+
 	isSetFile = pOpt->isEnable;
 	if(pOpt->isEnable){
 		// If can close file, you should open file here.
