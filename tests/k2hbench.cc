@@ -152,12 +152,14 @@ static inline void ERR(const char* format, ...)
 	fprintf(stderr, "\n");
 }
 
-static inline char* programname(char* prgpath)
+static inline const char* programname(const char* prgpath)
 {
 	if(!prgpath){
 		return NULL;
 	}
-	char*	pprgname = basename(prgpath);
+	char*		ptmp	= strdup(prgpath);
+	const char*	pprgname= basename(ptmp);
+	free(ptmp);
 	if(0 == strncmp(pprgname, "lt-", strlen("lt-"))){
 		pprgname = &pprgname[strlen("lt-")];
 	}
@@ -292,7 +294,7 @@ const char	TestData::errData;
 //---------------------------------------------------------
 // Utility Functions
 //---------------------------------------------------------
-static void Help(char* progname)
+static void Help(const char* progname)
 {
 	PRN(NULL);
 	PRN("Usage: %s [ -f filename | -t filename | -m | -h ] [options]", progname ? programname(progname) : "program");
@@ -330,7 +332,7 @@ static void Help(char* progname)
 	PRN(NULL);
 }
 
-static void OptionParser(int argc, char** argv, optparams_t& optparams)
+static void OptionParser(int argc, const char** argv, optparams_t& optparams)
 {
 	optparams.clear();
 	for(int cnt = 1; cnt < argc && argv && argv[cnt]; cnt++){
@@ -340,7 +342,7 @@ static void OptionParser(int argc, char** argv, optparams_t& optparams)
 		param.num_value = 0;
 
 		// get option name
-		char*	popt = argv[cnt];
+		const char*	popt = argv[cnt];
 		if(ISEMPTYSTR(popt)){
 			continue;		// skip
 		}
@@ -351,14 +353,14 @@ static void OptionParser(int argc, char** argv, optparams_t& optparams)
 
 		// check option parameter
 		if((cnt + 1) < argc && argv[cnt + 1]){
-			char*	pparam = argv[cnt + 1];
+			const char*	pparam = argv[cnt + 1];
 			if(!ISEMPTYSTR(pparam) && '-' != *pparam){
 				// found param
 				param.rawstring = pparam;
 
 				// check number
 				param.is_number = true;
-				for(char* ptmp = pparam; *ptmp; ++ptmp){
+				for(const char* ptmp = pparam; *ptmp; ++ptmp){
 					if(0 == isdigit(*ptmp)){
 						param.is_number = false;
 						break;
@@ -378,7 +380,7 @@ static void OptionParser(int argc, char** argv, optparams_t& optparams)
 //
 // Parse and set options and check another option combination
 //
-static bool SetBenchOptions(int argc, char** argv, BOPTS& benchopts)
+static bool SetBenchOptions(int argc, const char** argv, BOPTS& benchopts)
 {
 	// parse
 	optparams_t	optparams;
@@ -666,7 +668,7 @@ static bool SetBenchOptions(int argc, char** argv, BOPTS& benchopts)
 	return true;
 }
 
-static K2HShm* InitializeK2HashFile(BOPTS& benchopts)
+static K2HShm* InitializeK2HashFile(const BOPTS& benchopts)
 {
 	K2HShm*	pk2hshm = new K2HShm();
 
@@ -723,6 +725,8 @@ static int OpenBenchFile(const string& filepath, size_t& totalsize, bool is_crea
 		// truncate & clean up
 		if(0 != ftruncate(fd, totalsize)){
 			ERR("Could not truncate file(%s) to %zu, errno = %d", filepath.c_str(), totalsize, errno);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return -1;
 		}
@@ -732,6 +736,8 @@ static int OpenBenchFile(const string& filepath, size_t& totalsize, bool is_crea
 			onewrote = min(static_cast<size_t>(sizeof(unsigned char) * 1024), (totalsize - static_cast<size_t>(wrote)));
 			if(-1 == k2h_pwrite(fd, szBuff, onewrote, wrote)){
 				ERR("Failed to write initializing file(%s), errno = %d", filepath.c_str(), errno);
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress unreadVariable
 				K2H_CLOSE(fd);
 				return -1;
 			}
@@ -774,6 +780,8 @@ static void* MmapBenchFile(bool is_create, int proccnt, int threadcnt, string& f
 	void*	pShm;
 	if(MAP_FAILED == (pShm = mmap(NULL, totalsize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0))){
 		ERR("Could not mmap to file(%s), errno = %d", filepath.c_str(), errno);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(fd);
 		return NULL;
 	}
@@ -997,6 +1005,8 @@ static int RunChild(string cntlfile)
 	if(pexeccntl->is_exit){
 		ERR("Exit process ASSAP.");
 		munmap(pShmBase, totalsize);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(cntlfd);
 		return EXIT_FAILURE;
 	}
@@ -1012,6 +1022,8 @@ static int RunChild(string cntlfile)
 	if(!pmycntl){
 		ERR("Could not find my procid in PCHLDCNTL.");
 		munmap(pShmBase, totalsize);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(cntlfd);
 		return EXIT_FAILURE;
 	}
@@ -1021,6 +1033,8 @@ static int RunChild(string cntlfile)
 	if(!pk2hshm->Attach(&pexeccntl->opt.szfile[0], pexeccntl->opt.is_read_only, false, pexeccntl->opt.is_temp_mode, pexeccntl->opt.is_fullmap, pexeccntl->opt.maskcnt, pexeccntl->opt.cmaskcnt, pexeccntl->opt.elementcnt, pexeccntl->opt.pagesize)){
 		ERR("Could not attach k2hash file(%s).", pexeccntl->opt.szfile);
 		munmap(pShmBase, totalsize);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(cntlfd);
 		return EXIT_FAILURE;
 	}
@@ -1070,7 +1084,7 @@ static int RunChild(string cntlfile)
 //---------------------------------------------------------
 // Main
 //---------------------------------------------------------
-int main(int argc, char** argv)
+int main(int argc, const char** argv)
 {
 	BOPTS	benchopts;
 	init_bench_opts(benchopts);
@@ -1120,6 +1134,8 @@ int main(int argc, char** argv)
 	K2HShm*	pk2hshm;
 	if(NULL == (pk2hshm = InitializeK2HashFile(benchopts))){
 		munmap(pShmBase, totalsize);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(cntlfd);
 		exit(EXIT_FAILURE);
 	}
@@ -1301,6 +1317,9 @@ int main(int argc, char** argv)
 		unlink(benchopts.szfile);
 	}
 	munmap(pShmBase, totalsize);
+
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(cntlfd);
 	unlink(cntlfile.c_str());
 

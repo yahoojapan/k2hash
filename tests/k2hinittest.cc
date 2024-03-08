@@ -50,7 +50,7 @@ using namespace std;
 //
 typedef std::map<std::string, std::string> params_t;
 
-static void Help(char* progname)
+static void Help(const char* progname)
 {
 	printf("Usage: %s [options]\n", progname ? progname : "program");
 	printf("Option  -f [file name]    File path\n");

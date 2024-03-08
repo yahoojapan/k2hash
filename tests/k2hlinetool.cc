@@ -1173,7 +1173,7 @@ static char* GetPrintableString(const unsigned char* byData, size_t length)
 //---------------------------------------------------------
 static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const char* pCommand, bool& is_exit);
 
-static bool InfoCommand(K2HShm& k2hash, params_t& params)
+static bool InfoCommand(K2HShm& k2hash, const params_t& params)
 {
 	bool	isState = false;
 	if(1 < params.size()){
@@ -1264,7 +1264,7 @@ static bool InfoCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool DumpCommand(K2HShm& k2hash, params_t& params)
+static bool DumpCommand(K2HShm& k2hash, const params_t& params)
 {
 	int		DumpMode = K2HShm::DUMP_HEAD;
 	string	modestr  = "HEAD";
@@ -1318,7 +1318,7 @@ static bool DumpCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool SetCommand(K2HShm& k2hash, params_t& params)
+static bool SetCommand(K2HShm& k2hash, const params_t& params)
 {
 	bool 	isRemoveSubkeyAll	= false;
 	time_t	expire_time			= -1;
@@ -1439,7 +1439,7 @@ static K2HGETCBRES SetTrialCallback(const unsigned char* byKey, size_t keylen, c
 	return res;
 }
 
-static bool SetTrialCommand(K2HShm& k2hash, params_t& params)
+static bool SetTrialCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(1 != params.size() && 2 != params.size()){
 		if(2 < params.size()){
@@ -1477,7 +1477,7 @@ static bool SetTrialCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool SetSubkeyCommand(K2HShm& k2hash, params_t& params)
+static bool SetSubkeyCommand(K2HShm& k2hash, const params_t& params)
 {
 	const char*	pValue = NULL;
 	if(0 < params[2].length()){
@@ -1500,7 +1500,7 @@ static bool SetSubkeyCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool DirectSetCommand(K2HShm& k2hash, params_t& params)
+static bool DirectSetCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(isModeCAPI){
 		// get handle
@@ -1548,7 +1548,7 @@ static bool DirectSetCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool DirectSetFileCommand(K2HShm& k2hash, params_t& params)
+static bool DirectSetFileCommand(K2HShm& k2hash, const params_t& params)
 {
 	// file open
 	int	fd;
@@ -1561,6 +1561,8 @@ static bool DirectSetFileCommand(K2HShm& k2hash, params_t& params)
 	struct stat	st;
 	if(-1 == fstat(fd, &st)){
 		ERR_K2HPRN("Could not get stat from fd. errno = %d", errno);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(fd);
 		return false;
 	}
@@ -1570,6 +1572,8 @@ static bool DirectSetFileCommand(K2HShm& k2hash, params_t& params)
 		k2h_da_h	dahandle;
 		if(K2H_INVALID_HANDLE == (dahandle = k2h_da_str_handle_write(reinterpret_cast<k2h_h>(&k2hash), params[0].c_str()))){
 			ERR("Could not get k2h_da_h handle.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;		// normal exit
 		}
@@ -1578,6 +1582,8 @@ static bool DirectSetFileCommand(K2HShm& k2hash, params_t& params)
 		off_t	offset = static_cast<off_t>(atoi(params[1].c_str()));
 		if(!k2h_da_set_write_offset(dahandle, offset)){
 			ERR("Could not set write offset.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			k2h_da_free(dahandle);
 			return true;		// normal exit
@@ -1587,6 +1593,8 @@ static bool DirectSetFileCommand(K2HShm& k2hash, params_t& params)
 		size_t	wlength = static_cast<size_t>(st.st_size);
 		if(!k2h_da_set_value_from_file(dahandle, fd, &wlength)){
 			ERR("Failed writing value.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			k2h_da_free(dahandle);
 			return true;		// normal exit
@@ -1601,6 +1609,8 @@ static bool DirectSetFileCommand(K2HShm& k2hash, params_t& params)
 		K2HDAccess*	pAccess;
 		if(NULL == (pAccess = k2hash.GetDAccessObj(params[0].c_str(), K2HDAccess::WRITE_ACCESS, offset))){
 			ERR("Could not initialize internal K2HDAccess object.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;		// normal exit
 		}
@@ -1609,18 +1619,22 @@ static bool DirectSetFileCommand(K2HShm& k2hash, params_t& params)
 		size_t	wlength = static_cast<size_t>(st.st_size);
 		if(!pAccess->Write(fd, wlength)){
 			ERR("Failed writing.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			K2H_Delete(pAccess);
 			return true;		// normal exit
 		}
 		K2H_Delete(pAccess);
 	}
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(fd);
 
 	return true;
 }
 
-static bool FillCommand(K2HShm& k2hash, params_t& params)
+static bool FillCommand(K2HShm& k2hash, const params_t& params)
 {
 	int		nCount = atoi(params[2].c_str());
 	if(0 >= nCount){
@@ -1653,7 +1667,7 @@ static bool FillCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool FillSubkeyCommand(K2HShm& k2hash, params_t& params)
+static bool FillSubkeyCommand(K2HShm& k2hash, const params_t& params)
 {
 	int		nCount = atoi(params[3].c_str());
 	if(0 >= nCount){
@@ -1686,7 +1700,7 @@ static bool FillSubkeyCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool RemoveCommand(K2HShm& k2hash, params_t& params)
+static bool RemoveCommand(K2HShm& k2hash, const params_t& params)
 {
 	bool isRemoveSubkeyAll = false;
 	if(1 < params.size()){
@@ -1714,7 +1728,7 @@ static bool RemoveCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool RemoveSubkeyCommand(K2HShm& k2hash, params_t& params)
+static bool RemoveSubkeyCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(isModeCAPI){
 		if(!k2h_remove_str_subkey(reinterpret_cast<k2h_h>(&k2hash), params[0].c_str(), params[1].c_str())){
@@ -1773,9 +1787,7 @@ static bool PrintKeys(K2HShm& k2hash, const char* pKey, const string& spacer, bo
 			for(strarr_t::iterator iter = strarr.begin(); iter != strarr.end(); iter++){
 				if(isSubkey){
 					// reentrant
-					if(!PrintKeys(k2hash, iter->c_str(), myspacer, isSubkey, is_check_attr, pass)){
-						// something error occurred, but nothing to do because already putting error from function.
-					}
+					PrintKeys(k2hash, iter->c_str(), myspacer, isSubkey, is_check_attr, pass);
 				}else{
 					PRN("%s     subkey: \"%s\"", myspacer.c_str(), iter->c_str());
 				}
@@ -1786,7 +1798,7 @@ static bool PrintKeys(K2HShm& k2hash, const char* pKey, const string& spacer, bo
 	return true;
 }
 
-static bool RenameCommand(K2HShm& k2hash, params_t& params)
+static bool RenameCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(isModeCAPI){
 		if(!k2h_rename_str(reinterpret_cast<k2h_h>(&k2hash), params[0].c_str(), params[1].c_str())){
@@ -1802,7 +1814,7 @@ static bool RenameCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool PrintCommand(K2HShm& k2hash, params_t& params)
+static bool PrintCommand(K2HShm& k2hash, const params_t& params)
 {
 	bool	isSubkeys		= false;
 	bool	is_check_attr	= true;
@@ -1821,14 +1833,12 @@ static bool PrintCommand(K2HShm& k2hash, params_t& params)
 	}
 
 	string	spacer = "";
-	if(!PrintKeys(k2hash, params[0].c_str(), spacer, isSubkeys, is_check_attr, (PassPhrase.empty() ? NULL : PassPhrase.c_str()))){
-		ERR("Something error occurred while displaying subkeys.");
-		return true;	// for continue.
-	}
+	PrintKeys(k2hash, params[0].c_str(), spacer, isSubkeys, is_check_attr, (PassPhrase.empty() ? NULL : PassPhrase.c_str()));
+
 	return true;
 }
 
-static bool PrintAttrCommand(K2HShm& k2hash, params_t& params)
+static bool PrintAttrCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(1 != params.size()){
 		if(1 < params.size()){
@@ -1881,7 +1891,7 @@ static bool PrintAttrCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool AddAttrCommand(K2HShm& k2hash, params_t& params)
+static bool AddAttrCommand(K2HShm& k2hash, const params_t& params)
 {
 	string	key;
 	string	attrkey;
@@ -1915,7 +1925,7 @@ static bool AddAttrCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool DirectPrintCommand(K2HShm& k2hash, params_t& params)
+static bool DirectPrintCommand(K2HShm& k2hash, const params_t& params)
 {
 	unsigned char*	byValue		= NULL;
 	size_t			vallength	= static_cast<size_t>(atoi(params[1].c_str()));
@@ -1996,7 +2006,7 @@ static bool DirectPrintCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool DirectSaveCommand(K2HShm& k2hash, params_t& params)
+static bool DirectSaveCommand(K2HShm& k2hash, const params_t& params)
 {
 	k2h_hash_t	hashval				= static_cast<k2h_hash_t>(atoi(params[0].c_str()));
 	struct timespec	startts 		= {0, 0};
@@ -2054,6 +2064,8 @@ static bool DirectSaveCommand(K2HShm& k2hash, params_t& params)
 	if(-1 == (fepos = lseek(fd, 0, SEEK_END)) || -1 == k2h_pwrite(fd, szBuff, strlen(szBuff), fepos)){
 		ERR("Could not write data count to file(%s)", params[1].c_str());
 		free_k2hbins(pbindatas, datacnt);
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(fd);
 		return true;			// for continue
 	}
@@ -2064,6 +2076,8 @@ static bool DirectSaveCommand(K2HShm& k2hash, params_t& params)
 		if(-1 == (fepos = lseek(fd, 0, SEEK_END)) || -1 == k2h_pwrite(fd, szBuff, strlen(szBuff), fepos)){
 			ERR("Could not write %zu data length to file(%s)", cnt, params[1].c_str());
 			free_k2hbins(pbindatas, datacnt);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;			// for continue
 		}
@@ -2071,17 +2085,21 @@ static bool DirectSaveCommand(K2HShm& k2hash, params_t& params)
 		if(-1 == (fepos = lseek(fd, 0, SEEK_END)) || -1 == k2h_pwrite(fd, pbindatas[cnt].byptr, pbindatas[cnt].length, fepos)){
 			ERR("Could not write %zu binary data to file(%s)", cnt, params[1].c_str());
 			free_k2hbins(pbindatas, datacnt);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;			// for continue
 		}
 	}
 
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(fd);
 
 	return true;
 }
 
-static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
+static bool DirectLoadCommand(K2HShm& k2hash, const params_t& params)
 {
 	struct timespec	ts	= {time(NULL), 0};
 	if(2 <= params.size()){
@@ -2111,11 +2129,15 @@ static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
 	char	szBuff[256];
 	if(strlen("COUNT=") != k2h_pread(fd, szBuff, strlen("COUNT="), rpos)){
 		ERR("Could not read data count key word from file(%s)", params[0].c_str());
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(fd);
 		return true;			// for continue
 	}
 	if(0 != strncmp(szBuff, "COUNT=", strlen("COUNT="))){
 		ERR("Wrong format file(%s), the data does not start \"COUNT=\"", params[0].c_str());
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(fd);
 		return true;			// for continue
 	}
@@ -2123,6 +2145,8 @@ static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
 	for(size_t cnt = 0; cnt < sizeof(szBuff); ++cnt, ++rpos){
 		if(1 != k2h_pread(fd, &szBuff[cnt], 1, rpos)){
 			ERR("Could not read data count from file(%s)", params[0].c_str());
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;			// for continue
 		}
@@ -2139,6 +2163,8 @@ static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
 	PK2HBIN	pbindatas;
 	if(NULL == (pbindatas = reinterpret_cast<PK2HBIN>(calloc(datacnt, sizeof(K2HBIN))))){
 		ERR("Could not allocate memory");
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress unreadVariable
 		K2H_CLOSE(fd);
 		return true;			// for continue
 	}
@@ -2147,12 +2173,16 @@ static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
 		if(strlen("LENGTH=") != k2h_pread(fd, szBuff, strlen("LENGTH="), rpos)){
 			ERR("Could not read %zu binary data length from file(%s)", cnt, params[0].c_str());
 			free_k2hbins(pbindatas, datacnt);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;			// for continue
 		}
 		if(0 != strncmp(szBuff, "LENGTH=", strlen("LENGTH="))){
 			ERR("Wrong format file(%s), the %zu binary data length does not start \"LENGTH=\"", params[0].c_str(), cnt);
 			free_k2hbins(pbindatas, datacnt);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;			// for continue
 		}
@@ -2161,6 +2191,8 @@ static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
 			if(1 != k2h_pread(fd, &szBuff[cnt2], 1, rpos)){
 				ERR("Could not read data count from file(%s)", params[0].c_str());
 				free_k2hbins(pbindatas, datacnt);
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress unreadVariable
 				K2H_CLOSE(fd);
 				return true;		// for continue
 			}
@@ -2178,12 +2210,16 @@ static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
 		if(NULL == (pbin = reinterpret_cast<unsigned char*>(malloc(sizeof(unsigned char) * datalength)))){
 			ERR("Could not allocate memory");
 			free_k2hbins(pbindatas, datacnt);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;			// for continue
 		}
 		if(static_cast<ssize_t>(datalength) != k2h_pread(fd, pbin, datalength, rpos)){
 			ERR("Could not read %zu binary data from file(%s)", cnt, params[0].c_str());
 			free_k2hbins(pbindatas, datacnt);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;			// for continue
 		}
@@ -2192,6 +2228,8 @@ static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
 		pbindatas[cnt].byptr	= pbin;
 		pbindatas[cnt].length	= datalength;
 	}
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(fd);
 
 	// Loop: set direct
@@ -2215,7 +2253,7 @@ static bool DirectLoadCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool DirectCopyFileCommand(K2HShm& k2hash, params_t& params)
+static bool DirectCopyFileCommand(K2HShm& k2hash, const params_t& params)
 {
 	// file open
 	int	fd;
@@ -2231,6 +2269,8 @@ static bool DirectCopyFileCommand(K2HShm& k2hash, params_t& params)
 		k2h_da_h	dahandle;
 		if(K2H_INVALID_HANDLE == (dahandle = k2h_da_str_handle_read(reinterpret_cast<k2h_h>(&k2hash), params[0].c_str()))){
 			ERR("Could not get k2h_da_h handle.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;		// normal exit
 		}
@@ -2240,6 +2280,8 @@ static bool DirectCopyFileCommand(K2HShm& k2hash, params_t& params)
 		if(!k2h_da_set_read_offset(dahandle, offset)){
 			ERR("Could not set read offset.");
 			k2h_da_free(dahandle);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;		// normal exit
 		}
@@ -2248,6 +2290,8 @@ static bool DirectCopyFileCommand(K2HShm& k2hash, params_t& params)
 		if(!k2h_da_get_value_to_file(dahandle, fd, &rlength)){
 			ERR("Failed reading.");
 			k2h_da_free(dahandle);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;		// normal exit
 		}
@@ -2261,6 +2305,8 @@ static bool DirectCopyFileCommand(K2HShm& k2hash, params_t& params)
 		K2HDAccess*	pAccess;
 		if(NULL == (pAccess = k2hash.GetDAccessObj(params[0].c_str(), K2HDAccess::READ_ACCESS, offset))){
 			ERR("Could not initialize internal K2HDAccess object.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;		// normal exit
 		}
@@ -2268,6 +2314,8 @@ static bool DirectCopyFileCommand(K2HShm& k2hash, params_t& params)
 		// read
 		if(!pAccess->Read(fd, rlength)){
 			ERR("Failed reading.");
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			K2H_Delete(pAccess);
 			return true;		// normal exit
@@ -2275,12 +2323,14 @@ static bool DirectCopyFileCommand(K2HShm& k2hash, params_t& params)
 		K2H_Delete(pAccess);
 	}
 	PRN("+\"%s\" => %zu byte read and write into file(%s).", params[0].c_str(), rlength, params[2].c_str());
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(fd);
 
 	return true;
 }
 
-static bool ListCommand(K2HShm& k2hash, params_t& params)
+static bool ListCommand(K2HShm& k2hash, const params_t& params)
 {
 	static string	strSpacer("");
 
@@ -2440,7 +2490,7 @@ static bool ListCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool StreamCommand(K2HShm& k2hash, params_t& params)
+static bool StreamCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(2 != params.size()){
 		if(2 < params.size()){
@@ -2575,7 +2625,7 @@ static bool HistoryCommand(const ConsoleInput& InputIF)
 	return true;
 }
 
-static bool SaveCommand(const ConsoleInput& InputIF, params_t& params)
+static bool SaveCommand(const ConsoleInput& InputIF, const params_t& params)
 {
 	int	fd;
 	if(-1 == (fd = open(params[0].c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644))){
@@ -2604,21 +2654,27 @@ static bool SaveCommand(const ConsoleInput& InputIF, params_t& params)
 		for(pHistory = iter->c_str(), wrote_byte = 0, one_wrote_byte = 0L; wrote_byte < iter->length(); wrote_byte += one_wrote_byte){
 			if(-1 == (one_wrote_byte = write(fd, &pHistory[wrote_byte], (iter->length() - wrote_byte)))){
 				ERR("Failed writing history to file(%s). errno(%d)", params[0].c_str(), errno);
+				// cppcheck-suppress unmatchedSuppression
+				// cppcheck-suppress unreadVariable
 				K2H_CLOSE(fd);
 				return true;	// for continue
 			}
 		}
 		if(-1 == write(fd, "\n", 1)){
 			ERR("Failed writing history to file(%s). errno(%d)", params[0].c_str(), errno);
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress unreadVariable
 			K2H_CLOSE(fd);
 			return true;	// for continue
 		}
 	}
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(fd);
 	return true;
 }
 
-static bool LoadCommand(K2HShm& k2hash, ConsoleInput& InputIF, params_t& params, bool& is_exit)
+static bool LoadCommand(K2HShm& k2hash, ConsoleInput& InputIF, const params_t& params, bool& is_exit)
 {
 	int	fd;
 	if(-1 == (fd = open(params[0].c_str(), O_RDONLY))){
@@ -2642,6 +2698,8 @@ static bool LoadCommand(K2HShm& k2hash, ConsoleInput& InputIF, params_t& params,
 			}
 		}
 	}
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress unreadVariable
 	K2H_CLOSE(fd);
 	return true;
 }
@@ -2666,8 +2724,8 @@ static bool ExtractExpireParameter(params_t& params, time_t& expire)
 static bool TransCommand(K2HShm& k2hash, params_t& params)
 {
 	if(0 == strcasecmp(params[0].c_str(), "ON")){
-		time_t		expire		= 0;
-		time_t*		pexpire		= NULL;
+		time_t			expire	= 0;
+		const time_t*	pexpire	= NULL;
 		if(ExtractExpireParameter(params, expire)){
 			pexpire = &expire;
 		}
@@ -2832,7 +2890,7 @@ static bool TransCommand(K2HShm& k2hash, params_t& params)
 }
 #endif
 
-static bool ThreadPoolCommand(K2HShm& k2hash, params_t& params)
+static bool ThreadPoolCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(0 == params.size()){
 		int	count;
@@ -2871,7 +2929,7 @@ static bool ThreadPoolCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool ArchiveCommand(K2HShm& k2hash, params_t& params)
+static bool ArchiveCommand(K2HShm& k2hash, const params_t& params)
 {
 	bool	isLoad;
 	string	filepath;
@@ -2919,7 +2977,7 @@ static bool ArchiveCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool QueueEmptySubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool QueueEmptySubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(1 != params.size()){
 		if(1 < params.size()){
@@ -2971,7 +3029,7 @@ static bool QueueEmptySubCommand(K2HShm& k2hash, const char* prefix, params_t& p
 	return true;
 }
 
-static bool QueueCountSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool QueueCountSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(1 != params.size()){
 		if(1 < params.size()){
@@ -3018,7 +3076,7 @@ static bool QueueCountSubCommand(K2HShm& k2hash, const char* prefix, params_t& p
 	return true;
 }
 
-static bool QueueReadSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool QueueReadSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(3 != params.size() && 4 != params.size()){
 		if(4 < params.size()){
@@ -3120,7 +3178,7 @@ static bool QueueReadSubCommand(K2HShm& k2hash, const char* prefix, params_t& pa
 	return true;
 }
 
-static bool QueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool QueuePushSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(3 != params.size() && 4 != params.size() && 5 != params.size()){
 		if(5 < params.size()){
@@ -3142,10 +3200,10 @@ static bool QueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t& pa
 	string	strvalue = params[2];
 
 	// cppcheck-suppress unreadVariable
-	time_t		expire	= 0;
-	string		pass;
-	const char*	ppass	= NULL;
-	time_t*		pexpire	= NULL;
+	time_t			expire	= 0;
+	string			pass;
+	const char*		ppass	= NULL;
+	const time_t*	pexpire	= NULL;
 	for(size_t pos = 3; pos < params.size(); ++pos){
 		if(0 == strncasecmp(params[pos].c_str(), "pass=", 5)){
 			pass = params[pos].substr(5);
@@ -3202,7 +3260,7 @@ static bool QueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t& pa
 	return true;
 }
 
-static bool QueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool QueuePopSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(2 != params.size() && 3 != params.size()){
 		if(3 < params.size()){
@@ -3303,7 +3361,7 @@ static bool QueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& par
 	return true;
 }
 
-static bool QueueDumpSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool QueueDumpSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(2 != params.size()){
 		if(2 < params.size()){
@@ -3432,7 +3490,7 @@ static K2HQRMCBRES QueueRemoveCallback(const unsigned char* bydata, size_t datal
 	return res;
 }
 
-static bool QueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool QueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(3 != params.size() && 4 != params.size() && 5 != params.size()){
 		if(5 < params.size()){
@@ -3589,7 +3647,7 @@ static bool QueueCommand(K2HShm& k2hash, params_t& params)
 	return bResult;
 }
 
-static bool KeyQueueEmptySubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool KeyQueueEmptySubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(1 != params.size()){
 		if(1 < params.size()){
@@ -3641,7 +3699,7 @@ static bool KeyQueueEmptySubCommand(K2HShm& k2hash, const char* prefix, params_t
 	return true;
 }
 
-static bool KeyQueueCountSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool KeyQueueCountSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(1 != params.size()){
 		if(1 < params.size()){
@@ -3688,7 +3746,7 @@ static bool KeyQueueCountSubCommand(K2HShm& k2hash, const char* prefix, params_t
 	return true;
 }
 
-static bool KeyQueueReadSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool KeyQueueReadSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(3 != params.size() && 4 != params.size()){
 		if(4 < params.size()){
@@ -3828,7 +3886,7 @@ static bool KeyQueueReadSubCommand(K2HShm& k2hash, const char* prefix, params_t&
 	return true;
 }
 
-static bool KeyQueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool KeyQueuePushSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(4 != params.size() && 5 != params.size() && 6 != params.size()){
 		if(6 < params.size()){
@@ -3851,10 +3909,10 @@ static bool KeyQueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t&
 	string	strvalue= params[3];
 
 	// cppcheck-suppress unreadVariable
-	time_t		expire	= 0;
-	string		pass;
-	const char*	ppass	= NULL;
-	time_t*		pexpire	= NULL;
+	time_t			expire	= 0;
+	string			pass;
+	const char*		ppass	= NULL;
+	const time_t*	pexpire	= NULL;
 	for(size_t pos = 4; pos < params.size(); ++pos){
 		if(0 == strncasecmp(params[pos].c_str(), "pass=", 5)){
 			pass = params[pos].substr(5);
@@ -3911,7 +3969,7 @@ static bool KeyQueuePushSubCommand(K2HShm& k2hash, const char* prefix, params_t&
 	return true;
 }
 
-static bool KeyQueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool KeyQueuePopSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(2 != params.size() && 3 != params.size()){
 		if(3 < params.size()){
@@ -4050,7 +4108,7 @@ static bool KeyQueuePopSubCommand(K2HShm& k2hash, const char* prefix, params_t& 
 	return true;
 }
 
-static bool KeyQueueDumpSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool KeyQueueDumpSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(2 != params.size()){
 		if(2 < params.size()){
@@ -4108,7 +4166,7 @@ static bool KeyQueueDumpSubCommand(K2HShm& k2hash, const char* prefix, params_t&
 	return true;
 }
 
-static bool KeyQueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, params_t& params)
+static bool KeyQueueRemoveSubCommand(K2HShm& k2hash, const char* prefix, const params_t& params)
 {
 	if(4 != params.size() && 5 != params.size()){
 		if(5 < params.size()){
@@ -4265,23 +4323,22 @@ static bool KeyQueueCommand(K2HShm& k2hash, params_t& params)
 	return bResult;
 }
 
-static bool BultinAttrCommand(K2HShm& k2hash, params_t& params)
+static bool BultinAttrCommand(K2HShm& k2hash, const params_t& params)
 {
-	bool*		pis_mtime	= NULL;
-	bool*		pis_defenc	= NULL;
-	const char*	ppassfile	= NULL;
-	bool*		pis_history	= NULL;
-	time_t*		pexpire		= NULL;
-
-	bool		is_mtime	= true;
-	bool		is_defenc	= true;
-	string		passfile;
-	bool		is_history	= true;
+	const bool*		pis_mtime	= NULL;
+	const bool*		pis_defenc	= NULL;
+	const char*		ppassfile	= NULL;
+	const bool*		pis_history	= NULL;
+	const time_t*	pexpire		= NULL;
+	bool			is_mtime	= true;
+	bool			is_defenc	= true;
+	string			passfile;
+	bool			is_history	= true;
 
 	// cppcheck-suppress unreadVariable
 	time_t		expire		= 0;
 
-	for(params_t::iterator iter = params.begin(); iter != params.end(); ++iter){
+	for(params_t::const_iterator iter = params.begin(); iter != params.end(); ++iter){
 		if(0 == strcasecmp(iter->c_str(), "mtime")){
 			pis_mtime = &is_mtime;
 
@@ -4326,7 +4383,7 @@ static bool BultinAttrCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool LoadPluginAttrCommand(K2HShm& k2hash, params_t& params)
+static bool LoadPluginAttrCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(1 != params.size()){
 		ERR("loadpluginattr command need one parameter.");
@@ -4346,7 +4403,7 @@ static bool LoadPluginAttrCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool AddPassPhraseCommand(K2HShm& k2hash, params_t& params)
+static bool AddPassPhraseCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(1 > params.size()){
 		ERR("addpassphrase command need one parameter.");
@@ -4374,7 +4431,7 @@ static bool AddPassPhraseCommand(K2HShm& k2hash, params_t& params)
 	return true;
 }
 
-static bool CleanAllAttrCommand(K2HShm& k2hash, params_t& params)
+static bool CleanAllAttrCommand(K2HShm& k2hash, const params_t& params)
 {
 	if(1 <= params.size()){
 		ERR("unknown parameter %s.", params[0].c_str());
@@ -4470,36 +4527,48 @@ static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const cha
 		is_exit = true;
 	}else if(opts.end() != opts.find("info") || opts.end() != opts.find("i")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!InfoCommand(k2hash, opts["info"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("dump") || opts.end() != opts.find("d")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!DumpCommand(k2hash, opts["dump"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("set") || opts.end() != opts.find("s")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!SetCommand(k2hash, opts["set"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("settrial") || opts.end() != opts.find("st")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!SetTrialCommand(k2hash, opts["settrial"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("setsub")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!SetSubkeyCommand(k2hash, opts["setsub"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("directset") || opts.end() != opts.find("dset")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!DirectSetCommand(k2hash, opts["directset"])){
 			CleanOptionMap(opts);
 			return false;
@@ -4512,78 +4581,104 @@ static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const cha
 		}
 	}else if(opts.end() != opts.find("fill") || opts.end() != opts.find("f")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!FillCommand(k2hash, opts["fill"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("fillsub")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!FillSubkeyCommand(k2hash, opts["fillsub"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("rm")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!RemoveCommand(k2hash, opts["rm"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("rmsub")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!RemoveSubkeyCommand(k2hash, opts["rmsub"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("rename")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!RenameCommand(k2hash, opts["rename"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("print") || opts.end() != opts.find("p")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!PrintCommand(k2hash, opts["print"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("printattr")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!PrintAttrCommand(k2hash, opts["printattr"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("addattr")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!AddAttrCommand(k2hash, opts["addattr"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("directprint") || opts.end() != opts.find("dp")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!DirectPrintCommand(k2hash, opts["directprint"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("directsave") || opts.end() != opts.find("dsave")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!DirectSaveCommand(k2hash, opts["directsave"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("directload") || opts.end() != opts.find("dload")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!DirectLoadCommand(k2hash, opts["directload"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("copyfile") || opts.end() != opts.find("cf")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!DirectCopyFileCommand(k2hash, opts["copyfile"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("list") || opts.end() != opts.find("l")){
 		LapTime	laptime;
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!ListCommand(k2hash, opts["list"])){
 			CleanOptionMap(opts);
 			return false;
@@ -4595,31 +4690,43 @@ static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const cha
 			return false;
 		}
 	}else if(opts.end() != opts.find("history") || opts.end() != opts.find("his")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!HistoryCommand(InputIF)){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("save")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!SaveCommand(InputIF, opts["save"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("load")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!LoadCommand(k2hash, InputIF, opts["load"], is_exit)){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("trans")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!TransCommand(k2hash, opts["trans"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("threadpool")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!ThreadPoolCommand(k2hash, opts["threadpool"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("archive")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!ArchiveCommand(k2hash, opts["archive"])){
 			CleanOptionMap(opts);
 			return false;
@@ -4635,36 +4742,50 @@ static bool CommandStringHandle(K2HShm& k2hash, ConsoleInput& InputIF, const cha
 			return false;
 		}
 	}else if(opts.end() != opts.find("builtinattr")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!BultinAttrCommand(k2hash, opts["builtinattr"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("loadpluginattr")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!LoadPluginAttrCommand(k2hash, opts["loadpluginattr"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("addpassphrase")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!AddPassPhraseCommand(k2hash, opts["addpassphrase"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("cleanallattr")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!CleanAllAttrCommand(k2hash, opts["cleanallattr"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("shell") || opts.end() != opts.find("sh")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!ShellCommand()){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("echo")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!EchoCommand(opts["echo"])){
 			CleanOptionMap(opts);
 			return false;
 		}
 	}else if(opts.end() != opts.find("sleep")){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress knownConditionTrueFalse
 		if(!SleepCommand(opts["sleep"])){
 			CleanOptionMap(opts);
 			return false;
@@ -4716,6 +4837,9 @@ static bool CommandHandle(K2HShm& k2hash, ConsoleInput& InputIF)
 			// exit shell
 			InputIF.RemoveLastHistory();	// remove last(this) command from history
 			InputIF.PutHistory("shell");	// and push "shell" command(replace history)
+
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress knownConditionTrueFalse
 			if(!ShellCommand()){
 				return false;
 			}

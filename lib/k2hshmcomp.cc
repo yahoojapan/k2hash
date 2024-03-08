@@ -141,8 +141,10 @@ PELEMENT K2HShm::ReserveElement(void* pRelExpArea, size_t ExpLength)
 	}
 	K2HLock		ALObjFEC(ShmFd, Rel(&(pHead->free_element_count)), K2HLock::RWLOCK);	// LOCK
 
-	PELEMENT	pStartPos	= reinterpret_cast<PELEMENT>(pRelExpArea);
-	PELEMENT	pLastPos	= ADDPTR(reinterpret_cast<PELEMENT>(pRelExpArea), static_cast<off_t>(ExpLength));
+	const PELEMENT	pStartPos	= reinterpret_cast<PELEMENT>(pRelExpArea);
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress constVariablePointer
+	const PELEMENT	pLastPos	= ADDPTR(reinterpret_cast<PELEMENT>(pRelExpArea), static_cast<off_t>(ExpLength));
 
 	for(PELEMENT pElement = static_cast<PELEMENT>(Abs(pHead->pfree_elements)), pRelElement = pHead->pfree_elements; pElement; pElement = static_cast<PELEMENT>(Abs(pElement->same)), pRelElement = pElement->same){
 		// check target area
@@ -744,7 +746,9 @@ bool K2HShm::AreaCompress(bool& isCompressed)
 		unsigned long	page_count		= 0UL; 
 		PAGEHEAD		CurPageHead;
 		for(K2HPage* pCurPage = GetPageObject(pHead->pfree_pages, false); pCurPage; pCurPage = GetPageObject(CurPageHead.next, false)){
-			PPAGEHEAD	pRelCurPageHead = pCurPage->GetPageHeadRelAddress();
+			// cppcheck-suppress unmatchedSuppression
+			// cppcheck-suppress constVariablePointer
+			const PPAGEHEAD	pRelCurPageHead = pCurPage->GetPageHeadRelAddress();
 			if(pStartPos <= pRelCurPageHead && pRelCurPageHead < pLastPos){
 				// found
 				page_count++;

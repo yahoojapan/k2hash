@@ -45,7 +45,7 @@ using namespace std;
 //
 typedef std::map<std::string, std::string> params_t;
 
-static void Help(char* progname)
+static void Help(const char* progname)
 {
 	printf("Usage: %s [options]\n", progname ? progname : "program");
 	printf("Option  -g [debug level]     \"ERR\" / \"WAN\" / \"INF\"\n");
@@ -168,6 +168,8 @@ int main(int argc, char** argv)
 	printf("Hash function test\n");
 	printf("-------------------------------------------------------\n");
 	printf("Test hashed value by base value         %s\n", szBuff);
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress internalAstError
 	printf("First hashed value:                     %p(0x%" PRIx64 ")\n", reinterpret_cast<void*>(K2H_HASH_FUNC(szBuff, strlen(szBuff))), K2H_HASH_FUNC(szBuff, strlen(szBuff)));
 	printf("Second hashed value:                    %p(0x%" PRIx64 ")\n", reinterpret_cast<void*>(K2H_2ND_HASH_FUNC(szBuff, strlen(szBuff))), K2H_2ND_HASH_FUNC(szBuff, strlen(szBuff)));
 	printf("\n");
@@ -303,9 +305,8 @@ k2h_hash_t k2h_hash(const void* ptr, size_t length)
 	}
 	k2h_hash_t				result	= 0UL;
 	const unsigned char*	pData	= reinterpret_cast<const unsigned char*>(ptr);
-	k2h_hash_t				lData;
 	for(size_t pos = 0L; pos < length; pos++){
-		lData = 0UL;
+		k2h_hash_t	lData = 0UL;
 		lData |= (static_cast<k2h_hash_t>(pData[pos]) << 24) & 0xFF000000;
 		lData |= pos + 1 < length ? ((static_cast<k2h_hash_t>(pData[pos + 1]) << 16) & 0x00FF0000) : 0UL;
 		lData |= pos + 1 < length ? ((static_cast<k2h_hash_t>(pData[pos + 2]) << 8) & 0x0000FF00) : 0UL;
@@ -324,9 +325,8 @@ k2h_hash_t k2h_second_hash(const void* ptr, size_t length)
 	}
 	k2h_hash_t				result	= 0UL;
 	const unsigned char*	pData	= reinterpret_cast<const unsigned char*>(ptr);
-	k2h_hash_t				lData;
 	for(size_t pos = 0L; pos < length; pos++){
-		lData = 0UL;
+		k2h_hash_t	lData = 0UL;
 		lData |= static_cast<k2h_hash_t>(pData[pos]) & 0x000000FF;
 		lData |= pos + 1 < length ? ((static_cast<k2h_hash_t>(pData[pos + 1]) << 8) & 0x0000FF00) : 0UL;
 		lData |= pos + 1 < length ? ((static_cast<k2h_hash_t>(pData[pos + 2]) << 16) & 0x00FF0000) : 0UL;

@@ -318,7 +318,7 @@ static bool TestHandle(K2HShm& k2hash)
 //
 typedef std::map<std::string, std::string> params_t;
 
-static void Help(char* progname)
+static void Help(const char* progname)
 {
 	printf("Usage: %s [options]\n", progname ? progname : "program");
 	printf("KEY                       Key string\n");
@@ -433,9 +433,7 @@ int main(int argc, char** argv)
 	//----------------------
 	// Command
 	//----------------------
-	if(!TestHandle(k2hash)){
-		ERR("Something error...");
-	}
+	TestHandle(k2hash);
 
 	if(!k2hash.Detach()){
 		ERR("Failed to detach.");
