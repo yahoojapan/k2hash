@@ -197,7 +197,7 @@ bool K2HPageFile::LoadPageHead(void)
 
 	// allocation for reading page head
 	PPAGEWRAP	pPageWrap;
-	if(NULL == (pPageWrap = (PPAGEWRAP)malloc(sizeof(PAGEWRAP)))){
+	if(NULL == (pPageWrap = static_cast<PPAGEWRAP>(malloc(sizeof(PAGEWRAP))))){
 		ERR_K2HPRN("Could not allocation memory.");
 		// cppcheck-suppress memleak
 		return false;

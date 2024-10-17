@@ -62,6 +62,7 @@ APK_TOPDIR="${SRCTOP}/apk_build"
 APKBUILD_TEMPLATE_FILE="${SRCTOP}/buildutils/APKBUILD.templ"
 APKBUILD_FILE="${APK_TOPDIR}/APKBUILD"
 APKBUILD_CONFIG_DIR="${HOME}/.abuild"
+APK_KEYS_DIR="/etc/apk/keys"
 MAKE_VARIABLES_TOOL="${SRCTOP}/buildutils/make_variables.sh"
 
 PRGNAME_NOEXT=$(echo "${PRGNAME}" | sed -e 's/[\.].*$//g' | tr -d '\n')
@@ -227,15 +228,23 @@ fi
 #
 # Check running as root user
 #
+RUN_USER_ID=$(id -u)
+
+if [ -n "${RUN_USER_ID}" ] && [ "${RUN_USER_ID}" -eq 0 ]; then
+	SUDO_CMD=""
+else
+	SUDO_CMD="sudo"
+fi
+
 # [NOTE]
 # The abuild tool drains errors when run as root.
 # To avoid this, the "-F" option is required.
+# If you need verbose message, you can add "-v" option here.
 #
-RUN_USER_ID=$(id -u)
-ABUILD_OPT=""
-
 if [ -n "${RUN_USER_ID}" ] && [ "${RUN_USER_ID}" -eq 0 ]; then
 	ABUILD_OPT="-F"
+else
+	ABUILD_OPT=""
 fi
 
 #---------------------------------------------------------------
@@ -288,6 +297,28 @@ cd "${SRCTOP}" || exit 1
 echo "[TITLE] Create RSA key for signing"
 
 #
+# Determining the RSA key location directory
+#
+# [NOTE]
+# This directory path depends on the apk-tools version.
+# It is different for 2.14.4 and later and previous versions.
+#
+APKTOOLS_ALL_VER=$(apk list apk-tools | awk '{print $1}' | tail -1)
+APKTOOLS_MAJOR_VER=$(echo "${APKTOOLS_ALL_VER}" | sed -e 's#^[[:space:]]*apk-tools-##g' -e 's#-# #g' -e 's#\.# #g' | awk '{print $1}')
+APKTOOLS_MINOR_VER=$(echo "${APKTOOLS_ALL_VER}" | sed -e 's#^[[:space:]]*apk-tools-##g' -e 's#-# #g' -e 's#\.# #g' | awk '{print $2}')
+APKTOOLS_PATCH_VER=$(echo "${APKTOOLS_ALL_VER}" | sed -e 's#^[[:space:]]*apk-tools-##g' -e 's#-# #g' -e 's#\.# #g' | awk '{print $3}')
+if [ -z "${APKTOOLS_MAJOR_VER}" ] || [ -z "${APKTOOLS_MINOR_VER}" ] || [ -z "${APKTOOLS_PATCH_VER}" ]; then
+	echo "[ERROR] Could not get aok-tools package version." 1>&2
+	exit 1
+fi
+APKTOOLS_MIX_VER=$((APKTOOLS_MAJOR_VER * 1000 * 1000 + APKTOOLS_MINOR_VER * 1000 + APKTOOLS_PATCH_VER))
+if [ "${APKTOOLS_MIX_VER}" -lt 2014004 ]; then
+	RSA_KEYS_DIR="${APK_TOPDIR}"
+else
+	RSA_KEYS_DIR="${APK_KEYS_DIR}"
+fi
+
+#
 # Check "${HOME}/.abuild" directory
 #
 if [ -d "${APKBUILD_CONFIG_DIR}" ] || [ -f "${APKBUILD_CONFIG_DIR}" ]; then
@@ -318,12 +349,13 @@ if ! find "${APKBUILD_CONFIG_DIR}" -name "${DEBEMAIL}"-\*\.rsa\.pub | grep -q "$
 	echo "[ERROR] Not found ${APKBUILD_CONFIG_DIR}/${DEBEMAIL}-<unixtime(hex)>.rsa.pub files." 1>&2
 	exit 1
 fi
-if ! cp -p "${APKBUILD_CONFIG_DIR}"/"${DEBEMAIL}"-*.rsa "${APK_TOPDIR}"; then
-	echo "[ERROR] Failed to copy RSA private key(${APKBUILD_CONFIG_DIR}/${DEBEMAIL}-<unixtime(hex)>.rsa) to ${APK_TOPDIR} directory." 1>&2
+if ! /bin/sh -c "${SUDO_CMD} cp -p ${APKBUILD_CONFIG_DIR}/${DEBEMAIL}-*.rsa ${RSA_KEYS_DIR} >/dev/null 2>&1"; then
+	echo "[ERROR] Failed to copy RSA private key(${APKBUILD_CONFIG_DIR}/${DEBEMAIL}-<unixtime(hex)>.rsa) to ${RSA_KEYS_DIR} directory." 1>&2
 	exit 1
 fi
-if ! cp -p "${APKBUILD_CONFIG_DIR}"/"${DEBEMAIL}"-*.rsa.pub "${APK_TOPDIR}"; then
-	echo "[ERROR] Failed to copy RSA public key(${APKBUILD_CONFIG_DIR}/${DEBEMAIL}-<unixtime(hex)>.rsa.pub) to ${APK_TOPDIR} directory." 1>&2
+if ! /bin/sh -c "${SUDO_CMD} cp -p ${APKBUILD_CONFIG_DIR}/${DEBEMAIL}-*.rsa.pub ${RSA_KEYS_DIR} >/dev/null 2>&1"; then
+	echo "[ERROR] Failed to copy RSA public key(${APKBUILD_CONFIG_DIR}/${DEBEMAIL}-<unixtime(hex)>.rsa.pub) to ${RSA_KEYS_DIR} directory." 1>&2
+	exit 1
 fi
 
 #
@@ -338,12 +370,12 @@ rm -rf "${APKBUILD_CONFIG_DIR}"
 #
 # Set file name/key contents to variables
 #
-APK_PACKAGE_PRIV_KEYNAME="$(find "${APK_TOPDIR}" -name "${DEBEMAIL}"-\*\.rsa 2>/dev/null | head -1 | sed -e "s#${APK_TOPDIR}/##g" | tr -d '\n')"
-APK_PACKAGE_PUB_KEYNAME="$(find "${APK_TOPDIR}" -name "${DEBEMAIL}"-\*\.rsa\.pub 2>/dev/null | head -1 | sed -e "s#${APK_TOPDIR}/##g" | tr -d '\n')"
+APK_PACKAGE_PRIV_KEYNAME="$(find "${RSA_KEYS_DIR}" -name "${DEBEMAIL}"-\*\.rsa 2>/dev/null | head -1 | sed -e "s#${RSA_KEYS_DIR}/##g" | tr -d '\n')"
+APK_PACKAGE_PUB_KEYNAME="$(find "${RSA_KEYS_DIR}" -name "${DEBEMAIL}"-\*\.rsa\.pub 2>/dev/null | head -1 | sed -e "s#${RSA_KEYS_DIR}/##g" | tr -d '\n')"
 
 echo "[SUCCEED] Created RSA keys"
-echo "    RSA private key : ${APK_TOPDIR}/${APK_PACKAGE_PRIV_KEYNAME}"
-echo "    RSA public key  : ${APK_TOPDIR}/${APK_PACKAGE_PUB_KEYNAME}"
+echo "    RSA private key : ${RSA_KEYS_DIR}/${APK_PACKAGE_PRIV_KEYNAME}"
+echo "    RSA public key  : ${RSA_KEYS_DIR}/${APK_PACKAGE_PUB_KEYNAME}"
 echo ""
 
 #---------------------------------------------------------------
@@ -461,7 +493,7 @@ echo "[TITLE] Build APK packages."
 #
 # build APK packages
 #
-if ({ /bin/sh -c "PACKAGER_PRIVKEY=${APK_TOPDIR}/${APK_PACKAGE_PRIV_KEYNAME} abuild ${ABUILD_OPT} -r -P $(pwd)" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's#^#    #') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
+if ({ /bin/sh -c "PACKAGER_PRIVKEY=${RSA_KEYS_DIR}/${APK_PACKAGE_PRIV_KEYNAME} abuild ${ABUILD_OPT} -r -P $(pwd)" || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's#^#    #') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 	echo "[ERROR] Failed to create APK packages." 1>&2
 	exit 1
 fi

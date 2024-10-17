@@ -32,8 +32,8 @@
 typedef std::vector<std::string>	strarr_t;
 
 strarr_t::size_type ParseStringArray(const char* pData, size_t length, strarr_t& strarr);
-size_t GetTotalLengthByStringArray(strarr_t& strarr);
-ssize_t AppendStringArray(strarr_t& strarr, char* pData, size_t length);
+size_t GetTotalLengthByStringArray(const strarr_t& strarr);
+ssize_t AppendStringArray(const strarr_t& strarr, char* pData, size_t length);
 
 //---------------------------------------------------------
 // Utilities

@@ -63,17 +63,19 @@ strarr_t::size_type ParseStringArray(const char* pData, size_t length, strarr_t&
 	return strarr.size();
 }
 
-size_t GetTotalLengthByStringArray(strarr_t& strarr)
+size_t GetTotalLengthByStringArray(const strarr_t& strarr)
 {
 	size_t	length = 0UL;
 	// cppcheck-suppress postfixOperator
  	for(strarr_t::const_iterator iter = strarr.begin(); iter != strarr.end(); iter++){
+		// cppcheck-suppress unmatchedSuppression
+		// cppcheck-suppress useStlAlgorithm
 		length += (iter->length() + 1);
  	}
 	return length;
 }
 
-ssize_t AppendStringArray(strarr_t& strarr, char* pData, size_t length)
+ssize_t AppendStringArray(const strarr_t& strarr, char* pData, size_t length)
 {
 	if(!pData || 0UL == length){
 		ERR_K2HPRN("Parameters is wrong");

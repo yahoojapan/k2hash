@@ -2890,7 +2890,7 @@ static bool TransCommand(K2HShm& k2hash, params_t& params)
 }
 #endif
 
-static bool ThreadPoolCommand(K2HShm& k2hash, const params_t& params)
+static bool ThreadPoolCommand(const K2HShm& k2hash, const params_t& params)
 {
 	if(0 == params.size()){
 		int	count;

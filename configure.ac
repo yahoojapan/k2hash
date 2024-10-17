@@ -221,6 +221,13 @@ case "${crypt_lib}" in
 			]], [[]])],
 			[AC_MSG_RESULT(no)],
 			[AC_MSG_RESULT(yes); is_openssl3=yes])
+
+		#
+		# Depends Crypt library for packaging
+		#
+		AC_SUBST([DEB_DEPS_CRYPT_PKG], "libssl-dev")
+		AC_SUBST([RPM_DEPS_CRYPT_PKG], "openssl-devel")
+
 		;;
 	nss)
 		AC_MSG_RESULT(NSS)
@@ -228,6 +235,12 @@ case "${crypt_lib}" in
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnss.cc")
 		AC_SUBST([CONFIGUREWITHOPT], "--with-nss")
 		AM_SUBST_NOTMAKE([CONFIGUREWITHOPT])
+
+		#
+		# Depends Crypt library for packaging
+		#
+		AC_SUBST([RPM_DEPS_CRYPT_PKG], "nss-devel")
+
 		;;
 	nettle)
 		AC_MSG_RESULT(nettle)
@@ -248,6 +261,12 @@ case "${crypt_lib}" in
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptgcrypt.cc")
 		AC_SUBST([CONFIGUREWITHOPT], "--with-gcrypt")
 		AM_SUBST_NOTMAKE([CONFIGUREWITHOPT])
+
+		#
+		# Depends Crypt library for packaging
+		#
+		AC_SUBST([DEB_DEPS_CRYPT_PKG], "libgcrypt20-dev")
+
 		;;
 	*)
 		AC_MSG_ERROR([unknown crypt library type.])
@@ -259,6 +278,11 @@ AM_CONDITIONAL([CRYPT_LIB_NSS],		[test "$crypt_lib" = nss])
 AM_CONDITIONAL([CRYPT_LIB_NETTLE],	[test "$crypt_lib" = nettle])
 AM_CONDITIONAL([CRYPT_LIB_GCRYPT],	[test "$crypt_lib" = gcrypt])
 AM_CONDITIONAL([IS_OPENSSL3],		[test "$is_openssl3" = yes])
+
+#
+# Version list for Libraries
+#
+AC_SUBST([LIB_MINVER_LIBFULLOCK], "1.0.60")
 
 #
 # Checking Libraries
@@ -273,7 +297,7 @@ AC_ARG_ENABLE(check-depend-libs,
 	esac]
 )
 AS_IF([test ${check_depend_libs} = 1], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
-AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.59], [], [AC_MSG_ERROR(not found libfullock package)])])
+AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.60], [], [AC_MSG_ERROR(not found libfullock package)])])
 
 #
 # CFLAGS/CXXFLAGS
