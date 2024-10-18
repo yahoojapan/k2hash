@@ -1,3 +1,9 @@
+k2hash (1.0.94) unstable; urgency=low
+
+  * Changed supported OS and modified some codes - #102
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Fri, 18 Oct 2024 09:26:58 +0900
+
 k2hash (1.0.93) unstable; urgency=low
 
   * Changed support OS and Fixed about cppcheck, etc - #100
