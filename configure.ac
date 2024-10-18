@@ -248,6 +248,12 @@ case "${crypt_lib}" in
 		AC_SUBST([CRYPT_LIB_SOURCE], "k2hcryptnettle.cc")
 		AC_SUBST([CONFIGUREWITHOPT], "--with-nettle")
 		AM_SUBST_NOTMAKE([CONFIGUREWITHOPT])
+
+		#
+		# Depends Crypt library for packaging
+		#
+		AC_SUBST([RPM_DEPS_CRYPT_PKG], "nettle-devel")
+
 		;;
 	gcrypt)
 		AC_MSG_RESULT(gcrypt)
