@@ -52,10 +52,10 @@
 #   PKG_EXT           : The extension of the package file
 #   IS_OS_UBUNTU      : Set to 1 for Ubuntu, 0 otherwise
 #   IS_OS_DEBIAN      : Set to 1 for Debian, 0 otherwise
-#   IS_OS_CENTOS      : Set to 1 for CentOS, 0 otherwise
 #   IS_OS_FEDORA      : Set to 1 for Fedora, 0 otherwise
 #   IS_OS_ROCKY       : Set to 1 for Rocky, 0 otherwise
 #   IS_OS_ALPINE      : Set to 1 for Alpine, 0 otherwise
+#   IS_OPENSSL_TYPE   : Set to 1 for using openssl library, 0 otherwise
 #
 # Set these variables according to the CI_OSTYPE variable.
 # The value of the CI_OSTYPE variable matches the name of the
@@ -81,10 +81,10 @@ PKG_EXT=""
 
 IS_OS_UBUNTU=0
 IS_OS_DEBIAN=0
-IS_OS_CENTOS=0
 IS_OS_FEDORA=0
 IS_OS_ROCKY=0
 IS_OS_ALPINE=0
+IS_OPENSSL_TYPE=1
 
 #----------------------------------------------------------
 # Variables for each OS Type
@@ -94,9 +94,10 @@ if [ -z "${CI_OSTYPE}" ]; then
 	# Unknown OS : Nothing to do
 	#
 	:
-elif [ "${CI_OSTYPE}" = "ubuntu:22.04" ] || [ "${CI_OSTYPE}" = "ubuntu:jammy" ]; then
-	DIST_TAG="ubuntu/jammy"
-	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
+
+elif echo "${CI_OSTYPE}" | grep -q -i -e "ubuntu:24.04" -e "ubuntu:noble"; then
+	DIST_TAG="ubuntu/noble"
+	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libssl-dev"
 	INSTALLER_BIN="apt-get"
 	UPDATE_CMD="update"
 	UPDATE_CMD_ARG=""
@@ -108,7 +109,21 @@ elif [ "${CI_OSTYPE}" = "ubuntu:22.04" ] || [ "${CI_OSTYPE}" = "ubuntu:jammy" ];
 	PKG_EXT="deb"
 	IS_OS_UBUNTU=1
 
-elif [ "${CI_OSTYPE}" = "ubuntu:20.04" ] || [ "${CI_OSTYPE}" = "ubuntu:focal" ]; then
+elif echo "${CI_OSTYPE}" | grep -q -i -e "ubuntu:22.04" -e "ubuntu:jammy"; then
+	DIST_TAG="ubuntu/jammy"
+	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libssl-dev"
+	INSTALLER_BIN="apt-get"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG=""
+	INSTALL_CMD="install"
+	INSTALL_CMD_ARG=""
+	INSTALL_AUTO_ARG="-y"
+	INSTALL_QUIET_ARG="-qq"
+	PKG_OUTPUT_DIR="debian_build"
+	PKG_EXT="deb"
+	IS_OS_UBUNTU=1
+
+elif echo "${CI_OSTYPE}" | grep -q -i -e "ubuntu:20.04" -e "ubuntu:focal"; then
 	DIST_TAG="ubuntu/focal"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
 	INSTALLER_BIN="apt-get"
@@ -121,10 +136,11 @@ elif [ "${CI_OSTYPE}" = "ubuntu:20.04" ] || [ "${CI_OSTYPE}" = "ubuntu:focal" ];
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
 	IS_OS_UBUNTU=1
+	IS_OPENSSL_TYPE=0
 
-elif [ "${CI_OSTYPE}" = "debian:12" ] || [ "${CI_OSTYPE}" = "debian:bookworm" ]; then
+elif echo "${CI_OSTYPE}" | grep -q -i -e "debian:12" -e "debian:bookworm"; then
 	DIST_TAG="debian/bookworm"
-	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
+	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libssl-dev"
 	INSTALLER_BIN="apt-get"
 	UPDATE_CMD="update"
 	UPDATE_CMD_ARG=""
@@ -136,7 +152,7 @@ elif [ "${CI_OSTYPE}" = "debian:12" ] || [ "${CI_OSTYPE}" = "debian:bookworm" ];
 	PKG_EXT="deb"
 	IS_OS_DEBIAN=1
 
-elif [ "${CI_OSTYPE}" = "debian:11" ] || [ "${CI_OSTYPE}" = "debian:bullseye" ]; then
+elif echo "${CI_OSTYPE}" | grep -q -i -e "debian:11" -e "debian:bullseye"; then
 	DIST_TAG="debian/bullseye"
 	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
 	INSTALLER_BIN="apt-get"
@@ -149,24 +165,11 @@ elif [ "${CI_OSTYPE}" = "debian:11" ] || [ "${CI_OSTYPE}" = "debian:bullseye" ];
 	PKG_OUTPUT_DIR="debian_build"
 	PKG_EXT="deb"
 	IS_OS_DEBIAN=1
+	IS_OPENSSL_TYPE=0
 
-elif [ "${CI_OSTYPE}" = "debian:10" ] || [ "${CI_OSTYPE}" = "debian:buster" ]; then
-	DIST_TAG="debian/buster"
-	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	INSTALLER_BIN="apt-get"
-	UPDATE_CMD="update"
-	UPDATE_CMD_ARG=""
-	INSTALL_CMD="install"
-	INSTALL_CMD_ARG=""
-	INSTALL_AUTO_ARG="-y"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_OUTPUT_DIR="debian_build"
-	PKG_EXT="deb"
-	IS_OS_DEBIAN=1
-
-elif [ "${CI_OSTYPE}" = "rockylinux:9.0" ] || [ "${CI_OSTYPE}" = "rockylinux:9" ]; then
+elif echo "${CI_OSTYPE}" | grep -q -i "rockylinux:9"; then
 	DIST_TAG="el/9"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel openssl-devel"
 	INSTALLER_BIN="dnf"
 	UPDATE_CMD="update"
 	UPDATE_CMD_ARG=""
@@ -178,7 +181,7 @@ elif [ "${CI_OSTYPE}" = "rockylinux:9.0" ] || [ "${CI_OSTYPE}" = "rockylinux:9" 
 	PKG_EXT="rpm"
 	IS_OS_ROCKY=1
 
-elif [ "${CI_OSTYPE}" = "rockylinux:8.6" ] || [ "${CI_OSTYPE}" = "rockylinux:8" ]; then
+elif echo "${CI_OSTYPE}" | grep -q -i "rockylinux:8"; then
 	DIST_TAG="el/8"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
 	INSTALLER_BIN="dnf"
@@ -191,24 +194,11 @@ elif [ "${CI_OSTYPE}" = "rockylinux:8.6" ] || [ "${CI_OSTYPE}" = "rockylinux:8" 
 	PKG_OUTPUT_DIR="."
 	PKG_EXT="rpm"
 	IS_OS_ROCKY=1
+	IS_OPENSSL_TYPE=0
 
-elif [ "${CI_OSTYPE}" = "centos:7" ] || [ "${CI_OSTYPE}" = "centos:centos7" ]; then
-	DIST_TAG="el/7"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
-	INSTALLER_BIN="yum"
-	UPDATE_CMD="update"
-	UPDATE_CMD_ARG=""
-	INSTALL_CMD="install"
-	INSTALL_CMD_ARG=""
-	INSTALL_AUTO_ARG="-y"
-	INSTALL_QUIET_ARG="-q"
-	PKG_OUTPUT_DIR="."
-	PKG_EXT="rpm"
-	IS_OS_CENTOS=1
-
-elif [ "${CI_OSTYPE}" = "fedora:39" ]; then
-	DIST_TAG="fedora/39"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+elif echo "${CI_OSTYPE}" | grep -q -i "fedora:41"; then
+	DIST_TAG="fedora/41"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel openssl-devel"
 	INSTALLER_BIN="dnf"
 	UPDATE_CMD="update"
 	UPDATE_CMD_ARG=""
@@ -220,9 +210,9 @@ elif [ "${CI_OSTYPE}" = "fedora:39" ]; then
 	PKG_EXT="rpm"
 	IS_OS_FEDORA=1
 
-elif [ "${CI_OSTYPE}" = "fedora:38" ]; then
-	DIST_TAG="fedora/38"
-	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel nss-devel"
+elif echo "${CI_OSTYPE}" | grep -q -i "fedora:40"; then
+	DIST_TAG="fedora/40"
+	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel openssl-devel"
 	INSTALLER_BIN="dnf"
 	UPDATE_CMD="update"
 	UPDATE_CMD_ARG=""
@@ -234,7 +224,21 @@ elif [ "${CI_OSTYPE}" = "fedora:38" ]; then
 	PKG_EXT="rpm"
 	IS_OS_FEDORA=1
 
-elif [ "${CI_OSTYPE}" = "alpine:3.19" ]; then
+elif echo "${CI_OSTYPE}" | grep -q -i "alpine:3.20"; then
+	DIST_TAG="alpine/v3.20"
+	INSTALL_PKG_LIST="bash sudo alpine-sdk automake autoconf libtool groff util-linux-misc musl-locales ruby-dev procps libfullock libfullock-dev openssl-dev"
+	INSTALLER_BIN="apk"
+	UPDATE_CMD="update"
+	UPDATE_CMD_ARG="--no-progress"
+	INSTALL_CMD="add"
+	INSTALL_CMD_ARG="--no-progress --no-cache"
+	INSTALL_AUTO_ARG=""
+	INSTALL_QUIET_ARG="-q"
+	PKG_OUTPUT_DIR="apk_build"
+	PKG_EXT="apk"
+	IS_OS_ALPINE=1
+
+elif echo "${CI_OSTYPE}" | grep -q -i "alpine:3.19"; then
 	DIST_TAG="alpine/v3.19"
 	INSTALL_PKG_LIST="bash sudo alpine-sdk automake autoconf libtool groff util-linux-misc musl-locales ruby-dev procps libfullock libfullock-dev openssl-dev"
 	INSTALLER_BIN="apk"
@@ -248,7 +252,7 @@ elif [ "${CI_OSTYPE}" = "alpine:3.19" ]; then
 	PKG_EXT="apk"
 	IS_OS_ALPINE=1
 
-elif [ "${CI_OSTYPE}" = "alpine:3.18" ]; then
+elif echo "${CI_OSTYPE}" | grep -q -i "alpine:3.18"; then
 	DIST_TAG="alpine/v3.18"
 	INSTALL_PKG_LIST="bash sudo alpine-sdk automake autoconf libtool groff util-linux-misc musl-locales ruby-dev procps libfullock libfullock-dev openssl-dev"
 	INSTALLER_BIN="apk"
@@ -332,9 +336,11 @@ fi
 #	CREATE_PACKAGE_TOOL_OPT_ALPINE	""
 #	CREATE_PACKAGE_TOOL_OPT_OTHER	""
 #
-if [ "${IS_OS_UBUNTU}" -eq 1 ] || [ "${IS_OS_DEBIAN}" -eq 1 ]; then
+if [ "${IS_OS_UBUNTU}" -eq 1 ] && [ "${IS_OPENSSL_TYPE}" -eq 0 ]; then
 	CONFIGURE_EXT_OPT_DEBIAN="--with-gcrypt"
-elif [ "${IS_OS_CENTOS}" -eq 1 ] || [ "${IS_OS_ROCKY}" -eq 1 ] || [ "${IS_OS_FEDORA}" -eq 1 ]; then
+elif [ "${IS_OS_DEBIAN}" -eq 1 ] && [ "${IS_OPENSSL_TYPE}" -eq 0 ]; then
+	CONFIGURE_EXT_OPT_DEBIAN="--with-gcrypt"
+elif [ "${IS_OS_ROCKY}" -eq 1 ] && [ "${IS_OPENSSL_TYPE}" -eq 0 ]; then
 	CONFIGURE_EXT_OPT_RPM="--with-nss"
 fi
 

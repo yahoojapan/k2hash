@@ -61,16 +61,16 @@ jobs:
       #
       matrix:
         container:
+          - ubuntu:24.04
           - ubuntu:22.04
           - ubuntu:20.04
           - debian:bookworm
           - debian:bullseye
-          - debian:buster
           - rockylinux:9
           - rockylinux:8
-          - centos:centos7
-          - fedora:39
-          - fedora:38
+          - fedora:41
+          - fedora:40
+          - alpine:3.20
           - alpine:3.19
           - alpine:3.18
 
@@ -78,18 +78,8 @@ jobs:
       image: ${{ matrix.container }}
 
     steps:
-      # [NOTE]
-      # actions/checkout@v3 uses nodejs v16 and will be deprecated.
-      # However, @v4 does not work on centos7 depending on the glibc version,
-      # so we will continue to use @v3.
-      #
-      - name: Checkout source code(other than centos7)
-        if: matrix.container != 'centos:centos7'
+      - name: Checkout source code
         uses: actions/checkout@v4
-
-      - name: Checkout source code(only centos7)
-        if: matrix.container == 'centos:centos7'
-        uses: actions/checkout@v3
 
       #
       # Set environments from secrets
@@ -160,8 +150,8 @@ jobs:
         # <default tag flag>:   If you want to use the created Docker image as the default image, specify "default".
         #
         imageinfo:
-          - alpine:3.19,alpine:3.19,alpine,default
-          - ubuntu:22.04,ubuntu:22.04,ubuntu
+          - alpine:3.20,alpine:3.20,alpine,default
+          - ubuntu:24.04,ubuntu:24.04,ubuntu
 
     #
     # Run building and pushing helper

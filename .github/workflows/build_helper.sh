@@ -393,7 +393,7 @@ run_pre_create_package()
 run_create_package()
 {
 	if ! CONFIGUREOPT="${CONFIGURE_EXT_OPT}" /bin/sh -c "${CREATE_PACKAGE_TOOL} --buildnum ${CI_BUILD_NUMBER} ${CREATE_PACKAGE_TOOL_OPT} ${CREATE_PACKAGE_TOOL_OPT_AUTO}"; then
-		PRNERR "Failed to create debian type packages"
+		PRNERR "Failed to create ${CI_OSTYPE} packages"
 		return 1
 	fi
 	return 0
@@ -670,12 +670,42 @@ if [ -n "${OPT_DEVELOPER_FULLNAME}" ]; then
 	CI_DEVELOPER_FULLNAME="${OPT_DEVELOPER_FULLNAME}"
 elif [ -n "${ENV_DEVELOPER_FULLNAME}" ]; then
 	CI_DEVELOPER_FULLNAME="${ENV_DEVELOPER_FULLNAME}"
+else
+	# [NOTE]
+	# If this variable is not set in a project that uses configure,
+	# an attempt will be made to load the value from configure.ac etc.
+	#
+	if [ -f "${SRCTOP}/configure.custom" ]; then
+		CI_DEVELOPER_FULLNAME=$(grep '^[[:space:]]*DEB_NAME[[:space:]]*=' "${SRCTOP}/configure.custom" | sed -e 's|^[[:space:]]*DEB_NAME[[:space:]]*=[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g')
+	fi
+	if [ -z "${CI_DEVELOPER_FULLNAME}" ] && [ -f "${SRCTOP}/configure.ac" ]; then
+		CI_DEVELOPER_FULLNAME=$(grep '^[[:space:]]*custom_dev_name[[:space:]]*=' "${SRCTOP}/configure.ac" | grep -v 'DEB_NAME' | sed -e 's|^[[:space:]]*custom_dev_name[[:space:]]*=[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g' -e 's|"||g')
+	fi
+	if [ -z "${CI_DEVELOPER_FULLNAME}" ]; then
+		PRNWARN "DEVELOPER_FULLNAME is not set in the options or environment variables. There is no choice but to set the default value."
+		CI_DEVELOPER_FULLNAME="ANTPICKAX_DEVELOPER"
+	fi
 fi
 
 if [ -n "${OPT_DEVELOPER_EMAIL}" ]; then
 	CI_DEVELOPER_EMAIL="${OPT_DEVELOPER_EMAIL}"
 elif [ -n "${ENV_DEVELOPER_EMAIL}" ]; then
 	CI_DEVELOPER_EMAIL="${ENV_DEVELOPER_EMAIL}"
+else
+	# [NOTE]
+	# If this variable is not set in a project that uses configure,
+	# an attempt will be made to load the value from configure.ac etc.
+	#
+	if [ -f "${SRCTOP}/configure.custom" ]; then
+		CI_DEVELOPER_EMAIL=$(grep '^[[:space:]]*DEV_EMAIL[[:space:]]*=' "${SRCTOP}/configure.custom" | sed -e 's|^[[:space:]]*DEV_EMAIL[[:space:]]*=[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g')
+	fi
+	if [ -z "${CI_DEVELOPER_EMAIL}" ] && [ -f "${SRCTOP}/configure.ac" ]; then
+		CI_DEVELOPER_EMAIL=$(grep '^[[:space:]]*custom_dev_email[[:space:]]*=' "${SRCTOP}/configure.ac" | grep -v 'DEV_EMAIL' | sed -e 's|^[[:space:]]*custom_dev_email[[:space:]]*=[[:space:]]*||g' -e 's|^[[:space:]]*||g' -e 's|[[:space:]]*$||g' -e 's|"||g')
+	fi
+	if [ -z "${CI_DEVELOPER_EMAIL}" ]; then
+		PRNWARN "DEVELOPER_EMAIL is not set in the options or environment variables. There is no choice but to set the default value."
+		CI_DEVELOPER_EMAIL="antpickax-support@mail.yahoo.co.jp"
+	fi
 fi
 
 if [ -n "${OPT_FORCE_PUBLISH}" ]; then
@@ -743,13 +773,19 @@ elif [ -n "${ENV_PACKAGECLOUD_DOWNLOAD_REPO}" ]; then
 fi
 
 #
-# Set environments for debian package
+# Set environments for debian/alpine package
 #
 if [ -n "${CI_DEVELOPER_FULLNAME}" ]; then
-	export DEBEMAIL="${CI_DEVELOPER_FULLNAME}"
+	export DEBFULLNAME="${CI_DEVELOPER_FULLNAME}"
+else
+	PRNERR "\"CI_DEVELOPER_FULLNAME\" value is not set."
+	exit 1
 fi
 if [ -n "${CI_DEVELOPER_EMAIL}" ]; then
-	export DEBFULLNAME="${CI_DEVELOPER_EMAIL}"
+	export DEBEMAIL="${CI_DEVELOPER_EMAIL}"
+else
+	PRNERR "\"CI_DEVELOPER_EMAIL\" value is not set."
+	exit 1
 fi
 
 # [NOTE] for ubuntu/debian
@@ -839,14 +875,6 @@ elif [ "${IS_OS_DEBIAN}" -eq 1 ]; then
 	MAKE_TEST_OPT="${MAKE_TEST_OPT_DEBIAN}"
 	CREATE_PACKAGE_TOOL="${CREATE_PACKAGE_TOOL_DEBIAN}"
 	CREATE_PACKAGE_TOOL_OPT="${CREATE_PACKAGE_TOOL_OPT_DEBIAN}"
-
-elif [ "${IS_OS_CENTOS}" -eq 1 ]; then
-	AUTOGEN_EXT_OPT="${AUTOGEN_EXT_OPT_RPM}"
-	CONFIGURE_EXT_OPT="${CONFIGURE_EXT_OPT_RPM}"
-	BUILD_MAKE_EXT_OPT="${BUILD_MAKE_EXT_OPT_DEBIAN}"
-	MAKE_TEST_OPT="${MAKE_TEST_OPT_DEBIAN}"
-	CREATE_PACKAGE_TOOL="${CREATE_PACKAGE_TOOL_RPM}"
-	CREATE_PACKAGE_TOOL_OPT="${CREATE_PACKAGE_TOOL_OPT_RPM}"
 
 elif [ "${IS_OS_FEDORA}" -eq 1 ]; then
 	AUTOGEN_EXT_OPT="${AUTOGEN_EXT_OPT_RPM}"
@@ -968,7 +996,6 @@ echo ""
 echo "  DIST_TAG                      = ${DIST_TAG}"
 echo "  IS_OS_UBUNTU                  = ${IS_OS_UBUNTU}"
 echo "  IS_OS_DEBIAN                  = ${IS_OS_DEBIAN}"
-echo "  IS_OS_CENTOS                  = ${IS_OS_CENTOS}"
 echo "  IS_OS_FEDORA                  = ${IS_OS_FEDORA}"
 echo "  IS_OS_ROCKY                   = ${IS_OS_ROCKY}"
 echo "  IS_OS_ALPINE                  = ${IS_OS_ALPINE}"
@@ -1036,7 +1063,7 @@ if [ "${CI_USE_PACKAGECLOUD_REPO}" -eq 1 ]; then
 	#
 	# Setup packagecloud.io repository
 	#
-	if [ "${IS_OS_CENTOS}" -eq 1 ] || [ "${IS_OS_FEDORA}" -eq 1 ] || [ "${IS_OS_ROCKY}" -eq 1 ]; then
+	if [ "${IS_OS_FEDORA}" -eq 1 ] || [ "${IS_OS_ROCKY}" -eq 1 ]; then
 		PC_REPO_ADD_SH="script.rpm.sh"
 		PC_REPO_ADD_SH_RUN="bash"
 	elif [ "${IS_OS_UBUNTU}" -eq 1 ] || [ "${IS_OS_DEBIAN}" -eq 1 ]; then
@@ -1056,7 +1083,7 @@ if [ "${CI_USE_PACKAGECLOUD_REPO}" -eq 1 ]; then
 			exit 1
 		fi
 	else
-		PRNWARN "OS is not debian/ubuntu nor centos/fedora/rocky nor alpine, then we do not know which download script use. Thus skip to setup packagecloud.io repository."
+		PRNWARN "OS is not debian/ubuntu nor fedora/rocky nor alpine, then we do not know which download script use. Thus skip to setup packagecloud.io repository."
 	fi
 else
 	PRNINFO "Not set packagecloud.io repository."
@@ -1090,28 +1117,7 @@ if [ "${CI_DO_PUBLISH}" -eq 1 ]; then
 	GEM_BIN="gem"
 	GEM_INSTALL_CMD="install"
 
-	if [ "${IS_OS_CENTOS}" -eq 1 ] && echo "${CI_OSTYPE}" | sed -e 's#:##g' | grep -q -i -e 'centos7' -e 'centos6'; then
-		#
-		# Case for CentOS
-		#
-		PRNWARN "OS is CentOS 7(6), so install ruby by special means(SCL)."
-
-		if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" "${INSTALL_QUIET_ARG}" centos-release-scl || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install SCL packages"
-			exit 1
-		fi
-		if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" "${INSTALL_QUIET_ARG}" rh-ruby27 rh-ruby27-ruby-devel rh-ruby27-rubygem-rake || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install ruby packages"
-			exit 1
-		fi
-		. /opt/rh/rh-ruby27/enable
-
-		if ({ RUNCMD "${GEM_BIN}" "${GEM_INSTALL_CMD}" package_cloud || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install packagecloud.io upload tools"
-			exit 1
-		fi
-
-	elif [ "${IS_OS_ALPINE}" -eq 1 ]; then
+	if [ "${IS_OS_ALPINE}" -eq 1 ]; then
 		#
 		# Case for Alpine
 		#
@@ -1241,7 +1247,7 @@ if [ "${CI_DO_PUBLISH}" -eq 1 ]; then
 
 	else
 		#
-		# Case for other than CentOS / Alpine / Debian 10 / Rocky Linux 8
+		# Case for other than Alpine / Debian 10 / Rocky Linux 8
 		#
 		if ({ RUNCMD "${GEM_BIN}" "${GEM_INSTALL_CMD}" rake package_cloud || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
 			PRNERR "Failed to install packagecloud.io upload tools"
@@ -1258,29 +1264,10 @@ PRNSUCCESS "Install published tools for uploading packages to packagecloud.io"
 #--------------------------------------------------------------
 PRNTITLE "Install cppcheck"
 
-IS_SET_ANOTHER_REPOSITORIES=0
 if [ "${RUN_CPPCHECK}" -eq 1 ]; then
 	PRNINFO "Install cppcheck package."
 
-	if [ "${IS_OS_CENTOS}" -eq 1 ]; then
-		#
-		# CentOS
-		#
-		if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" epel-release || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install epel repository"
-			exit 1
-		fi
-		if ({ RUNCMD yum-config-manager --disable epel || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to disable epel repository"
-			exit 1
-		fi
-		if ({ RUNCMD "${INSTALLER_BIN}" --enablerepo=epel "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" cppcheck || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install cppcheck from epel repository"
-			exit 1
-		fi
-		IS_SET_ANOTHER_REPOSITORIES=1
-
-	elif [ "${IS_OS_FEDORA}" -eq 1 ]; then
+	if [ "${IS_OS_FEDORA}" -eq 1 ]; then
 		#
 		# Fedora
 		#
@@ -1323,7 +1310,6 @@ if [ "${RUN_CPPCHECK}" -eq 1 ]; then
 			PRNERR "Failed to install cppcheck"
 			exit 1
 		fi
-		IS_SET_ANOTHER_REPOSITORIES=1
 
 	elif [ "${IS_OS_UBUNTU}" -eq 1 ] || [ "${IS_OS_DEBIAN}" -eq 1 ]; then
 		#
@@ -1359,27 +1345,7 @@ PRNTITLE "Install shellcheck"
 if [ "${RUN_SHELLCHECK}" -eq 1 ]; then
 	PRNINFO "Install shellcheck package."
 
-	if [ "${IS_OS_CENTOS}" -eq 1 ]; then
-		#
-		# CentOS
-		#
-		if [ "${IS_SET_ANOTHER_REPOSITORIES}" -eq 0 ]; then
-			if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" epel-release || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-				PRNERR "Failed to install epel repository"
-				exit 1
-			fi
-			if ({ RUNCMD yum-config-manager --disable epel || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-				PRNERR "Failed to disable epel repository"
-				exit 1
-			fi
-			IS_SET_ANOTHER_REPOSITORIES=1
-		fi
-		if ({ RUNCMD "${INSTALLER_BIN}" --enablerepo=epel "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" ShellCheck || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install ShellCheck from epel repository"
-			exit 1
-		fi
-
-	elif [ "${IS_OS_FEDORA}" -eq 1 ]; then
+	if [ "${IS_OS_FEDORA}" -eq 1 ]; then
 		#
 		# Fedora
 		#

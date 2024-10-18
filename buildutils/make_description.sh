@@ -97,8 +97,15 @@ while [ $# -ne 0 ]; do
 			exit 1
 		fi
 		IS_SHORT=0
-		ESC_LF_CHAR="\\n\\"
 		EXCLUSIVE_OPT=1
+		# [NOTE]
+		# I want to set ESC_LF_CHAR to "\n\".
+		# We can write as follows to set this, but to be compatible with vim and ShellCheck, so ex3 is used.
+		#	ex1) ESC_LF_CHAR="\\n\\"	-> vim will confuse it.
+		#	ex2) ESC_LF_CHAR='\n\'		-> ShellCheck will output a warning.
+		#	ex3) ESC_LF_CHAR='\n'\\		-> This is the correct.
+		#
+		ESC_LF_CHAR='\n'\\
 
 	elif [ "$1" = "-d" ] || [ "$1" = "-D" ] || [ "$1" = "--deblong" ] || [ "$1" = "--DEBLONG" ]; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
@@ -136,7 +143,7 @@ done
 # indicate sections, so use them as markers to insert characters.
 # This allows you to see the section breaks.
 #
-if ! nroff -man "${MAN_FILE}" 2>/dev/null | col -b 2>/dev/null | sed -e 's/[0-9][0-9]*m//g' -e 's/^[[:space:]]/_____/g' >"${TEMP_FILE}" 2>/dev/null; then
+if ! nroff -man "${MAN_FILE}" 2>/dev/null | sed -e 's/[[:cntrl:]]\[[0-9][0-9]*m//g' -e 's/[[:cntrl:]][[:graph:]]//g' -e 's/^[[:space:]]/_____/g' >"${TEMP_FILE}" 2>/dev/null; then
 	echo "[ERROR] Could not read ${MAN_FILE} file with converting." 1>&2
 	echo "No description because the ${PRGNAME} program failed to extract the description."
 	rm -f "${TEMP_FILE}"
@@ -152,7 +159,7 @@ while IFS= read -r ONE_LINE; do
 	#
 	# revert inserted special chars.
 	#
-	REVERTED_LINE=$(echo "${ONE_LINE}" | sed -e 's/^_____//g' -e 's/^[[:space:]]*//g')
+	REVERTED_LINE=$(echo "${ONE_LINE}" | sed -e 's/^_____//g' -e 's/^[[:space:]]*//g' -e 's/[[:space:]]*$//g')
 
 	if [ "${LINE_LEVEL}" -eq 0 ]; then
 		if [ -n "${REVERTED_LINE}" ] && [ "${REVERTED_LINE}" = "NAME" ]; then

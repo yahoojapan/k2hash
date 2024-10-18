@@ -661,7 +661,7 @@ fi
 if echo "${CI_DOCKER_IMAGE_OSTYPE}" | grep -q -i -e "ubuntu" -e "debian"; then
 	SETUP_PC_SCRIPT_NAME="script.deb.sh"
 	SETUP_PC_SCRIPT_EXEC="bash"
-elif echo "${CI_DOCKER_IMAGE_OSTYPE}" | grep -q -i -e "rocky" -e "centos" -e "fedora"; then
+elif echo "${CI_DOCKER_IMAGE_OSTYPE}" | grep -q -i -e "rocky" -e "fedora"; then
 	SETUP_PC_SCRIPT_NAME="script.rpm.sh"
 	SETUP_PC_SCRIPT_EXEC="bash"
 elif echo "${CI_DOCKER_IMAGE_OSTYPE}" | grep -q -i -e "alpine"; then
