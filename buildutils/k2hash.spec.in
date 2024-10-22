@@ -73,7 +73,6 @@ BuildRequires: git-core gcc-c++ make libtool libfullock-devel >= @LIB_MINVER_LIB
 %install
 %make_install
 find %{buildroot} -name '*.la' -exec rm -f {} ';'
-mkdir -p %{buildroot}/var/lib/antpickax
 
 %if %{make_check}
 %check
@@ -103,7 +102,6 @@ rm -rf %{buildroot}
 %{_libdir}/*.so.1*
 %{_mandir}/man1/*
 %{_bindir}/*
-%dir %attr(0777,root,root) /var/lib/antpickax
 
 #
 # devel package
