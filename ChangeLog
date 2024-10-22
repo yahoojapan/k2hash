@@ -1,3 +1,9 @@
+k2hash (1.0.96) unstable; urgency=low
+
+  * Changed directories created by packages - #106
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 22 Oct 2024 15:25:21 +0900
+
 k2hash (1.0.95) unstable; urgency=low
 
   * Fixed configure.ac for nettle crypt library - #104
