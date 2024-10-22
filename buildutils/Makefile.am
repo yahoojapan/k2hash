@@ -31,8 +31,7 @@ EXTRA_DIST =make_variables.sh \
 			make_description.sh \
 			debian_build.sh \
 			rpm_build.sh \
-			alpine_build.sh \
-			k2hash.postinst
+			alpine_build.sh
 
 #
 # Local variables:

@@ -55,7 +55,9 @@ url="https://k2hash.antpick.ax/"
 arch="x86_64"
 license="MIT"
 
-depends=""
+depends="
+	libfullock
+"
 depends_dev="
 	libfullock-dev
 "
