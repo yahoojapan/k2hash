@@ -70,7 +70,7 @@ makedepends="
 	util-linux-misc
 	musl-locales
 	procps
-	openssl-dev
+	@ALP_DEPS_CRYPT_DEV_PKG@
 "
 
 install=""
