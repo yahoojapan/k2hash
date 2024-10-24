@@ -1,3 +1,9 @@
+k2hash (1.0.97) unstable; urgency=low
+
+  * Reorganized dependent packages - #108
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Thu, 24 Oct 2024 10:33:11 +0900
+
 k2hash (1.0.96) unstable; urgency=low
 
   * Changed directories created by packages - #106
