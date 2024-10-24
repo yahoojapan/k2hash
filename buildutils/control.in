@@ -2,8 +2,8 @@ Source: @PACKAGE_NAME@
 Section: database
 Priority: optional
 Maintainer: @DEV_NAME@ <@DEV_EMAIL@>
-Build-Depends: @DEBHELPER_DEP@, libfullock-dev (>= @LIB_MINVER_LIBFULLOCK@), @DEB_DEPS_CRYPT_PKG@
-Depends: ${misc:Depends}
+Build-Depends: @DEBHELPER_DEP@, libfullock-dev (>= @LIB_MINVER_LIBFULLOCK@), @DEB_DEPS_CRYPT_DEV_PKG@
+Depends: ${misc:Depends}, @DEB_DEPS_CRYPT_PKG@
 Standards-Version: 3.9.8
 Homepage: https://@GIT_DOMAIN@/@GIT_ORG@/@GIT_REPO@
 Vcs-Git: git://@GIT_DOMAIN@/@GIT_ORG@/@GIT_REPO@.git
@@ -12,7 +12,7 @@ Vcs-Browser: https://@GIT_DOMAIN@/@GIT_ORG@/@GIT_REPO@
 Package: @PACKAGE_NAME@-dev
 Section: devel
 Architecture: amd64
-Depends: ${misc:Depends}, @PACKAGE_NAME@ (= ${binary:Version}), libfullock-dev (>= @LIB_MINVER_LIBFULLOCK@), @DEB_DEPS_CRYPT_PKG@
+Depends: ${misc:Depends}, @PACKAGE_NAME@ (= ${binary:Version}), libfullock-dev (>= @LIB_MINVER_LIBFULLOCK@), @DEB_DEPS_CRYPT_DEV_PKG@
 Description: @SHORTDESC@ (development)
  Development package for building with @PACKAGE_NAME@ shared library.
   This package has header files and symbols for it.

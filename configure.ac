@@ -225,8 +225,11 @@ case "${crypt_lib}" in
 		#
 		# Depends Crypt library for packaging
 		#
-		AC_SUBST([DEB_DEPS_CRYPT_PKG], "libssl-dev")
-		AC_SUBST([RPM_DEPS_CRYPT_PKG], "openssl-devel")
+		AC_SUBST([DEB_DEPS_CRYPT_PKG],     "libssl3")
+		AC_SUBST([DEB_DEPS_CRYPT_DEV_PKG], "libssl-dev")
+		AC_SUBST([RPM_DEPS_CRYPT_PKG],     "openssl-libs")
+		AC_SUBST([RPM_DEPS_CRYPT_DEV_PKG], "openssl-devel")
+		AC_SUBST([ALP_DEPS_CRYPT_DEV_PKG], "openssl-dev")
 
 		;;
 	nss)
@@ -239,7 +242,8 @@ case "${crypt_lib}" in
 		#
 		# Depends Crypt library for packaging
 		#
-		AC_SUBST([RPM_DEPS_CRYPT_PKG], "nss-devel")
+		AC_SUBST([RPM_DEPS_CRYPT_PKG],     "nss")
+		AC_SUBST([RPM_DEPS_CRYPT_DEV_PKG], "nss-devel")
 
 		;;
 	nettle)
@@ -252,7 +256,8 @@ case "${crypt_lib}" in
 		#
 		# Depends Crypt library for packaging
 		#
-		AC_SUBST([RPM_DEPS_CRYPT_PKG], "nettle-devel")
+		AC_SUBST([RPM_DEPS_CRYPT_PKG],     "nettle")
+		AC_SUBST([RPM_DEPS_CRYPT_DEV_PKG], "nettle-devel")
 
 		;;
 	gcrypt)
@@ -271,7 +276,8 @@ case "${crypt_lib}" in
 		#
 		# Depends Crypt library for packaging
 		#
-		AC_SUBST([DEB_DEPS_CRYPT_PKG], "libgcrypt20-dev")
+		AC_SUBST([DEB_DEPS_CRYPT_PKG],     "libgcrypt20")
+		AC_SUBST([DEB_DEPS_CRYPT_DEV_PKG], "libgcrypt20-dev")
 
 		;;
 	*)
