@@ -294,7 +294,7 @@ AM_CONDITIONAL([IS_OPENSSL3],		[test "$is_openssl3" = yes])
 #
 # Version list for Libraries
 #
-AC_SUBST([LIB_MINVER_LIBFULLOCK], "1.0.61")
+AC_SUBST([LIB_MINVER_LIBFULLOCK], "1.0.62")
 
 #
 # Checking Libraries
