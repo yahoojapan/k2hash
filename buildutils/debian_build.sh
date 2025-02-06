@@ -104,11 +104,11 @@ while [ $# -ne 0 ]; do
 	if [ -z "$1" ]; then
 		break
 
-	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+	elif echo "$1" | grep -q -i -e "^-h$" -e "^--help$"; then
 		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "$1" = "-b" ] || [ "$1" = "-B" ] || [ "$1" = "--buildnum" ] || [ "$1" = "--BUILDNUM" ]; then
+	elif echo "$1" | grep -q -i -e "^-b$" -e "^--buildnum$"; then
 		if [ "${BUILD_NUMBER}" -ne 0 ]; then
 			echo "[ERROR] Already --buildnum(-b) option is specified(${BUILD_NUMBER})." 1>&2
 			exit 1
@@ -128,7 +128,7 @@ while [ $# -ne 0 ]; do
 		fi
 		BUILD_NUMBER="$1"
 
-	elif [ "$1" = "-p" ] || [ "$1" = "-P" ] || [ "$1" = "--product" ] || [ "$1" = "--PRODUCT" ]; then
+	elif echo "$1" | grep -q -i -e "^-p$" -e "^--product$"; then
 		if [ -n "${PACKAGE_NAME}" ]; then
 			echo "[ERROR] Already --product(-p) option is specified(${PACKAGE_NAME})." 1>&2
 			exit 1
@@ -140,7 +140,7 @@ while [ $# -ne 0 ]; do
 		fi
 		PACKAGE_NAME="$1"
 
-	elif [ "$1" = "-c" ] || [ "$1" = "-C" ] || [ "$1" = "--class" ] || [ "$1" = "--CLASS" ]; then
+	elif echo "$1" | grep -q -i -e "^-c$" -e "^--class$"; then
 		if [ -n "${PKG_CLASS_NAME}" ]; then
 			echo "[ERROR] Already --class(-c) option is specified(${PKG_CLASS_NAME})." 1>&2
 			exit 1
@@ -152,7 +152,7 @@ while [ $# -ne 0 ]; do
 		fi
 		PKG_CLASS_NAME="$1"
 
-	elif [ "$1" = "-dt" ] || [ "$1" = "-DT" ] || [ "$1" = "--disttype" ] || [ "$1" = "--DISTTYPE" ]; then
+	elif echo "$1" | grep -q -i -e "^-dt$" -e "^--disttype$"; then
 		if [ -n "${OS_VERSION_NAME}" ]; then
 			echo "[ERROR] Already --disttype(-dt) option is specified(${OS_VERSION_NAME})." 1>&2
 			exit 1
@@ -164,14 +164,14 @@ while [ $# -ne 0 ]; do
 		fi
 		OS_VERSION_NAME="$1"
 
-	elif [ "$1" = "-r" ] || [ "$1" = "-R" ] || [ "$1" = "--rootdir" ] || [ "$1" = "--ROOTDIR" ]; then
+	elif echo "$1" | grep -q -i -e "^-r$" -e "^--rootdir$"; then
 		if [ "${IS_ROOTDIR}" -ne 0 ]; then
 			echo "[ERROR] Already --rootdir(-r) option is specified." 1>&2
 			exit 1
 		fi
 		IS_ROOTDIR=1
 
-	elif [ "$1" = "-y" ] || [ "$1" = "-Y" ] || [ "$1" = "--yes" ] || [ "$1" = "--YES" ]; then
+	elif echo "$1" | grep -q -i -e "^-y$" -e "^--yes$"; then
 		if [ "${NO_INTERACTIVE}" -ne 0 ]; then
 			echo "[ERROR] Already --yes(-y) option is specified." 1>&2
 			exit 1
@@ -255,9 +255,9 @@ if [ "${NO_INTERACTIVE}" -eq 0 ]; then
 		printf '[INPUT] Confirm (y/n) : '
 		read -r CONFIRM
 
-		if [ "${CONFIRM}" = "y" ] || [ "${CONFIRM}" = "Y" ] || [ "${CONFIRM}" = "yes" ] || [ "${CONFIRM}" = "YES" ]; then
+		if echo "${CONFIRM}" | grep -q -i -e "^y$" -e "^yes$"; then
 			IS_CONFIRMED=1
-		elif [ "${CONFIRM}" = "n" ] || [ "${CONFIRM}" = "N" ] || [ "${CONFIRM}" = "no" ] || [ "${CONFIRM}" = "NO" ]; then
+		elif echo "${CONFIRM}" | grep -q -i -e "^n$" -e "^no$"; then
 			echo "Interrupt this processing, bye..."
 			exit 0
 		fi

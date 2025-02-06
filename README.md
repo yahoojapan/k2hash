@@ -5,16 +5,17 @@ k2hash
 [![GitHub forks](https://img.shields.io/github/forks/yahoojapan/k2hash.svg)](https://github.com/yahoojapan/k2hash/network)
 [![GitHub stars](https://img.shields.io/github/stars/yahoojapan/k2hash.svg)](https://github.com/yahoojapan/k2hash/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/yahoojapan/k2hash.svg)](https://github.com/yahoojapan/k2hash/issues)
-[![debian packages](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/antpickax/stable)
 [![RPM packages](https://img.shields.io/badge/rpm-packagecloud.io-844fec.svg)](https://packagecloud.io/antpickax/stable)
+[![debian packages](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/antpickax/stable)
+[![ALPINE packages](https://img.shields.io/badge/apk-packagecloud.io-844fec.svg)](https://packagecloud.io/antpickax/stable)
 [![Docker image](https://img.shields.io/docker/pulls/antpickax/k2hash.svg)](https://hub.docker.com/r/antpickax/k2hash)
 [![Docker dev image](https://img.shields.io/docker/pulls/antpickax/k2hash-dev.svg)](https://hub.docker.com/r/antpickax/k2hash-dev)
 
 K2HASH - NoSQL Key Value Store(KVS) library
 
 ### Overview
-K2HASH is NoSQL(key value store) library and tools for this library by
-Yahoo! JAPAN. K2HASH is following specifications.  
+K2HASH is NoSQL(key value store) library and tools for this library by Yahoo! JAPAN.  
+K2HASH is following specifications.
 
 ![K2HASH](https://k2hash.antpick.ax/images/top_k2hash.png)
 
@@ -38,6 +39,7 @@ Yahoo! JAPAN. K2HASH is following specifications.
 ### Packages
   - [RPM packages(packagecloud.io)](https://packagecloud.io/antpickax/stable)
   - [Debian packages(packagecloud.io)](https://packagecloud.io/antpickax/stable)
+  - [ALPINE packages(packagecloud.io)](https://packagecloud.io/antpickax/stable)
 
 ### Docker images
   - [k2hash(Docker Hub)](https://hub.docker.com/r/antpickax/k2hash)

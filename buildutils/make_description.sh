@@ -67,11 +67,11 @@ while [ $# -ne 0 ]; do
 	if [ -z "$1" ]; then
 		break
 
-	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+	elif echo "$1" | grep -q -i -e "^-h$" -e "^--help$"; then
 		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "$1" = "-s" ] || [ "$1" = "-S" ] || [ "$1" = "--short" ] || [ "$1" = "--SHORT" ]; then
+	elif echo "$1" | grep -q -i -e "^-s$" -e "^--short$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --short(-s), --long(-l), --esclong(-e), --deblong(-d) ) is specified." 1>&2
 			echo "No description because the ${PRGNAME} program failed to extract the description."
@@ -80,7 +80,7 @@ while [ $# -ne 0 ]; do
 		IS_SHORT=1
 		EXCLUSIVE_OPT=1
 
-	elif [ "$1" = "-l" ] || [ "$1" = "-L" ] || [ "$1" = "--long" ] || [ "$1" = "--LONG" ]; then
+	elif echo "$1" | grep -q -i -e "^-l$" -e "^--long$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --short(-s), --long(-l), --esclong(-e), --deblong(-d) ) is specified." 1>&2
 			echo "No description because the ${PRGNAME} program failed to extract the description."
@@ -90,7 +90,7 @@ while [ $# -ne 0 ]; do
 		IS_DEB_CONTROL_FILE=0
 		EXCLUSIVE_OPT=1
 
-	elif [ "$1" = "-e" ] || [ "$1" = "-E" ] || [ "$1" = "--esclong" ] || [ "$1" = "--ESCLONG" ]; then
+	elif echo "$1" | grep -q -i -e "^-e$" -e "^--esclong$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --short(-s), --long(-l), --esclong(-e), --deblong(-d) ) is specified." 1>&2
 			echo "No description because the ${PRGNAME} program failed to extract the description."
@@ -107,7 +107,7 @@ while [ $# -ne 0 ]; do
 		#
 		ESC_LF_CHAR='\n'\\
 
-	elif [ "$1" = "-d" ] || [ "$1" = "-D" ] || [ "$1" = "--deblong" ] || [ "$1" = "--DEBLONG" ]; then
+	elif echo "$1" | grep -q -i -e "^-d$" -e "^--deblong$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --short(-s), --long(-l), --esclong(-e), --deblong(-d) ) is specified." 1>&2
 			echo "No description because the ${PRGNAME} program failed to extract the description."

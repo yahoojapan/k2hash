@@ -69,11 +69,11 @@ while [ $# -ne 0 ]; do
 	if [ -z "$1" ]; then
 		break
 
-	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+	elif echo "$1" | grep -q -i -e "^-h$" -e "^--help$"; then
 		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "$1" = "-o" ] || [ "$1" = "-O" ] || [ "$1" = "--organization" ] || [ "$1" = "--ORGANIZATION" ]; then
+	elif echo "$1" | grep -q -i -e "^-o$" -e "^--organization$"; then
 		if [ -n "${ORGNAME}" ]; then
 			echo "[ERROR] already --organization(-o) option is specified(${ORGNAME})." 1>&2
 			echo "unknown"
@@ -87,7 +87,7 @@ while [ $# -ne 0 ]; do
 		fi
 		ORGNAME="$1"
 
-	elif [ "$1" = "-r" ] || [ "$1" = "-R" ] || [ "$1" = "--reponame" ] || [ "$1" = "--REPONAME" ]; then
+	elif echo "$1" | grep -q -i -e "^-r$" -e "^--reponame$"; then
 		if [ -n "${REPONAME}" ]; then
 			echo "[ERROR] already --reponame(-r) option is specified(${REPONAME})." 1>&2
 			echo "unknown"
@@ -101,7 +101,7 @@ while [ $# -ne 0 ]; do
 		fi
 		REPONAME="$1"
 
-	elif [ "$1" = "-ep" ] || [ "$1" = "-EP" ] || [ "$1" = "--endpoint" ] || [ "$1" = "--ENDPOINT" ]; then
+	elif echo "$1" | grep -q -i -e "^-ep$" -e "^--endpoint$"; then
 		if [ -n "${ENDPOINT}" ]; then
 			echo "[ERROR] already --endpoint(-ep) option is specified(${ENDPOINT})." 1>&2
 			echo "unknown"
@@ -115,7 +115,7 @@ while [ $# -ne 0 ]; do
 		fi
 		ENDPOINT="$1"
 
-	elif [ "$1" = "-t" ] || [ "$1" = "-T" ] || [ "$1" = "--tag" ] || [ "$1" = "--TAG" ]; then
+	elif echo "$1" | grep -q -i -e "^-t$" -e "^--tag$"; then
 		if [ -n "${TAGNAME}" ]; then
 			echo "[ERROR] already --tag(-t) option is specified(${TAGNAME})." 1>&2
 			echo "unknown"
@@ -129,7 +129,7 @@ while [ $# -ne 0 ]; do
 		fi
 		TAGNAME="$1"
 
-	elif [ "$1" = "-s" ] || [ "$1" = "-S" ] || [ "$1" = "--short" ] || [ "$1" = "--SHORT" ]; then
+	elif echo "$1" | grep -q -i -e "^-s$" -e "^--short$"; then
 		if [ "${ISSHORT}" -eq 1 ]; then
 			echo "[ERROR] already --short(-s) option is specified." 1>&2
 			echo "unknown"

@@ -99,11 +99,11 @@ while [ $# -ne 0 ]; do
 	if [ -z "$1" ]; then
 		break
 
-	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+	elif echo "$1" | grep -q -i -e "^-h$" -e "^--help$"; then
 		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "$1" = "-b" ] || [ "$1" = "-B" ] || [ "$1" = "--buildnum" ] || [ "$1" = "--BUILDNUM" ]; then
+	elif echo "$1" | grep -q -i -e "^-b$" -e "^--buildnum$"; then
 		if [ -n "${BUILD_NUMBER}" ]; then
 			echo "[ERROR] Already --buildnum(-b) option is specified(${BUILD_NUMBER})." 1>&2
 			exit 1
@@ -119,7 +119,7 @@ while [ $# -ne 0 ]; do
 		fi
 		BUILD_NUMBER="$1"
 
-	elif [ "$1" = "-p" ] || [ "$1" = "-P" ] || [ "$1" = "--product" ] || [ "$1" = "--PRODUCT" ]; then
+	elif echo "$1" | grep -q -i -e "^-p$" -e "^--product$"; then
 		if [ -n "${PACKAGE_NAME}" ]; then
 			echo "[ERROR] Already --product(-p) option is specified(${PACKAGE_NAME})." 1>&2
 			exit 1
@@ -131,7 +131,7 @@ while [ $# -ne 0 ]; do
 		fi
 		PACKAGE_NAME="$1"
 
-	elif [ "$1" = "-y" ] || [ "$1" = "-Y" ] || [ "$1" = "--yes" ] || [ "$1" = "--YES" ]; then
+	elif echo "$1" | grep -q -i -e "^-y$" -e "^--yes$"; then
 		if [ "${NO_INTERACTIVE}" -ne 0 ]; then
 			echo "[ERROR] Already --yes(-y) option is specified." 1>&2
 			exit 1
