@@ -1350,7 +1350,7 @@ if [ "${RUN_SHELLCHECK}" -eq 1 ]; then
 		# Fedora
 		#
 		if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" ShellCheck || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install cppcheck"
+			PRNERR "Failed to install shellcheck"
 			exit 1
 		fi
 
@@ -1377,7 +1377,7 @@ if [ "${RUN_SHELLCHECK}" -eq 1 ]; then
 		# Ubuntu or Debian
 		#
 		if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" shellcheck || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install cppcheck"
+			PRNERR "Failed to install shellcheck"
 			exit 1
 		fi
 
@@ -1386,7 +1386,7 @@ if [ "${RUN_SHELLCHECK}" -eq 1 ]; then
 		# Alpine
 		#
 		if ({ RUNCMD "${INSTALLER_BIN}" "${INSTALL_CMD}" "${INSTALL_CMD_ARG}" "${INSTALL_AUTO_ARG}" shellcheck || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install cppcheck"
+			PRNERR "Failed to install shellcheck"
 			exit 1
 		fi
 

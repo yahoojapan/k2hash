@@ -54,18 +54,18 @@ while [ $# -ne 0 ]; do
 		echo "[ERROR] Parameters are something wrong."
 		exit 1
 
-	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+	elif echo "$1" | grep -q -i -e "^-h$" -e "^--help$"; then
 		echo "Usage: ${AUTOGEN_NAME} [--help(-h)] [--no_update_version_file(-nu)] [--no_aclocal_force(-na)] [--no_check_ver_diff(-nc)]"
 		exit 0
 
-	elif [ "$1" = "-nu" ] || [ "$1" = "-NU" ] || [ "$1" = "--no_update_version_file" ] || [ "$1" = "--NO_UPDATE_VERSION_FILE" ]; then
+	elif echo "$1" | grep -q -i -e "^-nu$" -e "^--no_update_version_file$"; then
 		UPDATE_VERSION_FILE=0
 		FORCEPARAM=""			# do not need force
 
-	elif [ "$1" = "-na" ] || [ "$1" = "-NA" ] || [ "$1" = "--no_aclocal_force" ] || [ "$1" = "--NO_ACLOCAL_FORCE" ]; then
+	elif echo "$1" | grep -q -i -e "^-na$" -e "^--no_aclocal_force$"; then
 		FORCEPARAM=""
 
-	elif [ "$1" = "-nc" ] || [ "$1" = "-NC" ] || [ "$1" = "--no_check_ver_diff" ] || [ "$1" = "--NO_CHECK_VER_DIFF" ]; then
+	elif echo "$1" | grep -q -i -e "^-nc$" -e "^--no_check_ver_diff$"; then
 		PARAMETERS="$1"
 
 	else

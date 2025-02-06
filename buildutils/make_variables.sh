@@ -65,11 +65,11 @@ while [ $# -ne 0 ]; do
 	if [ -z "$1" ]; then
 		break
 
-	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+	elif echo "$1" | grep -q -i -e "^-h$" -e "^--help$"; then
 		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "$1" = "-pv" ] || [ "$1" = "-PV" ] || [ "$1" = "--pkg_version" ] || [ "$1" = "--PKG_VERSION" ]; then
+	elif echo "$1" | grep -q -i -e "^-pv$" -e "^--pkg_version$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
 			printf '0'
@@ -78,7 +78,7 @@ while [ $# -ne 0 ]; do
 		PRGMODE="PKG"
 		EXCLUSIVE_OPT=1
 
-	elif [ "$1" = "-lvi" ] || [ "$1" = "-LVI" ] || [ "$1" = "--lib_version_info" ] || [ "$1" = "--LIB_VERSION_INFO" ]; then
+	elif echo "$1" | grep -q -i -e "^-lvi$" -e "^--lib_version_info$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
 			printf '0'
@@ -87,7 +87,7 @@ while [ $# -ne 0 ]; do
 		PRGMODE="LIB"
 		EXCLUSIVE_OPT=1
 
-	elif [ "$1" = "-lvl" ] || [ "$1" = "-LVL" ] || [ "$1" = "--lib_version_for_link" ] || [ "$1" = "--LIB_VERSION_FOR_LINK" ]; then
+	elif echo "$1" | grep -q -i -e "^-lvl$" -e "^--lib_version_for_link$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
 			printf '0'
@@ -96,7 +96,7 @@ while [ $# -ne 0 ]; do
 		PRGMODE="LINK"
 		EXCLUSIVE_OPT=1
 
-	elif [ "$1" = "-mn" ] || [ "$1" = "-MN" ] || [ "$1" = "--major_number" ] || [ "$1" = "--MAJOR_NUMBER" ]; then
+	elif echo "$1" | grep -q -i -e "^-mn$" -e "^--major_number$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
 			printf '0'
@@ -105,7 +105,7 @@ while [ $# -ne 0 ]; do
 		PRGMODE="MAJOR"
 		EXCLUSIVE_OPT=1
 
-	elif [ "$1" = "-dd" ] || [ "$1" = "-DD" ] || [ "$1" = "--debhelper_dep" ] || [ "$1" = "--DEBHELPER_DEP" ]; then
+	elif echo "$1" | grep -q -i -e "^-dd$" -e "^--debhelper_dep$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
 			printf '0'
@@ -115,7 +115,7 @@ while [ $# -ne 0 ]; do
 		DEB_WITH_SYSTEMD=0
 		EXCLUSIVE_OPT=1
 
-	elif [ "$1" = "-dds" ] || [ "$1" = "-DDS" ] || [ "$1" = "--debhelper_dep_with_systemd" ] || [ "$1" = "--DEBHELPER_DEP_WITH_SYSTEMD" ]; then
+	elif echo "$1" | grep -q -i -e "^-dds$" -e "^--debhelper_dep_with_systemd$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
 			printf '0'
@@ -125,7 +125,7 @@ while [ $# -ne 0 ]; do
 		DEB_WITH_SYSTEMD=1
 		EXCLUSIVE_OPT=1
 
-	elif [ "$1" = "-rg" ] || [ "$1" = "-RG" ] || [ "$1" = "--rpmpkg_group" ] || [ "$1" = "--RPMPKG_GROUP" ]; then
+	elif echo "$1" | grep -q -i -e "^-rg$" -e "^--rpmpkg_group$"; then
 		if [ "${EXCLUSIVE_OPT}" -eq 1 ]; then
 			echo "[ERROR] already one of eclusive options( --pkg_version(-pv), --lib_version_info(-lvi), --lib_version_for_link(-lvl), --major_number(-mn), --debhelper_dep(-dd), --debhelper_dep_with_systemd(-dds), --rpmpkg_group(-rg) ) is specified." 1>&2
 			printf '0'

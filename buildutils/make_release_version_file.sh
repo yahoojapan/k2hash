@@ -68,31 +68,31 @@ while [ $# -ne 0 ]; do
 	if [ -z "$1" ]; then
 		break
 
-	elif [ "$1" = "-h" ] || [ "$1" = "-H" ] || [ "$1" = "--help" ] || [ "$1" = "--HELP" ]; then
+	elif echo "$1" | grep -q -i -e "^-h$" -e "^--help$"; then
 		func_usage "${PRGNAME}"
 		exit 0
 
-	elif [ "$1" = "-ng" ] || [ "$1" = "-NG" ] || [ "$1" = "--not_use_git" ] || [ "$1" = "--NOT_USE_GIT" ]; then
+	elif echo "$1" | grep -q -i -e "^-ng$" -e "^--not_use_git$"; then
 		if [ "${NOT_USE_GIT}" -ne 0 ]; then
 			echo "[ERROR] already --not_use_git(-ng) option is specified." 1>&2
 			exit 1
 		fi
 		NOT_USE_GIT=1
 
-	elif [ "$1" = "-nd" ] || [ "$1" = "-ND" ] || [ "$1" = "--no_check_ver_diff" ] || [ "$1" = "--NO_CHECK_VER_DIFF" ]; then
+	elif echo "$1" | grep -q -i -e "^-nd$" -e "^--no_check_ver_diff$"; then
 		if [ "${NO_CHECK_VER_DIFF}" -ne 0 ]; then
 			echo "[ERROR] already --no_check_ver_diff(-nd) option is specified." 1>&2
 			exit 1
 		fi
 		NO_CHECK_VER_DIFF=1
 
-	elif [ "$1" = "-f" ] || [ "$1" = "-F" ] || [ "$1" = "--file" ] || [ "$1" = "--FILE" ]; then
+	elif echo "$1" | grep -q -i -e "^-f$" -e "^--file$"; then
 		if [ -n "${CHANGELOG_FILE}" ]; then
 			echo "[ERROR] already --file(-f) option is specified(${CHANGELOG_FILE})." 1>&2
 			exit 1
 		fi
 		shift
-		if [ $# -eq 0 ] || [ -z "$1" ]; then
+		if [ $# -eq 0 ]; then
 			echo "[ERROR] Must set changelog file path after -file(-f) option." 1>&2
 			exit 1
 		fi
