@@ -28,7 +28,7 @@ K2HASHの実行環境を整え、動作確認する方法を示します。
 **K2HASH** のパッケージは、Debianパッケージ、RPMパッケージの形式で公開しています。  
 お使いのOSによりインストール方法が異なりますので、以下の手順を確認してインストールしてください。  
 
-#### 最近のDebianベースLinuxの利用者は、以下の手順に従ってください。
+#### DebianベースLinuxの利用者は、以下の手順に従ってください。
 ```
 $ sudo apt-get update -y
 $ sudo apt-get install curl -y
@@ -40,7 +40,7 @@ $ sudo apt-get install k2hash
 $ sudo apt-get install k2hash-dev
 ```
 
-#### Fedoraの利用者は、以下の手順に従ってください。
+#### RPMベースのLinuxの場合は、以下の手順に従ってください。
 ```
 $ sudo dnf makecache
 $ sudo dnf install curl -y
@@ -52,16 +52,16 @@ $ sudo dnf install k2hash
 $ sudo dnf install k2hash-devel
 ```
 
-#### その他最近のRPMベースのLinuxの場合は、以下の手順に従ってください。
+#### ALPINEベースのLinuxの場合は、以下の手順に従ってください。
 ```
-$ sudo yum makecache
-$ sudo yum install curl -y
-$ curl -s https://packagecloud.io/install/repositories/antpickax/stable/script.rpm.sh | sudo bash
-$ sudo yum install k2hash
+# apk update
+# apk add curl
+# curl -s https://packagecloud.io/install/repositories/antpickax/stable/script.alpine.sh | sh
+# apk add k2hash
 ```
 開発者向けパッケージをインストールする場合は、以下のパッケージをインストールしてください。
 ```
-$ sudo yum install k2hash-devel
+# apk add k2hash-dev
 ```
 
 #### 上記以外のOS
