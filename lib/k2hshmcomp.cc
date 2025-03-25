@@ -141,6 +141,8 @@ PELEMENT K2HShm::ReserveElement(void* pRelExpArea, size_t ExpLength)
 	}
 	K2HLock		ALObjFEC(ShmFd, Rel(&(pHead->free_element_count)), K2HLock::RWLOCK);	// LOCK
 
+	// cppcheck-suppress unmatchedSuppression
+	// cppcheck-suppress constVariablePointer
 	const PELEMENT	pStartPos	= reinterpret_cast<PELEMENT>(pRelExpArea);
 	// cppcheck-suppress unmatchedSuppression
 	// cppcheck-suppress constVariablePointer
