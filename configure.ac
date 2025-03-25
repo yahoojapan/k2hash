@@ -294,7 +294,7 @@ AM_CONDITIONAL([IS_OPENSSL3],		[test "$is_openssl3" = yes])
 #
 # Version list for Libraries
 #
-AC_SUBST([LIB_MINVER_LIBFULLOCK], "1.0.62")
+AC_SUBST([LIB_MINVER_LIBFULLOCK], "1.0.63")
 
 #
 # Checking Libraries
@@ -309,7 +309,7 @@ AC_ARG_ENABLE(check-depend-libs,
 	esac]
 )
 AS_IF([test ${check_depend_libs} = 1], [AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
-AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.61], [], [AC_MSG_ERROR(not found libfullock package)])])
+AS_IF([test ${check_depend_libs} = 1], [PKG_CHECK_MODULES([fullock], [libfullock >= 1.0.63], [], [AC_MSG_ERROR(not found libfullock package)])])
 
 #
 # CFLAGS/CXXFLAGS
