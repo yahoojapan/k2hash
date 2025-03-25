@@ -1,3 +1,9 @@
+k2hash (1.0.99) unstable; urgency=low
+
+  * Avoided latest cppcheck error which maybe a false positive - #113
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Tue, 25 Mar 2025 15:39:40 +0900
+
 k2hash (1.0.98) unstable; urgency=low
 
   * Changed support OSes and Fixed scripts, etc - #110
