@@ -165,21 +165,6 @@ elif echo "${CI_OSTYPE}" | grep -q -i -e "debian:12" -e "debian:bookworm"; then
 	PKG_EXT="deb"
 	IS_OS_DEBIAN=1
 
-elif echo "${CI_OSTYPE}" | grep -q -i -e "debian:11" -e "debian:bullseye"; then
-	DIST_TAG="debian/bullseye"
-	INSTALL_PKG_LIST="git autoconf autotools-dev gcc g++ make gdb dh-make fakeroot dpkg-dev devscripts libtool pkg-config ruby-dev rubygems rubygems-integration procps libfullock-dev libgcrypt20-dev"
-	INSTALLER_BIN="apt-get"
-	UPDATE_CMD="update"
-	UPDATE_CMD_ARG=""
-	INSTALL_CMD="install"
-	INSTALL_CMD_ARG=""
-	INSTALL_AUTO_ARG="-y"
-	INSTALL_QUIET_ARG="-qq"
-	PKG_OUTPUT_DIR="debian_build"
-	PKG_EXT="deb"
-	IS_OS_DEBIAN=1
-	IS_OPENSSL_TYPE=0
-
 elif echo "${CI_OSTYPE}" | grep -q -i "rockylinux:10"; then
 	DIST_TAG="el/10"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel openssl-devel"
@@ -223,8 +208,8 @@ elif echo "${CI_OSTYPE}" | grep -q -i "rockylinux:8"; then
 	IS_OS_ROCKY=1
 	IS_OPENSSL_TYPE=0
 
-elif echo "${CI_OSTYPE}" | grep -q -i "fedora:44"; then
-	DIST_TAG="fedora/44"
+elif echo "${CI_OSTYPE}" | grep -q -i "fedora:45"; then
+	DIST_TAG="fedora/45"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel openssl-devel"
 	INSTALLER_BIN="dnf"
 	UPDATE_CMD="update"
@@ -237,8 +222,8 @@ elif echo "${CI_OSTYPE}" | grep -q -i "fedora:44"; then
 	PKG_EXT="rpm"
 	IS_OS_FEDORA=1
 
-elif echo "${CI_OSTYPE}" | grep -q -i "fedora:43"; then
-	DIST_TAG="fedora/43"
+elif echo "${CI_OSTYPE}" | grep -q -i "fedora:44"; then
+	DIST_TAG="fedora/44"
 	INSTALL_PKG_LIST="git autoconf automake gcc gcc-c++ gdb make libtool pkgconfig redhat-rpm-config rpm-build ruby-devel rubygems procps libfullock-devel openssl-devel"
 	INSTALLER_BIN="dnf"
 	UPDATE_CMD="update"
@@ -281,34 +266,6 @@ elif echo "${CI_OSTYPE}" | grep -q -i "alpine:3.23"; then
 
 elif echo "${CI_OSTYPE}" | grep -q -i "alpine:3.22"; then
 	DIST_TAG="alpine/v3.22"
-	INSTALL_PKG_LIST="bash sudo alpine-sdk automake autoconf libtool groff util-linux-misc musl-locales ruby-dev procps libfullock libfullock-dev openssl-dev"
-	INSTALLER_BIN="apk"
-	UPDATE_CMD="update"
-	UPDATE_CMD_ARG="--no-progress"
-	INSTALL_CMD="add"
-	INSTALL_CMD_ARG="--no-progress --no-cache"
-	INSTALL_AUTO_ARG=""
-	INSTALL_QUIET_ARG="-q"
-	PKG_OUTPUT_DIR="apk_build"
-	PKG_EXT="apk"
-	IS_OS_ALPINE=1
-
-elif echo "${CI_OSTYPE}" | grep -q -i "alpine:3.21"; then
-	DIST_TAG="alpine/v3.21"
-	INSTALL_PKG_LIST="bash sudo alpine-sdk automake autoconf libtool groff util-linux-misc musl-locales ruby-dev procps libfullock libfullock-dev openssl-dev"
-	INSTALLER_BIN="apk"
-	UPDATE_CMD="update"
-	UPDATE_CMD_ARG="--no-progress"
-	INSTALL_CMD="add"
-	INSTALL_CMD_ARG="--no-progress --no-cache"
-	INSTALL_AUTO_ARG=""
-	INSTALL_QUIET_ARG="-q"
-	PKG_OUTPUT_DIR="apk_build"
-	PKG_EXT="apk"
-	IS_OS_ALPINE=1
-
-elif echo "${CI_OSTYPE}" | grep -q -i "alpine:3.20"; then
-	DIST_TAG="alpine/v3.20"
 	INSTALL_PKG_LIST="bash sudo alpine-sdk automake autoconf libtool groff util-linux-misc musl-locales ruby-dev procps libfullock libfullock-dev openssl-dev"
 	INSTALLER_BIN="apk"
 	UPDATE_CMD="update"

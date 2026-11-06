@@ -493,7 +493,7 @@ bool K2HTransManager::isEnable(const K2HShm* pk2hshm, bool with_lock)
 		while(!fullock::flck_trylock_noshared_mutex(&LockVal));		// no call sched_yield()
 	}
 
-	PTRFILEINFO	pFileInfo;
+	const TRFILEINFO*	pFileInfo;
 	if(NULL == (pFileInfo = GetFileInfo(pk2hshm))){
 		if(with_lock){
 			fullock::flck_unlock_noshared_mutex(&LockVal);
@@ -585,7 +585,7 @@ int K2HTransManager::GetArchiveFd(const K2HShm* pk2hshm)
 		return -1;
 	}
 
-	PTRFILEINFO	pFileInfo;
+	const TRFILEINFO*	pFileInfo;
 	if(NULL == (pFileInfo = GetFileInfo(pk2hshm))){
 		fullock::flck_unlock_noshared_mutex(&LockVal);
 		return -1;
