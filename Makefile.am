@@ -93,9 +93,9 @@ SHELLCHECK_CMD				= shellcheck
 SHELLCHECK_BASE_OPT			= --shell=sh
 SHELLCHECK_IGN_OPT			= --exclude=SC1117,SC1090,SC1091
 SHELLCHECK_INCLUDE_IGN_OPT	= --exclude=SC1117,SC1090,SC1091,SC2034,SC2148
-SHELLCHECK_FILES_NO_SH		= `grep -ril '^\#!/bin/sh' . | grep -v '\.sh' | grep -v '\.log' | grep -v '/\.git/' | grep -v '/rpmbuild/' | grep -v '/debian_build/' | grep -v '/autom4te.cache/' | grep -v '/m4/' | grep -v '/install-sh' | grep -v '/ltmain.sh' | tr '\n' ' '`
-SHELLCHECK_FILES_SH			= `grep -ril '^\#!/bin/sh' . | grep '\.sh'    | grep -v '\.log' | grep -v '/\.git/' | grep -v '/rpmbuild/' | grep -v '/debian_build/' | grep -v '/autom4te.cache/' | grep -v '/m4/' | grep -v '/install-sh' | grep -v '/ltmain.sh' | tr '\n' ' '`
-SHELLCHECK_FILES_INCLUDE_SH	= `grep -Lir '^\#!/bin/sh' . | grep '\.sh'    | grep -v '\.log' | grep -v '/\.git/' | grep -v '/rpmbuild/' | grep -v '/debian_build/' | grep -v '/autom4te.cache/' | grep -v '/m4/' | grep -v '/install-sh' | grep -v '/ltmain.sh' | tr '\n' ' '`
+SHELLCHECK_FILES_NO_SH		= `grep -ril "^$$(printf '%b' '\0043')!/bin/sh" . | grep -v '\.sh' | grep -v '\.log' | grep -v '/\.git/' | grep -v '/rpmbuild/' | grep -v '/debian_build/' | grep -v '/autom4te.cache/' | grep -v '/m4/' | grep -v '/install-sh' | grep -v '/ltmain.sh' | tr '\n' ' '`
+SHELLCHECK_FILES_SH			= `grep -ril "^$$(printf '%b' '\0043')!/bin/sh" . | grep '\.sh'    | grep -v '\.log' | grep -v '/\.git/' | grep -v '/rpmbuild/' | grep -v '/debian_build/' | grep -v '/autom4te.cache/' | grep -v '/m4/' | grep -v '/install-sh' | grep -v '/ltmain.sh' | tr '\n' ' '`
+SHELLCHECK_FILES_INCLUDE_SH	= `grep -Lir "^$$(printf '%b' '\0043')!/bin/sh" . | grep '\.sh'    | grep -v '\.log' | grep -v '/\.git/' | grep -v '/rpmbuild/' | grep -v '/debian_build/' | grep -v '/autom4te.cache/' | grep -v '/m4/' | grep -v '/install-sh' | grep -v '/ltmain.sh' | tr '\n' ' '`
 
 shellcheck:
 	@set -e; \

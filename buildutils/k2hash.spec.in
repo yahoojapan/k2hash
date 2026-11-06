@@ -45,6 +45,8 @@
 %global run_autogen echo "skip autogen.sh"
 %endif
 
+%global major_version %{lua: print(string.match("@VERSION@", "^%d+"))}
+
 #
 # main package
 #
@@ -86,20 +88,12 @@ find %{buildroot} -name '*.la' -exec rm -f {} ';'
 %postun -p /sbin/ldconfig
 %endif
 
-%if 0%{?rhel} == 6
-%clean
-rm -rf %{buildroot}
-%endif
-
 %files
-%if 0%{?rhel} == 6
-%doc COPYING
-%defattr(-,root,root)
-%else
+
 %license COPYING
-%endif
+
 %doc README AUTHORS ChangeLog
-%{_libdir}/*.so.1*
+%{_libdir}/*.so.%{major_version}*
 %{_mandir}/man1/*
 %{_bindir}/*
 
@@ -115,9 +109,7 @@ Development package for building with @PACKAGE_NAME@ shared library.
 This package has header files and symbols for it.
 
 %files devel
-%if 0%{?rhel} == 6
-%defattr(-,root,root)
-%endif
+
 %doc README AUTHORS ChangeLog
 %{_includedir}/*
 %{_libdir}/*.so

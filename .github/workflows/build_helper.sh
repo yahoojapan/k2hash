@@ -1268,51 +1268,6 @@ if [ "${CI_DO_PUBLISH}" -eq 1 ]; then
 			exit 1
 		fi
 	fi
-
-	# [NOTE]
-	# Currently, the package_cloud tool must restrict gem packages depending on
-	# the Ruby version.
-	#
-	RB_MAJOR_VER=$(ruby -v | awk '{print $2}' | awk -F'[^0-9]' '{print $1}')
-	RB_MINOR_VER=$(ruby -v | awk '{print $2}' | awk -F'[^0-9]' '{print $2}')
-	RB_PATCH_VER=$(ruby -v | awk '{print $2}' | awk -F'[^0-9]' '{print $3}')
-	RB_ALL_VER=$((RB_MAJOR_VER*10000 + RB_MINOR_VER*100 + RB_PATCH_VER))
-
-	if [ "${RB_ALL_VER}" -ge 30400 ]; then
-		# [NOTE]
-		# For Ruby 3.4.0 and later, you must manually install the addrev gem package.
-		#
-		PRNINFO "Start to install addrev gem because ruby version is 3.4.0 later"
-		if ({ RUNCMD "${GEM_BIN}" "${GEM_INSTALL_CMD}" abbrev || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-			PRNERR "Failed to install addrev gem"
-			exit 1
-		fi
-
-		# [NOTE]
-		# A fix for JSON::Fragment has been made in json 2.10.0 and later, which
-		# causes an error when running the current package_cloud tool.
-		# To avoid this, we will limit it to json 2.9.1.(This will occur in Fedora 42)
-		#
-		GEMJSON_MAJOR_VER=$("${GEM_BIN}" list | grep '^json[[:space:]]*(' | grep -oP '\(\K[^\)]*' | awk -F'[^0-9]' '{print $1}')
-		GEMJSON_MINOR_VER=$("${GEM_BIN}" list | grep '^json[[:space:]]*(' | grep -oP '\(\K[^\)]*' | awk -F'[^0-9]' '{print $2}')
-		GEMJSON_PATCH_VER=$("${GEM_BIN}" list | grep '^json[[:space:]]*(' | grep -oP '\(\K[^\)]*' | awk -F'[^0-9]' '{print $3}')
-		GEMJSON_ALL_VER=$((GEMJSON_MAJOR_VER*10000 + GEMJSON_MINOR_VER*100 + GEMJSON_PATCH_VER))
-
-		if [ "${GEMJSON_ALL_VER}" -gt 20901 ]; then
-			PRNINFO "Start to uninstall all json gem"
-			for json_installed_path in $("${GEM_BIN}" env gempath | tr ':' '\n'); do
-				if ({ RUNCMD "${GEM_BIN}" uninstall -i "${json_installed_path}" json -aIx || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-					PRNERR "Failed to uninstall json gem in ${json_installed_path}, but continue..."
-				fi
-			done
-
-			PRNINFO "Start to install json gem 2.9.1"
-			if ({ RUNCMD "${GEM_BIN}" "${GEM_INSTALL_CMD}" json -v 2.9.1 || echo > "${PIPEFAILURE_FILE}"; } | sed -e 's/^/    /g') && rm "${PIPEFAILURE_FILE}" >/dev/null 2>&1; then
-				PRNERR "Failed to install json gem"
-				exit 1
-			fi
-		fi
-	fi
 else
 	PRNINFO "Skip to install published tools for uploading packages to packagecloud.io, because this CI process does not upload any packages."
 fi

@@ -2439,10 +2439,11 @@ bool K2HShm::AddSubkey(const unsigned char* byKey, size_t keylength, const unsig
 	// get parent subkeys
 	K2HSubKeys	k2hsubkeys;
 	K2HSubKeys*	pk2hsubkeys;
-	bool		isDelete = true;
-	if(NULL == (pk2hsubkeys = GetSubKeys(byKey, keylength))){
+	K2HSubKeys*	pfreek2hsubkeys;
+	if(NULL == (pfreek2hsubkeys = GetSubKeys(byKey, keylength))){
 		pk2hsubkeys	= &k2hsubkeys;
-		isDelete	= false;
+	}else{
+		pk2hsubkeys	= pfreek2hsubkeys;
 	}
 
 	// prepare parent's new subkeys
@@ -2451,9 +2452,7 @@ bool K2HShm::AddSubkey(const unsigned char* byKey, size_t keylength, const unsig
 	pk2hsubkeys->insert(bySubkey, skeylength);
 	if(!pk2hsubkeys->Serialize(&bySubkeys, skeyslength)){
 		ERR_K2HPRN("Could not build subkeys for parent.");
-		if(isDelete){
-			K2H_Delete(pk2hsubkeys);
-		}
+		K2H_Delete(pfreek2hsubkeys);
 		return false;
 	}
 
@@ -2462,9 +2461,7 @@ bool K2HShm::AddSubkey(const unsigned char* byKey, size_t keylength, const unsig
 	if(false == (result = ReplaceSubkeys(byKey, keylength, bySubkeys, skeyslength))){
 		ERR_K2HPRN("Could not replace subkeys in parent.");
 	}
-	if(isDelete){
-		K2H_Delete(pk2hsubkeys);
-	}
+	K2H_Delete(pfreek2hsubkeys);
 	K2H_Free(bySubkeys);
 
 	return result;
@@ -2491,10 +2488,11 @@ bool K2HShm::AddAttr(const unsigned char* byKey, size_t keylength, const unsigne
 	// get current attrs
 	K2HAttrs	Attrs;
 	K2HAttrs*	pAttrs;
-	bool		isDelete = true;
-	if(NULL == (pAttrs = GetAttrs(byKey, keylength))){
+	K2HAttrs*	pFreeAttrs;
+	if(NULL == (pFreeAttrs = GetAttrs(byKey, keylength))){
 		pAttrs		= &Attrs;
-		isDelete	= false;
+	}else{
+		pAttrs		= pFreeAttrs;
 	}
 
 	// add attr
@@ -2505,9 +2503,7 @@ bool K2HShm::AddAttr(const unsigned char* byKey, size_t keylength, const unsigne
 	size_t			attrlength	= 0UL;
 	if(!pAttrs->Serialize(&byAttrs, attrlength)){
 		ERR_K2HPRN("Could not make attribute binary data from object.");
-		if(isDelete){
-			K2H_Delete(pAttrs);
-		}
+		K2H_Delete(pFreeAttrs);
 		return false;
 	}
 
@@ -2516,9 +2512,7 @@ bool K2HShm::AddAttr(const unsigned char* byKey, size_t keylength, const unsigne
 	if(false == (result = ReplaceAttrs(byKey, keylength, byAttrs, attrlength))){
 		ERR_K2HPRN("Could not replace attributes.");
 	}
-	if(isDelete){
-		K2H_Delete(pAttrs);
-	}
+	K2H_Delete(pFreeAttrs);
 	K2H_Free(byAttrs);
 
 	return result;

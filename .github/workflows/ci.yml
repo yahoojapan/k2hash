@@ -72,16 +72,14 @@ jobs:
           - ubuntu:22.04
           - debian:trixie
           - debian:bookworm
-          - debian:bullseye
           - rockylinux/rockylinux:10
           - rockylinux:9
           - rockylinux:8
+          - fedora:45
           - fedora:44
-          - fedora:43
           - alpine:3.24
           - alpine:3.23
           - alpine:3.22
-          - alpine:3.21
 
     container:
       image: ${{ matrix.container }}
