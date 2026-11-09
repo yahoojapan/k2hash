@@ -226,7 +226,7 @@ bool K2HFileMonitor::InitializeFileMonitor(const SFMONWRAP* pfmonwrap, bool noup
 		need_init_size	= false;
 
 		// open or create file
-		if(-1 != (fmfd = open(bup_monfile.c_str(), O_RDWR | O_CREAT | O_EXCL | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))){
+		if(-1 != (fmfd = open(bup_monfile.c_str(), O_RDWR | O_CREAT | O_EXCL | O_SYNC | O_NOFOLLOW, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))){
 			// created new file
 
 			// [NOTE]
@@ -242,7 +242,7 @@ bool K2HFileMonitor::InitializeFileMonitor(const SFMONWRAP* pfmonwrap, bool noup
 			}
 			has_write_lock = true;
 
-		}else if(-1 != (fmfd = open(bup_monfile.c_str(), O_RDWR))){
+		}else if(-1 != (fmfd = open(bup_monfile.c_str(), O_RDWR | O_NOFOLLOW))){
 			// opened existed file
 
 			// [NOTE]
@@ -390,6 +390,7 @@ bool K2HFileMonitor::InitializeFileMonitor(const SFMONWRAP* pfmonwrap, bool noup
 			//continue;
 		}
 	}
+	umask(old_umask);
 
 	// write lock during initializing
 	if(!noupdate){

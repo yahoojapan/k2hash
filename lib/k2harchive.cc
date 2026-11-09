@@ -343,6 +343,8 @@ bool K2HArchive::Load(K2HShm* pShm) const
 		}else if(SCOM_OW_VAL == pBinCom->scom.type){
 			if(!byExdata || 0UL == pBinCom->scom.exdata_length){
 				CommandResult = false;
+			}else if(sizeof(OWVAL_EXDATA) != pBinCom->scom.exdata_length){
+				CommandResult = false;
 			}else{
 				K2HDAccess		daccess(pShm, K2HDAccess::WRITE_ACCESS);
 				OWVAL_EXDATA	exdata;

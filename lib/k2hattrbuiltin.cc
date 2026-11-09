@@ -973,8 +973,16 @@ unsigned char* K2hAttrBuiltin::GetDecryptValue(K2HAttrs& attrs, const char* encp
 
 		// do decrypt
 		if(K2H_ENC_AES256_PBKDF1 == enctype){
+			if(ValLen <= (K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH)){
+				ERR_K2HPRN("Encrypted value length is smaller than (K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH).");
+				return presult;
+			}
 			presult = k2h_decrypt_aes256_cbc(strPass.c_str(), byValue, ValLen, declen);
 		}else{	// K2H_ENC_AES256_PBKDF2 == enctype
+			if(ValLen <= (K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH + K2H_ENCRYPT_IV_LENGTH + K2H_ENCRYPT_ITER_LENGTH)){
+				ERR_K2HPRN("Encrypted value length is smaller than (K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH + K2H_ENCRYPT_IV_LENGTH + K2H_ENCRYPT_ITER_LENGTH).");
+				return presult;
+			}
 			presult = k2h_decrypt_aes256_cbc_pbkdf2(strPass.c_str(), byValue, ValLen, declen);
 		}
 		if(!presult){

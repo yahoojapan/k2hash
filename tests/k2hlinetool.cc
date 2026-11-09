@@ -2140,7 +2140,9 @@ static bool DirectLoadCommand(K2HShm& k2hash, const params_t& params)
 		return true;			// for continue
 	}
 	rpos += strlen("COUNT=");
-	for(size_t cnt = 0; cnt < sizeof(szBuff); ++cnt, ++rpos){
+
+	memset(szBuff, 0, sizeof(szBuff));
+	for(size_t cnt = 0; cnt < (sizeof(szBuff) - 1); ++cnt, ++rpos){
 		if(1 != k2h_pread(fd, &szBuff[cnt], 1, rpos)){
 			ERR("Could not read data count from file(%s)", params[0].c_str());
 			// cppcheck-suppress unmatchedSuppression
@@ -2185,7 +2187,9 @@ static bool DirectLoadCommand(K2HShm& k2hash, const params_t& params)
 			return true;			// for continue
 		}
 		rpos += strlen("LENGTH=");
-		for(size_t cnt2 = 0; cnt2 < sizeof(szBuff); ++cnt2, ++rpos){
+
+		memset(szBuff, 0, sizeof(szBuff));
+		for(size_t cnt2 = 0; cnt2 < (sizeof(szBuff) - 1); ++cnt2, ++rpos){
 			if(1 != k2h_pread(fd, &szBuff[cnt2], 1, rpos)){
 				ERR("Could not read data count from file(%s)", params[0].c_str());
 				free_k2hbins(pbindatas, datacnt);
