@@ -1,3 +1,10 @@
+k2hash (1.0.104) unstable; urgency=low
+
+  * Strengthened variable checks and fixed bugs - #124
+  * Changed support OSes and fixed files - #123
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 09 Nov 2026 14:41:04 +0900
+
 k2hash (1.0.103) unstable; urgency=low
 
   * Supports Alpine 3.24, manual trigger for GHA, and fix codes - #121
