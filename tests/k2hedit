@@ -46,9 +46,9 @@ TARGET_K2HFILE="$1"
 #--------------------------------------------------------------
 K2HTOUCH_BIN="k2htouch"
 
-ORG_TEMPFILE="/tmp/.${PRGNAME}_$$.tmp"
-WORK_TEMPFILE="/tmp/.${PRGNAME}_$$.swp"
-DIFF_RESULT_FILE="/tmp/.${PRGNAME}_$$.diff"
+ORG_TEMPFILE=$(mktemp -u "/tmp/${PRGNAME}_$$.XXXXXX.tmp")
+WORK_TEMPFILE=$(mktemp -u "/tmp/.${PRGNAME}_$$.XXXXXX.swp")
+DIFF_RESULT_FILE=$(mktemp -u "/tmp/.${PRGNAME}_$$.XXXXXX.diff")
 
 if [ -n "${EDITOR}" ]; then
 	EDITOR_BIN="${EDITOR}"
@@ -96,8 +96,18 @@ if ! diff --new-line-format="%L" --unchanged-line-format="" --old-line-format=""
 	exit 1
 fi
 
-AWK_PARAMETER="{system(\"${K2HTOUCH_BIN} ${TARGET_K2HFILE} set \"\$1\" \"\$2\"\")}"
-if ! awk -F\\t "${AWK_PARAMETER}" "${DIFF_RESULT_FILE}"; then
+IS_ERROR=0
+while IFS="$(printf '\t')" read -r key val || [ -n "${key}" ]; do
+	if [ -z "${key}" ]; then
+		continue
+	fi
+	if ! "${K2HTOUCH_BIN}" "${TARGET_K2HFILE}" set "${key}" "${val}"; then
+		IS_ERROR=1
+		break
+	fi
+done < "${DIFF_RESULT_FILE}"
+
+if [ "${IS_ERROR}" -ne 0 ]; then
 	echo "[ERROR] Failed to set modified data to ${TARGET_K2HFILE}"
 	rm -f "${ORG_TEMPFILE}"
 	rm -f "${WORK_TEMPFILE}"

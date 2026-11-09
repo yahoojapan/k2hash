@@ -1573,6 +1573,10 @@ bool k2h_set_element_by_binary(k2h_h handle, const PK2HBIN pbindatas, const stru
 	}
 
 	PBALLEDATA	pbinall = reinterpret_cast<PBALLEDATA>(pbindatas->byptr);
+	if(pbindatas->length < calc_ralledata_length(pbinall->rawdata)){
+		ERR_K2HPRN("Wrong data length about direct element binary data.");
+		return false;
+	}
 	if(!pShm->SetElementByBinArray(&(pbinall->rawdata), pts)){
 		ERR_K2HPRN("Failed to set direct element binary data.");
 		return false;

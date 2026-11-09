@@ -356,7 +356,7 @@ unsigned char* k2h_encrypt_aes256_cbc(const char* pass, const unsigned char* org
 
 unsigned char* k2h_decrypt_aes256_cbc(const char* pass, const unsigned char* encdata, size_t enclen, size_t& declen)
 {
-	if(ISEMPTYSTR(pass) || !encdata || 0 == enclen){
+	if(ISEMPTYSTR(pass) || !encdata || enclen <= (K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH)){
 		ERR_K2HPRN("parameters are wrong.");
 		return NULL;
 	}
@@ -587,7 +587,7 @@ unsigned char* k2h_encrypt_aes256_cbc_pbkdf2(const char* pass, int iter, const u
 
 unsigned char* k2h_decrypt_aes256_cbc_pbkdf2(const char* pass, const unsigned char* encdata, size_t enclen, size_t& declen)
 {
-	if(ISEMPTYSTR(pass) || !encdata || 0 == enclen){
+	if(ISEMPTYSTR(pass) || !encdata || enclen <= (K2H_ENCRYPT_SALT_PREFIX_LENGTH + K2H_ENCRYPT_SALT_LENGTH + K2H_ENCRYPT_IV_LENGTH + K2H_ENCRYPT_ITER_LENGTH)){
 		ERR_K2HPRN("parameters are wrong.");
 		return NULL;
 	}

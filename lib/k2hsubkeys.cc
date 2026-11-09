@@ -114,7 +114,7 @@ bool K2HSubKeys::Serialize(const unsigned char* pSubkeys, size_t length)
 {
 	clear();
 
-	if(!pSubkeys || 0UL == length){
+	if(!pSubkeys || length < sizeof(size_t)){
 		return true;
 	}
 
