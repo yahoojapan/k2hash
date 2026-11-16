@@ -1,3 +1,9 @@
+k2hash (1.0.105) unstable; urgency=low
+
+  * Add strict variable checks in alpine_build.sh - #126
+
+ -- Takeshi Nakatani <ggtakec@gmail.com>  Mon, 16 Nov 2026 14:40:24 +0900
+
 k2hash (1.0.104) unstable; urgency=low
 
   * Strengthened variable checks and fixed bugs - #124
