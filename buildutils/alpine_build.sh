@@ -212,6 +212,14 @@ if [ -z "${DEBEMAIL}" ]; then
 	DEBEMAIL="${USER}@$(hostname -f)"
 fi
 
+# [NOTE]
+# Ensure DEBEMAIL contains only safe email characters(allowlist validation) to prevent
+# shell metacharacter injection when constructing file paths.
+#
+if ! printf '%s' "${DEBEMAIL}" | grep -Eq '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'; then
+	echo "[ERROR] DEBEMAIL environment(${DEBEMAIL}) is invalid  format." 1>&2
+fi
+
 if [ -z "${DEBFULLNAME}" ]; then
 	echo "[WARNING] DEBFULLNAME environment is not set, so set default \"${USER}\"." 1>&2
 	DEBFULLNAME="${USER}"
@@ -340,6 +348,9 @@ fi
 
 #
 # Check and Copy RSA keys
+#
+# [NOTE]
+# Safe to expand: DEBEMAIL is pre-validated to contain no shell metacharacters.
 #
 if ! find "${APKBUILD_CONFIG_DIR}" -name "${DEBEMAIL}"-\*\.rsa | grep -q "${DEBEMAIL}"; then
 	echo "[ERROR] Not found ${APKBUILD_CONFIG_DIR}/${DEBEMAIL}-<unixtime(hex)>.rsa files." 1>&2
