@@ -41,7 +41,6 @@ MAN_FILE=""
 IS_SHORT=0
 IS_DEB_CONTROL_FILE=0
 ESC_LF_CHAR=""
-TEMP_FILE="/tmp/${PRGNAME}_$$.tmp"
 
 #
 # Utility functions
@@ -143,6 +142,13 @@ done
 # indicate sections, so use them as markers to insert characters.
 # This allows you to see the section breaks.
 #
+
+RANDOM_STR=$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n')
+TEMP_FILE="/tmp/${PRGNAME}_${RANDOM_STR}.tmp"
+if [ -e "${TEMP_FILE}" ] || [ -L "${TEMP_FILE}" ]; then
+	echo "[ERROR] ${TEMP_FILE} temporary file already exists, so not write to avoid overwriting." 1>&2
+    exit 1
+fi
 if ! nroff -man "${MAN_FILE}" 2>/dev/null | sed -e 's/[[:cntrl:]]\[[0-9][0-9]*m//g' -e 's/[[:cntrl:]][[:graph:]]//g' -e 's/^[[:space:]]/_____/g' >"${TEMP_FILE}" 2>/dev/null; then
 	echo "[ERROR] Could not read ${MAN_FILE} file with converting." 1>&2
 	echo "No description because the ${PRGNAME} program failed to extract the description."
